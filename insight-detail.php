@@ -94,6 +94,50 @@ if ($plain !== '') {
 
 			</div>
 		</div>
+
+		<!-- Nexus Field decorative swirl arcs -->
+		<svg class="hero-swirl hero-swirl-tr" viewBox="0 0 520 420" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
+		  <defs>
+		    <linearGradient id="heroSwirlGradTR" x1="60" y1="0" x2="520" y2="260" gradientUnits="userSpaceOnUse">
+		      <stop offset="0%"  stop-color="#5b9cff" stop-opacity="0"/>
+		      <stop offset="18%" stop-color="#2b7bff" stop-opacity="0.9"/>
+		      <stop offset="55%" stop-color="#dce9ff" stop-opacity="1"/>
+		      <stop offset="100%" stop-color="#1a66ff" stop-opacity="0"/>
+		    </linearGradient>
+		    <filter id="heroGlowTR" x="-60%" y="-60%" width="220%" height="220%">
+		      <feGaussianBlur stdDeviation="4.5" result="blur"/>
+		      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+		    </filter>
+		  </defs>
+		  <g filter="url(#heroGlowTR)" stroke-linecap="round" fill="none">
+		    <path d="M 300 -20 C 190 40, 150 140, 230 210 C 300 270, 400 250, 560 150" stroke="url(#heroSwirlGradTR)" stroke-width="2.5" opacity="0.55" transform="translate(-14,-10)"/>
+		    <path d="M 300 -20 C 190 40, 150 140, 230 210 C 300 270, 400 250, 560 150" stroke="url(#heroSwirlGradTR)" stroke-width="3"   opacity="0.75" transform="translate(-4,-2)"/>
+		    <path d="M 300 -20 C 190 40, 150 140, 230 210 C 300 270, 400 250, 560 150" stroke="url(#heroSwirlGradTR)" stroke-width="2.2" opacity="1"/>
+		    <path d="M 300 -20 C 190 40, 150 140, 230 210 C 300 270, 400 250, 560 150" stroke="#ffffff" stroke-width="0.9" opacity="0.85" transform="translate(6,6)"/>
+		  </g>
+		</svg>
+
+		<svg class="hero-swirl hero-swirl-bl" viewBox="0 0 520 420" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
+		  <defs>
+		    <linearGradient id="heroSwirlGradBL" x1="60" y1="0" x2="520" y2="260" gradientUnits="userSpaceOnUse">
+		      <stop offset="0%"  stop-color="#7ea0f8" stop-opacity="0"/>
+		      <stop offset="18%" stop-color="#2b7bff" stop-opacity="0.9"/>
+		      <stop offset="55%" stop-color="#dce9ff" stop-opacity="1"/>
+		      <stop offset="100%" stop-color="#1a66ff" stop-opacity="0"/>
+		    </linearGradient>
+		    <filter id="heroGlowBL" x="-60%" y="-60%" width="220%" height="220%">
+		      <feGaussianBlur stdDeviation="4" result="blur"/>
+		      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+		    </filter>
+		  </defs>
+		  <g filter="url(#heroGlowBL)" stroke-linecap="round" fill="none">
+		    <path d="M 300 -20 C 190 40, 150 140, 230 210 C 300 270, 400 250, 560 150" stroke="url(#heroSwirlGradBL)" stroke-width="2.5" opacity="0.5" transform="translate(-14,-10)"/>
+		    <path d="M 300 -20 C 190 40, 150 140, 230 210 C 300 270, 400 250, 560 150" stroke="url(#heroSwirlGradBL)" stroke-width="2.8" opacity="0.7" transform="translate(-4,-2)"/>
+		    <path d="M 300 -20 C 190 40, 150 140, 230 210 C 300 270, 400 250, 560 150" stroke="url(#heroSwirlGradBL)" stroke-width="2"   opacity="1"/>
+		  </g>
+		</svg>
+
+		<canvas id="heroCanvas" class="hero-canvas" aria-hidden="true"></canvas>
 	</header>
 
 	<?php if ($featuredUrl): ?>
@@ -150,10 +194,10 @@ if ($plain !== '') {
 				</div>
 				<div class="ind-cta-inner">
 					<span class="ind-cta-eyebrow">Let's Build</span>
-					<h3 class="ind-cta-title">Want to Apply These Insights?</h3>
-					<p class="ind-cta-text">Talk to our team of experts about how we can help your business leverage cutting-edge technology.</p>
-					<a href="<?= SITE_URL ?>/services.php" class="ind-cta-btn">
-						<span>Explore Our Services</span>
+					<h3 class="ind-cta-title">Have a Project in Mind?</h3>
+					<p class="ind-cta-text">We assemble and lead dedicated, high-impact tech teams that bring ambitious ideas to reality</p>
+					<a href="<?= SITE_URL ?>/contact.php" class="ind-cta-btn">
+						<span>Talk to our team</span>
 						<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
 					</a>
 				</div>

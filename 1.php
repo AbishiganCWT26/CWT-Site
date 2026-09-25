@@ -26,6 +26,7 @@ $techFirst = $techKeys[0];
 $services = [
 	[
 		'num'   => '01',
+		'icon'  => '<path d="M3 3v18h18"/><path d="M7 15v3M12 10v8M17 6v12"/>',
 		'title' => 'Data Engineering &amp; Analytics',
 		'desc'  => 'We design and deploy robust architectures, pipelines, and governance frameworks to turn complex, scattered enterprise data into trusted, analytics-ready assets that drive strategic decision-making.',
 		'consultant' => ['Renien', 'Senior Solution Architect / CTO'],
@@ -34,6 +35,7 @@ $services = [
 	],
 	[
 		'num'   => '02',
+		'icon'  => '<rect x="7" y="7" width="10" height="10" rx="2.5"/><path d="M10 3v4M14 3v4M10 17v4M14 17v4M3 10h4M3 14h4M17 10h4M17 14h4"/>',
 		'title' => 'AI Engineering &amp; Intelligent Automation',
 		'desc'  => 'We build intelligent systems, machine learning models, and automated workflows—from generative AI to process orchestration—that automate repetitive tasks and deliver high-impact business solutions.',
 		'consultant' => ['Eranga', 'AI Research Engineer'],
@@ -42,6 +44,7 @@ $services = [
 	],
 	[
 		'num'   => '03',
+		'icon'  => '<path d="M4 7h16M4 12h16M4 17h16"/><circle cx="9" cy="7" r="2.3"/><circle cx="15" cy="12" r="2.3"/><circle cx="8" cy="17" r="2.3"/>',
 		'title' => 'Optimization',
 		'desc'  => 'We optimize enterprise systems, cloud-native architectures, and CI/CD pipelines to accelerate software delivery, strengthen operational reliability, and drive continuous efficiency.',
 		'consultant' => ['Amal', 'Senior Optimization Consultant'],
@@ -50,6 +53,7 @@ $services = [
 	],
 	[
 		'num'   => '04',
+		'icon'  => '<path d="M8 6l-5 6 5 6M16 6l5 6-5 6"/>',
 		'title' => 'Software Engineering &amp; Development',
 		'desc'  => 'We design, build, and modernize scalable enterprise applications, digital platforms, and custom APIs to establish secure, high-performing technology environments.',
 		'consultant' => ['Rashintha', 'Senior Solution Architect'],
@@ -58,6 +62,7 @@ $services = [
 	],
 	[
 		'num'   => '05',
+		'icon'  => '<path d="M12 3l7 3v5.2c0 4.5-3 8.1-7 9.8-4-1.7-7-5.3-7-9.8V6z"/><path d="M9.2 12.2l2 2 3.6-3.8"/>',
 		'title' => 'Cybersecurity, Network, Infrastructure, Partner Management, Cloud, Support &amp; Services',
 		'desc'  => 'We architect, protect, and maintain hybrid infrastructure, cloud environments, and managed IT services to guarantee enterprise compliance, robust security, and 24/7 reliability.',
 		'consultant' => ['Isuru', 'Senior IT Architect'],
@@ -66,6 +71,7 @@ $services = [
 	],
 	[
 		'num'   => '06',
+		'icon'  => '<rect x="6" y="4" width="12" height="17" rx="2.5"/><path d="M9 4V3h6v1"/><path d="M9.2 12.4l2 2 3.6-3.8"/>',
 		'title' => 'Project Delivery &amp; PMO',
 		'desc'  => 'We enforce disciplined project governance, strategic planning, and continuous quality assurance to deliver transparent stakeholder visibility and predictable, high-value project outcomes.',
 		'consultant' => ['Priyath', 'Senior Project Consultant'],
@@ -74,26 +80,29 @@ $services = [
 	],
 	[
 		'num'   => '07',
+		'icon'  => '<path d="M12 3v18M8 21h8"/><path d="M6 7l-3 6h6zM18 7l-3 6h6zM6 7l6-2 6 2"/>',
 		'title' => 'Legal, Internal Operations &amp; HR',
 		'desc'  => 'We enable new market opportunities, cultivate strategic partnerships, and drive sustainable organizational growth by aligning internal operations and strategic governance with proactive marketing, customer engagement, and RFP management.',
 		'consultant' => ['Chameera', 'Senior Consultant'],
-		'lead'  => ['TBC'],
+		'lead'  => ['Unknown'],
 		'team'  => ['Samadhi'],
 	],
 	[
 		'num'   => '08',
+		'icon'  => '<path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/><path d="M9 13h6M9 17h4"/>',
+		'title' => 'Legal, Internal Operations &amp; HR',
+		'desc'  => 'We enable new market opportunities, cultivate strategic partnerships, and drive sustainable organizational growth by aligning internal operations and strategic governance with proactive marketing, customer engagement, and RFP management.',
+		'consultant' => ['Chameera', 'Senior Consultant'],
+		'lead'  => ['Unknown'],
+		'team'  => ['Samadhi'],
+	],
+	[
+		'num'   => '09',
+		'icon'  => '<path d="M3 17l6-6 4 4 8-8"/><path d="M15 7h6v6"/>',
 		'title' => 'Business Development',
 		'desc'  => 'We identify strategic market opportunities, optimize commercial engagement processes, and cultivate technology partnerships to drive sustainable revenue growth and enterprise expansion.',
 		'consultant' => ['Ayesh', 'Senior Business Development Consultant'],
 		'lead'  => ['Menura'],
-		'team'  => ['Chenuli', 'Lehan'],
-	],
-	[
-		'num'   => '09',
-		'title' => 'Training',
-		'desc'  => '---',
-		'consultant' => ['Ulinda', 'Senior Finance & Advisory Consultant'],
-		'lead'  => ['TBC'],
 		'team'  => ['Chenuli', 'Lehan'],
 	],
 ];
@@ -122,7 +131,7 @@ $pageTitle = 'Our Services — Creative Web Technologies';
 	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 	<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Exo+2:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
-	<link rel="stylesheet" href="<?= SITE_URL ?>/assets/css/services.css">
+	<link rel="stylesheet" href="<?= SITE_URL ?>/assets/css/1.css">
 	<script>document.documentElement.classList.add('js');</script>
 </head>
 <body class="svc-page">
@@ -151,50 +160,6 @@ $pageTitle = 'Our Services — Creative Web Technologies';
 			</div>
 		</div>
 	</div>
-
-	<!-- Nexus Field decorative swirl arcs -->
-	<svg class="hero-swirl hero-swirl-tr" viewBox="0 0 520 420" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
-	  <defs>
-	    <linearGradient id="heroSwirlGradTR" x1="60" y1="0" x2="520" y2="260" gradientUnits="userSpaceOnUse">
-	      <stop offset="0%"  stop-color="#5b9cff" stop-opacity="0"/>
-	      <stop offset="18%" stop-color="#2b7bff" stop-opacity="0.9"/>
-	      <stop offset="55%" stop-color="#dce9ff" stop-opacity="1"/>
-	      <stop offset="100%" stop-color="#1a66ff" stop-opacity="0"/>
-	    </linearGradient>
-	    <filter id="heroGlowTR" x="-60%" y="-60%" width="220%" height="220%">
-	      <feGaussianBlur stdDeviation="4.5" result="blur"/>
-	      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
-	    </filter>
-	  </defs>
-	  <g filter="url(#heroGlowTR)" stroke-linecap="round" fill="none">
-	    <path d="M 300 -20 C 190 40, 150 140, 230 210 C 300 270, 400 250, 560 150" stroke="url(#heroSwirlGradTR)" stroke-width="2.5" opacity="0.55" transform="translate(-14,-10)"/>
-	    <path d="M 300 -20 C 190 40, 150 140, 230 210 C 300 270, 400 250, 560 150" stroke="url(#heroSwirlGradTR)" stroke-width="3"   opacity="0.75" transform="translate(-4,-2)"/>
-	    <path d="M 300 -20 C 190 40, 150 140, 230 210 C 300 270, 400 250, 560 150" stroke="url(#heroSwirlGradTR)" stroke-width="2.2" opacity="1"/>
-	    <path d="M 300 -20 C 190 40, 150 140, 230 210 C 300 270, 400 250, 560 150" stroke="#ffffff" stroke-width="0.9" opacity="0.85" transform="translate(6,6)"/>
-	  </g>
-	</svg>
-
-	<svg class="hero-swirl hero-swirl-bl" viewBox="0 0 520 420" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
-	  <defs>
-	    <linearGradient id="heroSwirlGradBL" x1="60" y1="0" x2="520" y2="260" gradientUnits="userSpaceOnUse">
-	      <stop offset="0%"  stop-color="#7ea0f8" stop-opacity="0"/>
-	      <stop offset="18%" stop-color="#2b7bff" stop-opacity="0.9"/>
-	      <stop offset="55%" stop-color="#dce9ff" stop-opacity="1"/>
-	      <stop offset="100%" stop-color="#1a66ff" stop-opacity="0"/>
-	    </linearGradient>
-	    <filter id="heroGlowBL" x="-60%" y="-60%" width="220%" height="220%">
-	      <feGaussianBlur stdDeviation="4" result="blur"/>
-	      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
-	    </filter>
-	  </defs>
-	  <g filter="url(#heroGlowBL)" stroke-linecap="round" fill="none">
-	    <path d="M 300 -20 C 190 40, 150 140, 230 210 C 300 270, 400 250, 560 150" stroke="url(#heroSwirlGradBL)" stroke-width="2.5" opacity="0.5" transform="translate(-14,-10)"/>
-	    <path d="M 300 -20 C 190 40, 150 140, 230 210 C 300 270, 400 250, 560 150" stroke="url(#heroSwirlGradBL)" stroke-width="2.8" opacity="0.7" transform="translate(-4,-2)"/>
-	    <path d="M 300 -20 C 190 40, 150 140, 230 210 C 300 270, 400 250, 560 150" stroke="url(#heroSwirlGradBL)" stroke-width="2"   opacity="1"/>
-	  </g>
-	</svg>
-
-	<canvas id="heroCanvas" class="hero-canvas" aria-hidden="true"></canvas>
 </section>
 
 <section class="svc-sec svc-hub" id="all-services" aria-labelledby="all-services-heading">
@@ -207,40 +172,39 @@ $pageTitle = 'Our Services — Creative Web Technologies';
 		<div class="svc-hub-grid reveal">
 			<?php foreach ($services as $s): ?>
 			<div class="svc-hub-card">
-				<div class="svc-hub-heading">
-					<h3 class="svc-hub-name"><?= $s['title'] ?></h3>
+				<div class="svc-hub-top">
+					<span class="svc-hub-icon" aria-hidden="true">
+						<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><?= $s['icon'] ?></svg>
+					</span>
 					<span class="svc-hub-num"><?= e($s['num']) ?></span>
 				</div>
-
+				<h3 class="svc-hub-name"><?= $s['title'] ?></h3>
 				<p class="svc-hub-text"><?= e($s['desc']) ?></p>
-
-				<div class="svc-hub-divider"></div>
-
-				<div class="svc-hub-details">
-					<div class="svc-hub-detail svc-hub-consultant">
-						<span class="svc-hub-key">Consultant</span>
+				<div class="svc-hub-foot">
+					<div class="svc-hub-consultant">
+						<span class="svc-hub-avatar"><?= e(mb_substr($s['consultant'][0], 0, 1)) ?></span>
 						<div class="svc-hub-consultant-info">
 							<span class="svc-hub-cname"><?= e($s['consultant'][0]) ?></span>
 							<span class="svc-hub-crole"><?= e($s['consultant'][1]) ?></span>
 						</div>
 					</div>
-
-					<div class="svc-hub-detail">
-						<span class="svc-hub-key">Lead</span>
-						<span class="svc-hub-chips">
-							<?php foreach ($s['lead'] as $name): ?>
-							<span class="svc-hub-chip"><?= e($name) ?></span>
-							<?php endforeach; ?>
-						</span>
-					</div>
-
-					<div class="svc-hub-detail">
-						<span class="svc-hub-key">Team</span>
-						<span class="svc-hub-chips">
-							<?php foreach ($s['team'] as $name): ?>
-							<span class="svc-hub-chip"><?= e($name) ?></span>
-							<?php endforeach; ?>
-						</span>
+					<div class="svc-hub-teams">
+						<div class="svc-hub-team-row">
+							<span class="svc-hub-key">Lead</span>
+							<span class="svc-hub-chips">
+								<?php foreach ($s['lead'] as $name): ?>
+								<span class="svc-hub-chip"><?= e($name) ?></span>
+								<?php endforeach; ?>
+							</span>
+						</div>
+						<div class="svc-hub-team-row">
+							<span class="svc-hub-key">Team</span>
+							<span class="svc-hub-chips">
+								<?php foreach ($s['team'] as $name): ?>
+								<span class="svc-hub-chip"><?= e($name) ?></span>
+								<?php endforeach; ?>
+							</span>
+						</div>
 					</div>
 				</div>
 			</div>
@@ -251,10 +215,10 @@ $pageTitle = 'Our Services — Creative Web Technologies';
 
 <section class="section section-light" id="what-we-offer" aria-labelledby="offer-heading">
 	<div class="container">
-		<div class="svc-sec-head reveal">
-			<span class="svc-label">Solutions</span>
-			<h2 class="svc-sec-title" id="offer-heading">What We Offer</h2>
-			<p class="svc-sec-sub">A comprehensive suite of technology solutions tailored to your unique business needs.</p>
+		<div class="section-header reveal">
+			<span class="section-label">Solutions</span>
+			<h2 class="section-title" id="offer-heading">What We Offer</h2>
+			<p class="section-subtitle">A comprehensive suite of technology solutions tailored to your unique business needs.</p>
 		</div>
 
 		<svg class="svg-sprite" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
@@ -465,8 +429,8 @@ $pageTitle = 'Our Services — Creative Web Technologies';
 		<?php endforeach; ?>
 	</div>
 </section>
-<?php require_once __DIR__ . '/service-talk.php'; ?>
+
 <?php require_once __DIR__ . '/includes/footer.php'; ?>
-<script src="<?= SITE_URL ?>/assets/js/services.js"></script>
+<script src="<?= SITE_URL ?>/assets/js/1.js"></script>
 </body>
 </html>

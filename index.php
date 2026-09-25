@@ -45,7 +45,6 @@ $offerings = [
 <?php require_once __DIR__ . '/includes/navbar.php'; ?>
 
 <section class="hero" id="hero" aria-label="Hero">
-	<canvas id="heroCanvas" class="hero-canvas"></canvas>
 
 	<?php if (file_exists(__DIR__ . '/assets/video/hero.mp4')): ?>
 	<video class="hero-video" autoplay muted loop playsinline aria-hidden="true">
@@ -59,6 +58,64 @@ $offerings = [
 	<div class="hero-orb hero-orb-2" aria-hidden="true"></div>
 	<div class="hero-orb hero-orb-3" aria-hidden="true"></div>
 
+	<!-- Nexus Field decorative swirl arcs -->
+	<svg class="hero-swirl hero-swirl-tr" viewBox="0 0 520 420" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
+		<defs>
+			<linearGradient id="heroSwirlGradTR" x1="60" y1="0" x2="520" y2="260" gradientUnits="userSpaceOnUse">
+				<stop offset="0%"  stop-color="#5b9cff" stop-opacity="0"/>
+				<stop offset="18%" stop-color="#2b7bff" stop-opacity="0.9"/>
+				<stop offset="55%" stop-color="#dce9ff" stop-opacity="1"/>
+				<stop offset="100%" stop-color="#1a66ff" stop-opacity="0"/>
+			</linearGradient>
+			<filter id="heroGlowTR" x="-60%" y="-60%" width="220%" height="220%">
+				<feGaussianBlur stdDeviation="4.5" result="blur"/>
+				<feMerge>
+					<feMergeNode in="blur"/>
+					<feMergeNode in="SourceGraphic"/>
+				</feMerge>
+			</filter>
+		</defs>
+		<g filter="url(#heroGlowTR)" stroke-linecap="round" fill="none">
+			<path d="M 300 -20 C 190 40, 150 140, 230 210 C 300 270, 400 250, 560 150"
+			      stroke="url(#heroSwirlGradTR)" stroke-width="2.5" opacity="0.55" transform="translate(-14,-10)"/>
+			<path d="M 300 -20 C 190 40, 150 140, 230 210 C 300 270, 400 250, 560 150"
+			      stroke="url(#heroSwirlGradTR)" stroke-width="3" opacity="0.75" transform="translate(-4,-2)"/>
+			<path d="M 300 -20 C 190 40, 150 140, 230 210 C 300 270, 400 250, 560 150"
+			      stroke="url(#heroSwirlGradTR)" stroke-width="2.2" opacity="1"/>
+			<path d="M 300 -20 C 190 40, 150 140, 230 210 C 300 270, 400 250, 560 150"
+			      stroke="#ffffff" stroke-width="0.9" opacity="0.85" transform="translate(6,6)"/>
+		</g>
+	</svg>
+
+	<svg class="hero-swirl hero-swirl-bl" viewBox="0 0 520 420" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
+		<defs>
+			<linearGradient id="heroSwirlGradBL" x1="60" y1="0" x2="520" y2="260" gradientUnits="userSpaceOnUse">
+				<stop offset="0%"  stop-color="#7ea0f8" stop-opacity="0"/>
+				<stop offset="18%" stop-color="#2b7bff" stop-opacity="0.9"/>
+				<stop offset="55%" stop-color="#dce9ff" stop-opacity="1"/>
+				<stop offset="100%" stop-color="#1a66ff" stop-opacity="0"/>
+			</linearGradient>
+			<filter id="heroGlowBL" x="-60%" y="-60%" width="220%" height="220%">
+				<feGaussianBlur stdDeviation="4" result="blur"/>
+				<feMerge>
+					<feMergeNode in="blur"/>
+					<feMergeNode in="SourceGraphic"/>
+				</feMerge>
+			</filter>
+		</defs>
+		<g filter="url(#heroGlowBL)" stroke-linecap="round" fill="none">
+			<path d="M 300 -20 C 190 40, 150 140, 230 210 C 300 270, 400 250, 560 150"
+			      stroke="url(#heroSwirlGradBL)" stroke-width="2.5" opacity="0.5" transform="translate(-14,-10)"/>
+			<path d="M 300 -20 C 190 40, 150 140, 230 210 C 300 270, 400 250, 560 150"
+			      stroke="url(#heroSwirlGradBL)" stroke-width="2.8" opacity="0.7" transform="translate(-4,-2)"/>
+			<path d="M 300 -20 C 190 40, 150 140, 230 210 C 300 270, 400 250, 560 150"
+			      stroke="url(#heroSwirlGradBL)" stroke-width="2" opacity="1"/>
+		</g>
+	</svg>
+
+	<!-- Nexus Field interactive canvas -->
+	<canvas id="heroCanvas" class="hero-canvas" aria-hidden="true"></canvas>
+
 	<div class="hero-content">
 
 		<h1 class="hero-title animate-fade-up animate-fade-up-delay-1">
@@ -70,7 +127,7 @@ $offerings = [
 		</h1>
 
 		<p class="hero-subtitle animate-fade-up animate-fade-up-delay-2">
-			Extend your in-house teams with Sri Lanka's finest technology talent — scalable, secure, and seamlessly integrated.
+			We turn ambitious ideas into products that move businesses forward with confidence and innovation.
 		</p>
 
 		<div class="hero-actions animate-fade-up animate-fade-up-delay-3">
@@ -101,7 +158,6 @@ $offerings = [
 	<div class="section-header reveal">
 		<span class="section-tag">Why CWT</span>
 		<h2 class="section-title" id="trust-heading">Why Companies Trust Us</h2>
-		<p class="section-subtitle">We combine world-class talent with enterprise-grade processes to deliver technology that moves your business forward.</p>
 	</div>
 
 	<div class="cards-wrapper" id="cardsWrapper">
@@ -308,87 +364,16 @@ $offerings = [
 
 		<div class="services-btn-wrap">
 			<a href="<?= SITE_URL ?>/services.php" class="services-button">
-				<span>Our Services</span>
+				<span>View All Services</span>
 				<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
 			</a>
 		</div>
 	</div>
 </section>
 
-<section class="section section-light" id="what-we-offer" aria-labelledby="offer-heading">
-	<div class="container">
-		<div class="section-header reveal">
-			<span class="section-label">Solutions</span>
-			<h2 class="section-title" id="offer-heading">What We Offer</h2>
-			<p class="section-subtitle">A comprehensive suite of technology solutions tailored to your unique business needs.</p>
-		</div>
-
-		<svg class="svg-sprite" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
-			<symbol id="i-grid" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/></symbol>
-			<symbol id="i-shuffle" viewBox="0 0 24 24"><path d="M16 3h5v5"/><path d="M4 20 21 3"/><path d="M21 16v5h-5"/><path d="m15 15 6 6"/><path d="m4 4 5 5"/></symbol>
-			<symbol id="i-box" viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><path d="m3.27 6.96 8.73 5.05 8.73-5.05"/><path d="M12 22.08V12"/></symbol>
-			<symbol id="i-layers" viewBox="0 0 24 24"><path d="m12 2 10 5-10 5L2 7l10-5z"/><path d="m2 17 10 5 10-5"/><path d="m2 12 10 5 10-5"/></symbol>
-			<symbol id="i-filter" viewBox="0 0 24 24"><path d="M22 3H2l8 9.46V19l4 2v-8.54L22 3z"/></symbol>
-			<symbol id="i-chart" viewBox="0 0 24 24"><path d="M3 3v18h18"/><rect x="7" y="11" width="3" height="7" rx="1"/><rect x="12.5" y="7" width="3" height="11" rx="1"/><rect x="18" y="13" width="3" height="5" rx="1"/></symbol>
-			<symbol id="i-monitor" viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8"/><path d="M12 17v4"/></symbol>
-			<symbol id="i-cpu" viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6" rx="1"/><path d="M9 1v3M15 1v3M9 20v3M15 20v3M1 9h3M1 15h3M20 9h3M20 15h3"/></symbol>
-			<symbol id="i-trending" viewBox="0 0 24 24"><path d="m23 6-9.5 9.5-5-5L1 18"/><path d="M17 6h6v6"/></symbol>
-			<symbol id="i-star" viewBox="0 0 24 24"><path d="m12 2 3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></symbol>
-			<symbol id="i-branch" viewBox="0 0 24 24"><path d="M6 3v12"/><circle cx="18" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M18 9a9 9 0 0 1-9 9"/></symbol>
-			<symbol id="i-robot" viewBox="0 0 24 24"><rect x="3" y="8" width="18" height="12" rx="2"/><path d="M12 8V5"/><circle cx="12" cy="3.5" r="1.5"/><path d="M8 13h.01M16 13h.01"/><path d="M9 17h6"/></symbol>
-			<symbol id="i-compass" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="m16.24 7.76-2.12 6.36-6.36 2.12 2.12-6.36 6.36-2.12z"/></symbol>
-			<symbol id="i-code" viewBox="0 0 24 24"><path d="m16 18 6-6-6-6"/><path d="m8 6-6 6 6 6"/></symbol>
-			<symbol id="i-refresh" viewBox="0 0 24 24"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10"/><path d="M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></symbol>
-			<symbol id="i-sliders" viewBox="0 0 24 24"><path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3"/><path d="M1 14h6M9 8h6M17 16h6"/></symbol>
-			<symbol id="i-gear" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></symbol>
-			<symbol id="i-database" viewBox="0 0 24 24"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14c0 1.66 4.03 3 9 3s9-1.34 9-3V5"/><path d="M3 12c0 1.66 4.03 3 9 3s9-1.34 9-3"/></symbol>
-			<symbol id="i-dollar" viewBox="0 0 24 24"><path d="M12 1v22"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></symbol>
-			<symbol id="i-activity" viewBox="0 0 24 24"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></symbol>
-			<symbol id="i-file" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M16 13H8"/><path d="M16 17H8"/><path d="M10 9H8"/></symbol>
-			<symbol id="i-target" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></symbol>
-			<symbol id="i-smartphone" viewBox="0 0 24 24"><rect x="5" y="2" width="14" height="20" rx="2"/><path d="M12 18h.01"/></symbol>
-			<symbol id="i-link" viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></symbol>
-			<symbol id="i-cloud" viewBox="0 0 24 24"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/></symbol>
-			<symbol id="i-terminal" viewBox="0 0 24 24"><path d="m4 17 6-6-6-6"/><path d="M12 19h8"/></symbol>
-			<symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></symbol>
-			<symbol id="i-globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></symbol>
-			<symbol id="i-wrench" viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></symbol>
-			<symbol id="i-users" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></symbol>
-			<symbol id="i-harddrive" viewBox="0 0 24 24"><path d="M22 12H2"/><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/><path d="M6 16h.01"/><path d="M10 16h.01"/></symbol>
-			<symbol id="i-lock" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></symbol>
-			<symbol id="i-eye" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></symbol>
-			<symbol id="i-briefcase" viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></symbol>
-			<symbol id="i-clipboard" viewBox="0 0 24 24"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M9 12h6"/><path d="M9 16h4"/></symbol>
-			<symbol id="i-alert" viewBox="0 0 24 24"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><path d="M12 9v4"/><path d="M12 17h.01"/></symbol>
-			<symbol id="i-check" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="M22 4 12 14.01l-3-3"/></symbol>
-			<symbol id="i-userplus" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><path d="M20 8v6"/><path d="M23 11h-6"/></symbol>
-			<symbol id="i-cart" viewBox="0 0 24 24"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></symbol>
-			<symbol id="i-award" viewBox="0 0 24 24"><circle cx="12" cy="8" r="7"/><path d="m8.21 13.89-1.21 9.11 5-3 5 3-1.21-9.12"/></symbol>
-			<symbol id="i-message" viewBox="0 0 24 24"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></symbol>
-		</svg>
-
-		<div class="capabilities-explorer-wrap">
-			<nav class="tabs" id="tabs" role="tablist" aria-label="Capability areas"></nav>
-
-			<section class="panel" id="panel" role="tabpanel" aria-labelledby="tab-data" tabindex="0">
-				<div class="panel__head">
-					<span class="panel__badge" aria-hidden="true">
-						<svg class="ico" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-							<use id="panelIconUse" href="#i-database"></use>
-						</svg>
-					</span>
-					<div class="panel__head-text">
-						<h2 class="panel__title" id="panelTitle">Data Engineering &amp; Analytics</h2>
-						<p class="panel__meta" id="panelMeta">7 capabilities</p>
-					</div>
-				</div>
-
-				<div class="cards" id="cards"></div>
-				<div class="cards-dots" id="cardsDots" aria-hidden="true"></div>
-			</section>
-		</div>
-	</div>
-</section>
+<!-- =========================================================
+     WHAT WE OFFER section has been MOVED to services.php
+     ========================================================= -->
 
 <section class="cta-band">
 	<div class="cta-band-bg" aria-hidden="true">
@@ -398,9 +383,9 @@ $offerings = [
 	<div class="container reveal">
 		<span class="cta-eyebrow">Let's Build Together</span>
 		<h2 class="cta-title">Ready to Extend Your Tech Team?</h2>
-		<p class="cta-text">Partner with Creative Web Technologies and gain access to Sri Lanka's finest technology talent — scalable, secure, and seamlessly integrated.</p>
-		<a href="<?= SITE_URL ?>/services.php" class="btn btn-white">
-			<span>Get Started Today</span>
+		<p class="cta-text">Let’s talk about transforming your vision into reality.</p>
+		<a href="<?= SITE_URL ?>/contact.php" class="btn btn-white">
+			<span>Schedule a call</span>
 			<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M1 8a.5.5 0 0 1 .5-.5h11.793l-3.147-3.146a.5.5 0 0 1 .708-.708l4 4a.5.5 0 0 1 0 .708l-4 4a.5.5 0 0 1-.708-.708L13.293 8.5H1.5A.5.5 0 0 1 1 8"/></svg>
 		</a>
 	</div>

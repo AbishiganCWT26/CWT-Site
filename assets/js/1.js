@@ -1,4 +1,4 @@
-﻿document.addEventListener('DOMContentLoaded', function () {
+document.addEventListener('DOMContentLoaded', function () {
 
     const navbar = document.querySelector('.cwt-navbar, .navbar');
     if (navbar) {
@@ -76,109 +76,6 @@
         });
     });
 
-
-    /* =========================================================
-       HERO NEXUS FIELD
-       Interactive starfield with cursor attraction, twinkle,
-       constellation web, and a bright cursor hub.
-       Runs only on the hero canvas (#heroCanvas).
-       ========================================================= */
-    const heroCanvas = document.getElementById('heroCanvas');
-    if (heroCanvas && heroCanvas.getContext) {
-        (function () {
-            const hero = heroCanvas.parentElement;
-            const ctx  = heroCanvas.getContext('2d');
-            if (!ctx || !hero) return;
-
-            const DENSITY_DIVISOR = 1200, MAX_STARS = 900, MOUSE_RADIUS = 220, MOUSE_FORCE = 2.2;
-            const SPRING = 0.012, DAMPING = 0.91, CONSTELLATION_RANGE = 90, CONSTELLATION_ALPHA = 0.16;
-            const COLORS = { white:[255,255,255], paleBlue:[200,220,255], blue400:[91,156,255], blue500:[43,123,255], pink:[126,160,248] };
-            let w = 0, h = 0, stars = [], running = true;
-            const mouse = { x: 0, y: 0, active: false };
-
-            function resize() {
-                const dpr = window.devicePixelRatio || 1, rect = hero.getBoundingClientRect();
-                w = rect.width; h = rect.height;
-                heroCanvas.width = Math.round(w * dpr); heroCanvas.height = Math.round(h * dpr);
-                heroCanvas.style.width = w + 'px'; heroCanvas.style.height = h + 'px';
-                ctx.setTransform(dpr, 0, 0, dpr, 0, 0); initStars();
-            }
-            function pickColor() {
-                const r = Math.random();
-                if (r < 0.55) return COLORS.white; if (r < 0.75) return COLORS.paleBlue;
-                if (r < 0.88) return COLORS.blue400; if (r < 0.96) return COLORS.pink;
-                return COLORS.blue500;
-            }
-            function initStars() {
-                const count = Math.min(Math.round((w * h) / DENSITY_DIVISOR), MAX_STARS);
-                stars = new Array(count).fill(0).map(function () {
-                    const x = Math.random() * w, y = Math.random() * h;
-                    const depth = Math.random() < 0.55 ? 0 : (Math.random() < 0.7 ? 1 : 2);
-                    const baseR = depth === 0 ? Math.random() * 0.5 + 0.25 : depth === 1 ? Math.random() * 0.9 + 0.4 : Math.random() * 1.4 + 0.6;
-                    const r = Math.random(), shape = r < 0.78 ? 'dot' : r < 0.94 ? 'sparkle' : 'streak';
-                    return { x, y, homeX: x, homeY: y, vx: 0, vy: 0, r: baseR, depth, shape, color: pickColor(),
-                        baseAlpha: (depth === 0 ? 0.20 : depth === 1 ? 0.35 : 0.55) + Math.random() * 0.30,
-                        phase: Math.random() * Math.PI * 2, speed: Math.random() * 0.018 + 0.005,
-                        twinkleAmp: Math.random() * 0.30 + 0.15,
-                        driftX: (Math.random() - 0.5) * 0.04 * (depth + 1), driftY: (Math.random() - 0.5) * 0.04 * (depth + 1),
-                        angle: Math.random() * Math.PI * 2, proximity: 0 };
-                });
-            }
-            function setPointer(cx, cy) { const rect = hero.getBoundingClientRect(); mouse.x = cx - rect.left; mouse.y = cy - rect.top; mouse.active = true; }
-            hero.addEventListener('mousemove', function (e) { setPointer(e.clientX, e.clientY); });
-            hero.addEventListener('mouseleave', function () { mouse.active = false; });
-            hero.addEventListener('touchstart', function (e) { const t = e.touches[0]; if (t) setPointer(t.clientX, t.clientY); }, { passive: true });
-            hero.addEventListener('touchmove',  function (e) { const t = e.touches[0]; if (t) setPointer(t.clientX, t.clientY); }, { passive: true });
-            hero.addEventListener('touchend',   function () { mouse.active = false; });
-
-            function drawDot(s, drawR, alpha) { ctx.beginPath(); ctx.fillStyle = 'rgba(' + s.color.join(',') + ',' + alpha + ')'; ctx.arc(s.x, s.y, drawR, 0, Math.PI * 2); ctx.fill(); }
-            function drawSparkle(s, drawR, alpha, gb) {
-                const arm = drawR * (3.4 + gb * 1.6), thin = Math.max(drawR * 0.55, 0.4), rgb = s.color.join(',');
-                ctx.save(); ctx.translate(s.x, s.y); ctx.rotate(s.angle);
-                if (gb > 0.05) { ctx.beginPath(); ctx.fillStyle = 'rgba(' + rgb + ',' + (gb * 0.22) + ')'; ctx.arc(0, 0, arm * 1.4, 0, Math.PI * 2); ctx.fill(); }
-                const gH = ctx.createLinearGradient(-arm, 0, arm, 0); gH.addColorStop(0, 'rgba(' + rgb + ',0)'); gH.addColorStop(0.5, 'rgba(' + rgb + ',' + alpha + ')'); gH.addColorStop(1, 'rgba(' + rgb + ',0)');
-                ctx.fillStyle = gH; ctx.fillRect(-arm, -thin / 2, arm * 2, thin);
-                const gV = ctx.createLinearGradient(0, -arm, 0, arm); gV.addColorStop(0, 'rgba(' + rgb + ',0)'); gV.addColorStop(0.5, 'rgba(' + rgb + ',' + alpha + ')'); gV.addColorStop(1, 'rgba(' + rgb + ',0)');
-                ctx.fillStyle = gV; ctx.fillRect(-thin / 2, -arm, thin, arm * 2);
-                ctx.beginPath(); ctx.fillStyle = 'rgba(255,255,255,' + Math.min(alpha * 1.2, 1) + ')'; ctx.arc(0, 0, drawR * 0.9, 0, Math.PI * 2); ctx.fill(); ctx.restore();
-            }
-            function drawStreak(s, drawR, alpha) {
-                const len = drawR * 5, rgb = s.color.join(','); ctx.save(); ctx.translate(s.x, s.y); ctx.rotate(s.angle);
-                const g = ctx.createLinearGradient(-len / 2, 0, len / 2, 0); g.addColorStop(0, 'rgba(' + rgb + ',0)'); g.addColorStop(0.5, 'rgba(' + rgb + ',' + alpha + ')'); g.addColorStop(1, 'rgba(' + rgb + ',0)');
-                ctx.fillStyle = g; ctx.fillRect(-len / 2, -drawR * 0.4, len, drawR * 0.8); ctx.restore();
-            }
-            function drawConstellation(neighbors) {
-                const range2 = CONSTELLATION_RANGE * CONSTELLATION_RANGE;
-                for (let i = 0; i < neighbors.length; i++) { const a = neighbors[i]; for (let j = i + 1; j < neighbors.length; j++) { const b = neighbors[j], dx = a.x - b.x, dy = a.y - b.y, d2 = dx * dx + dy * dy; if (d2 < range2) { const t = 1 - d2 / range2; ctx.beginPath(); ctx.strokeStyle = 'rgba(91,156,255,' + (t * CONSTELLATION_ALPHA * a.proximity) + ')'; ctx.lineWidth = 0.6; ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke(); } } }
-            }
-            function tick() {
-                if (!running) return;
-                ctx.clearRect(0, 0, w, h);
-                const R = MOUSE_RADIUS, R2 = R * R, neighbors = [];
-                if (mouse.active) { const hub = ctx.createRadialGradient(mouse.x, mouse.y, 0, mouse.x, mouse.y, R * 0.9); hub.addColorStop(0, 'rgba(91,156,255,0.10)'); hub.addColorStop(0.4, 'rgba(43,123,255,0.05)'); hub.addColorStop(1, 'rgba(0,27,228,0)'); ctx.fillStyle = hub; ctx.fillRect(mouse.x - R, mouse.y - R, R * 2, R * 2); }
-                for (let i = 0; i < stars.length; i++) {
-                    const s = stars[i];
-                    s.homeX += s.driftX; s.homeY += s.driftY;
-                    if (s.homeX < 0) { s.homeX += w; s.x += w; } if (s.homeX > w) { s.homeX -= w; s.x -= w; }
-                    if (s.homeY < 0) { s.homeY += h; s.y += h; } if (s.homeY > h) { s.homeY -= h; s.y -= h; }
-                    s.vx += (s.homeX - s.x) * SPRING; s.vy += (s.homeY - s.y) * SPRING;
-                    let proximity = 0;
-                    if (mouse.active) { const dx = mouse.x - s.x, dy = mouse.y - s.y, d2 = dx * dx + dy * dy; if (d2 < R2) { const d = Math.sqrt(d2) || 0.0001; proximity = 1 - d / R; const f = proximity * proximity * MOUSE_FORCE * (0.6 + s.depth * 0.4); s.vx += (dx / d) * f; s.vy += (dy / d) * f; s.vx += (-dy / d) * f * 0.35; s.vy += (dx / d) * f * 0.35; } }
-                    s.proximity = proximity; s.vx *= DAMPING; s.vy *= DAMPING; s.x += s.vx; s.y += s.vy;
-                    s.phase += s.speed; const tw = Math.sin(s.phase) * s.twinkleAmp;
-                    const alpha = Math.max(0.05, Math.min(s.baseAlpha + tw + proximity * 0.6, 1)), drawR = s.r * (1 + proximity * 1.6);
-                    if (s.shape === 'dot') drawDot(s, drawR, alpha); else if (s.shape === 'sparkle') drawSparkle(s, drawR, alpha, proximity); else drawStreak(s, drawR, alpha);
-                    if (mouse.active && proximity > 0.15) neighbors.push(s);
-                }
-                if (neighbors.length > 1) drawConstellation(neighbors);
-                if (mouse.active) { ctx.beginPath(); ctx.fillStyle = 'rgba(255,255,255,0.9)'; ctx.arc(mouse.x, mouse.y, 2.2, 0, Math.PI * 2); ctx.fill(); ctx.beginPath(); ctx.fillStyle = 'rgba(91,156,255,0.35)'; ctx.arc(mouse.x, mouse.y, 6, 0, Math.PI * 2); ctx.fill(); ctx.beginPath(); ctx.fillStyle = 'rgba(43,123,255,0.15)'; ctx.arc(mouse.x, mouse.y, 14, 0, Math.PI * 2); ctx.fill(); }
-                requestAnimationFrame(tick);
-            }
-            window.addEventListener('resize', resize);
-            if ('IntersectionObserver' in window) { new IntersectionObserver(function (entries) { entries.forEach(function (entry) { if (entry.isIntersecting && !running) { running = true; requestAnimationFrame(tick); } else if (!entry.isIntersecting) { running = false; } }); }, { threshold: 0 }).observe(hero); }
-            resize(); requestAnimationFrame(tick);
-        })();
-    }
     const cards = Array.prototype.slice.call(document.querySelectorAll('.orbit .card'));
 
     if (cards.length) {
@@ -223,7 +120,7 @@
     }
 
     /* =========================================================
-   WHAT WE OFFER â€” capabilities explorer
+   WHAT WE OFFER — capabilities explorer
    ========================================================= */
     (function initWhatWeOffer() {
         const tabsEl = document.getElementById('tabs');
@@ -772,122 +669,6 @@
                 card.classList.toggle('is-flipped');
             }
         });
-    })();
-
-    /* =========================================================
-       SERVICE CARDS â€” MOBILE PAGINATION (3 cards per page)
-       Only active when viewport width <= 767px. Pager is
-       inserted after the .svc-hub-grid inside .svc-wrap.
-       ========================================================= */
-    (function initServiceCardPagination() {
-        const grid = document.querySelector('.svc-hub-grid');
-        if (!grid) return;
-
-        const cardNodes = Array.from(grid.children);
-        if (cardNodes.length <= 3) return; // no need to paginate a single row
-
-        const MOBILE_BREAKPOINT = 767;
-        const ITEMS_PER_PAGE = 3;
-        const TOTAL_PAGES = Math.ceil(cardNodes.length / ITEMS_PER_PAGE);
-
-        let currentPage = 0;
-
-        function isMobile() {
-            return window.innerWidth <= MOBILE_BREAKPOINT;
-        }
-
-        /* ---- build pager ---- */
-        const pager = document.createElement('nav');
-        pager.className = 'svc-hub-pager';
-        pager.setAttribute('aria-label', 'Service card pages');
-
-        const prevBtn = document.createElement('button');
-        prevBtn.type = 'button';
-        prevBtn.className = 'svc-hub-pager-btn svc-hub-pager-prev';
-        prevBtn.setAttribute('aria-label', 'Previous page');
-        prevBtn.innerHTML =
-            '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>';
-        prevBtn.addEventListener('click', function () { goToPage(currentPage - 1); });
-
-        const dotsWrap = document.createElement('div');
-        dotsWrap.className = 'svc-hub-pager-dots';
-
-        const dots = [];
-        for (let i = 0; i < TOTAL_PAGES; i++) {
-            const dot = document.createElement('button');
-            dot.type = 'button';
-            dot.className = 'svc-hub-pager-dot';
-            dot.setAttribute('aria-label', 'Go to page ' + (i + 1));
-            dot.addEventListener('click', function () { goToPage(i); });
-            dotsWrap.appendChild(dot);
-            dots.push(dot);
-        }
-
-        const nextBtn = document.createElement('button');
-        nextBtn.type = 'button';
-        nextBtn.className = 'svc-hub-pager-btn svc-hub-pager-next';
-        nextBtn.setAttribute('aria-label', 'Next page');
-        nextBtn.innerHTML =
-            '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>';
-        nextBtn.addEventListener('click', function () { goToPage(currentPage + 1); });
-
-        pager.appendChild(prevBtn);
-        pager.appendChild(dotsWrap);
-        pager.appendChild(nextBtn);
-        grid.parentNode.insertBefore(pager, grid.nextSibling);
-
-        /* ---- helpers ---- */
-        function updatePagerState() {
-            dots.forEach(function (dot, i) {
-                dot.classList.toggle('is-active', i === currentPage);
-                dot.setAttribute('aria-current', i === currentPage ? 'true' : 'false');
-            });
-            prevBtn.disabled = currentPage === 0;
-            nextBtn.disabled = currentPage === TOTAL_PAGES - 1;
-        }
-
-        function render() {
-            if (!isMobile()) {
-                cardNodes.forEach(function (card) {
-                    card.style.display = '';
-                    card.removeAttribute('aria-hidden');
-                });
-                pager.style.display = 'none';
-                return;
-            }
-
-            pager.style.display = '';
-
-            const start = currentPage * ITEMS_PER_PAGE;
-            const end = start + ITEMS_PER_PAGE;
-
-            cardNodes.forEach(function (card, i) {
-                const visible = i >= start && i < end;
-                card.style.display = visible ? '' : 'none';
-                if (visible) card.removeAttribute('aria-hidden');
-                else card.setAttribute('aria-hidden', 'true');
-            });
-
-            updatePagerState();
-        }
-
-        function goToPage(index) {
-            if (index < 0 || index >= TOTAL_PAGES) return;
-            currentPage = index;
-            render();
-        }
-
-        /* ---- init + respond to resize ---- */
-        render();
-
-        let resizeRaf = null;
-        window.addEventListener('resize', function () {
-            if (resizeRaf) cancelAnimationFrame(resizeRaf);
-            resizeRaf = requestAnimationFrame(function () {
-                if (!isMobile()) currentPage = 0;
-                render();
-            });
-        }, { passive: true });
     })();
 
 });

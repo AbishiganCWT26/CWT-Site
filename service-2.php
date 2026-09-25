@@ -131,7 +131,7 @@ $pageTitle = 'Our Services — Creative Web Technologies';
 	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 	<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Exo+2:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
-	<link rel="stylesheet" href="<?= SITE_URL ?>/assets/css/service-1.css">
+	<link rel="stylesheet" href="<?= SITE_URL ?>/assets/css/service-2.css">
 	<script>document.documentElement.classList.add('js');</script>
 </head>
 <body class="svc-page">
@@ -169,17 +169,21 @@ $pageTitle = 'Our Services — Creative Web Technologies';
 			<h2 class="svc-sec-title" id="all-services-heading">All Services &amp; Verticals</h2>
 		</div>
 
-		<div class="svc-pillars reveal">
+		<div class="svc-nine reveal">
 			<?php foreach ($services as $i => $s): ?>
 			<article class="svc-pillar" data-index="<?= $i ?>">
 				<button type="button" class="svc-pillar-head" aria-expanded="false">
-					<span class="svc-pillar-icon" aria-hidden="true">
-						<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><?= $s['icon'] ?></svg>
+					<span class="svc-pillar-ghost" aria-hidden="true"><?= e($s['num']) ?></span>
+					<span class="svc-pillar-top">
+						<span class="svc-pillar-icon" aria-hidden="true">
+							<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><?= $s['icon'] ?></svg>
+						</span>
+						<span class="svc-pillar-num"><?= e($s['num']) ?></span>
 					</span>
-					<span class="svc-pillar-num"><?= e($s['num']) ?></span>
 					<h3 class="svc-pillar-title"><?= $s['title'] ?></h3>
 					<span class="svc-pillar-toggle" aria-hidden="true">
 						<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+						<span class="svc-pillar-toggle-text">View team</span>
 					</span>
 				</button>
 				<div class="svc-pillar-body">
@@ -363,6 +367,6 @@ $pageTitle = 'Our Services — Creative Web Technologies';
 </section>
 
 <?php require_once __DIR__ . '/includes/footer.php'; ?>
-<script src="<?= SITE_URL ?>/assets/js/service-1.js"></script>
+<script src="<?= SITE_URL ?>/assets/js/service-2.js"></script>
 </body>
 </html>

@@ -1,4 +1,4 @@
-﻿@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Exo+2:wght@300;400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Exo+2:wght@300;400;500;600;700;800&display=swap');
 
 :root {
     --primary: #001be4;
@@ -404,8 +404,7 @@ body.svc-page ol {
 .svc-hub-grid {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
-    grid-auto-rows: 1fr;
-    gap: 12px;
+    gap: 10px;
     align-items: stretch;
 }
 
@@ -414,9 +413,8 @@ body.svc-page ol {
     isolation: isolate;
     display: flex;
     flex-direction: column;
-    gap: 8px;
-    padding: 14px 14px 12px;
-    height: 100%;
+    gap: 7px;
+    padding: 13px 13px 11px;
     background:
         linear-gradient(160deg, rgba(255, 255, 255, 0.6) 0%, rgba(255, 255, 255, 0) 60%),
         #ffffff;
@@ -548,33 +546,44 @@ body.svc-page ol {
     transform: translateY(2px) scale(1.05);
 }
 
-.svc-hub-heading {
+.svc-hub-top {
     position: relative;
     z-index: 1;
     display: flex;
-    align-items: flex-start;
+    align-items: center;
     justify-content: space-between;
-    gap: 10px;
+    gap: 8px;
 }
 
-.svc-hub-name {
-    position: relative;
-    z-index: 1;
-    margin: 0;
-    font-size: 0.82rem;
-    font-weight: 700;
-    line-height: 1.3;
-    letter-spacing: -0.012em;
-    color: var(--text-primary);
-    transition: color 0.35s ease;
-    cursor: default;
-    flex: 1;
-    min-width: 0;
-    word-break: break-word;
-}
-
-.svc-hub-card:hover .svc-hub-name {
+.svc-hub-icon {
+    width: 32px;
+    height: 32px;
+    flex: 0 0 32px;
+    display: grid;
+    place-items: center;
+    border-radius: 9px;
     color: var(--primary);
+    background: rgba(26, 102, 255, 0.09);
+    border: 1px solid rgba(26, 102, 255, 0.14);
+    transition:
+        background 0.4s ease,
+        color 0.4s ease,
+        transform 0.5s cubic-bezier(0.22, 1, 0.36, 1),
+        box-shadow 0.4s ease,
+        border-color 0.4s ease;
+}
+
+.svc-hub-icon svg {
+    width: 16px;
+    height: 16px;
+}
+
+.svc-hub-card:hover .svc-hub-icon {
+    color: var(--white);
+    background: linear-gradient(140deg, var(--primary-light), var(--primary-dark));
+    border-color: transparent;
+    transform: rotate(-8deg) scale(1.08);
+    box-shadow: 0 10px 18px -8px rgba(0, 27, 228, 0.85);
 }
 
 .svc-hub-num {
@@ -593,7 +602,6 @@ body.svc-page ol {
     background: rgba(0, 27, 228, 0.06);
     border: 1px solid rgba(0, 27, 228, 0.14);
     border-radius: var(--radius-full);
-    flex-shrink: 0;
     transition:
         background 0.35s ease,
         color 0.35s ease,
@@ -606,6 +614,23 @@ body.svc-page ol {
     border-color: var(--primary);
 }
 
+.svc-hub-name {
+    position: relative;
+    z-index: 1;
+    margin: 2px 0 1px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    line-height: 1.32;
+    letter-spacing: -0.012em;
+    color: var(--text-primary);
+    transition: color 0.35s ease;
+    cursor: default;
+}
+
+.svc-hub-card:hover .svc-hub-name {
+    color: var(--primary);
+}
+
 .svc-hub-text {
     position: relative;
     z-index: 1;
@@ -613,6 +638,10 @@ body.svc-page ol {
     font-size: 0.66rem;
     line-height: 1.55;
     color: var(--text-muted);
+    display: -webkit-box;
+    -webkit-line-clamp: 4;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
     transition: color 0.35s ease;
     cursor: default;
 }
@@ -621,38 +650,42 @@ body.svc-page ol {
     color: var(--text-secondary);
 }
 
-.svc-hub-divider {
-    position: relative;
-    z-index: 1;
-    height: 1px;
-    margin: 4px 0 2px;
-    border-top: 1px dashed rgba(26, 102, 255, 0.16);
-}
-
-.svc-hub-details {
+.svc-hub-foot {
     position: relative;
     z-index: 1;
     display: flex;
     flex-direction: column;
     gap: 6px;
     margin-top: auto;
+    padding-top: 9px;
+    border-top: 1px dashed rgba(26, 102, 255, 0.16);
     cursor: default;
 }
 
-.svc-hub-detail {
+.svc-hub-consultant {
     display: flex;
-    align-items: flex-start;
+    align-items: center;
     gap: 8px;
 }
 
-.svc-hub-key {
-    flex: 0 0 62px;
-    font-size: 0.52rem;
+.svc-hub-avatar {
+    width: 26px;
+    height: 26px;
+    flex: 0 0 26px;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    font-size: 0.66rem;
     font-weight: 800;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: var(--v-label);
-    padding-top: 2px;
+    color: var(--white);
+    background: linear-gradient(140deg, var(--primary-light), var(--primary-dark));
+    box-shadow: 0 4px 10px -4px rgba(0, 27, 228, 0.75);
+    transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.4s ease;
+}
+
+.svc-hub-card:hover .svc-hub-avatar {
+    transform: scale(1.08);
+    box-shadow: 0 8px 16px -6px rgba(0, 27, 228, 0.9);
 }
 
 .svc-hub-consultant-info {
@@ -664,7 +697,7 @@ body.svc-page ol {
 .svc-hub-cname {
     font-size: 0.7rem;
     font-weight: 700;
-    line-height: 1.2;
+    line-height: 1.15;
     color: var(--text-primary);
     white-space: nowrap;
     overflow: hidden;
@@ -680,12 +713,32 @@ body.svc-page ol {
     text-overflow: ellipsis;
 }
 
+.svc-hub-teams {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.svc-hub-team-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.svc-hub-key {
+    flex: 0 0 auto;
+    font-size: 0.52rem;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--v-label);
+}
+
 .svc-hub-chips {
     display: flex;
     flex-wrap: wrap;
     gap: 3px;
     min-width: 0;
-    flex: 1;
 }
 
 .svc-hub-chip {
@@ -711,46 +764,9 @@ body.svc-page ol {
     border-color: rgba(26, 102, 255, 0.28);
 }
 
-/* Responsive Service Cards */
-@media (max-width: 1024px) and (min-width: 768px) {
-    .svc-hub-grid {
-        grid-template-columns: repeat(3, minmax(0, 1fr));
-        grid-auto-rows: 1fr;
-        gap: 10px;
-    }
-
-    .svc-hub-text {
-        display: block;
-    }
-}
-
-@media (max-width: 767px) {
-    .svc-hub-grid {
-        grid-template-columns: repeat(3, minmax(0, 1fr));
-        grid-auto-rows: 1fr;
-        gap: 6px;
-    }
-
-    .svc-hub-text {
-        display: block;
-        font-size: 0.58rem;
-        line-height: 1.5;
-    }
-
-    .svc-hub-card {
-        padding: 10px 9px 9px;
-        gap: 5px;
-        border-radius: 11px;
-    }
-
-    .svc-hub-divider {
-        margin: 2px 0;
-    }
-}
-
 .svc-hub-chip:hover {
     background: var(--primary);
-    color: var(--white);
+    color: var(--primary);
     border-color: var(--primary);
     transform: translateY(-1px);
 }
@@ -1071,7 +1087,7 @@ body.svc-page ol {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-bottom: 0rem;
+    margin-bottom: 0.5rem;
 }
 
 .icon-box {
@@ -1123,9 +1139,8 @@ body.svc-page ol {
 .card .title {
     position: relative;
     z-index: 1;
-    margin-top: 2px;
-    margin-bottom: 2px;
-    font-size: 0.8rem;
+    margin-bottom: 0.28rem;
+    font-size: 0.88rem;
     font-weight: 700;
     line-height: 1.22;
     letter-spacing: -0.012em;
@@ -1141,11 +1156,10 @@ body.svc-page ol {
     line-height: 1.55;
     color: var(--v-muted);
     display: -webkit-box;
+    -webkit-line-clamp: 4;
+    -webkit-box-orient: vertical;
     overflow: hidden;
     transition: color 0.3s ease;
-    text-align: justify;
-    margin-bottom: 1px;
-    margin-top: 1px;
 }
 
 @media (hover: hover) and (pointer: fine) {
@@ -1942,10 +1956,6 @@ body.svc-page ol {
     }
 }
 
-/* ============================================================
-   MOBILE (576â€“767px) â€” HOW WE WORK: equal-height ring cards
-   + typography aligned with .svc-hub-name / .svc-hub-text
-   ============================================================ */
 @media (min-width: 576px) and (max-width: 767px) {
     .svc-sec {
         padding: 38px 0;
@@ -1989,8 +1999,7 @@ body.svc-page ol {
 
     .svc-hub-grid {
         grid-template-columns: repeat(3, minmax(0, 1fr));
-        grid-auto-rows: 1fr;
-        gap: 6px;
+        gap: 7px;
     }
 
     .svc-hub-card {
@@ -1999,36 +2008,66 @@ body.svc-page ol {
         border-radius: 11px;
     }
 
-    .svc-hub-name {
-        font-size: 0.68rem;
+    .svc-hub-icon {
+        width: 26px;
+        height: 26px;
+        flex: 0 0 26px;
+        border-radius: 7px;
+    }
+
+    .svc-hub-icon svg {
+        width: 13px;
+        height: 13px;
     }
 
     .svc-hub-num {
-        font-size: 0.5rem;
-        height: 18px;
-        min-width: 24px;
-        padding: 0 6px;
+        font-size: 0.48rem;
+        height: 17px;
+        min-width: 22px;
+        padding: 0 5px;
+    }
+
+    .svc-hub-ghost {
+        font-size: 2.2rem;
+    }
+
+    .svc-hub-name {
+        font-size: 0.66rem;
     }
 
     .svc-hub-text {
-        font-size: 0.56rem;
-        line-height: 1.48;
+        font-size: 0.55rem;
+        line-height: 1.45;
+        -webkit-line-clamp: 4;
+    }
+
+    .svc-hub-foot {
+        padding-top: 6px;
+        gap: 4px;
+    }
+
+    .svc-hub-avatar {
+        width: 20px;
+        height: 20px;
+        flex: 0 0 20px;
+        font-size: 0.54rem;
     }
 
     .svc-hub-cname {
-        font-size: 0.62rem;
+        font-size: 0.58rem;
     }
 
     .svc-hub-crole {
-        font-size: 0.5rem;
+        font-size: 0.46rem;
     }
 
     .svc-hub-key {
-        font-size: 0.44rem;
+        font-size: 0.42rem;
+        letter-spacing: 0.06em;
     }
 
     .svc-hub-chip {
-        font-size: 0.5rem;
+        font-size: 0.48rem;
         padding: 1px 5px;
     }
 
@@ -2047,32 +2086,27 @@ body.svc-page ol {
     .ring {
         display: grid;
         grid-template-columns: repeat(2, minmax(0, 1fr));
-        grid-auto-rows: 1fr;
-        align-items: stretch;
         gap: 0.7rem;
     }
 
     .node {
         position: static;
         width: auto;
-        height: 100%;
         transform: none !important;
     }
 
     .card {
-        height: 100%;
         padding: 0.8rem 0.85rem 0.85rem;
     }
 
     .card .title {
-        font-size: 0.68rem;
-        line-height: 1.28;
+        font-size: 0.88rem;
     }
 
     .card .descr {
-        font-size: 0.56rem;
-        line-height: 1.48;
-        -webkit-line-clamp: 5;
+        font-size: 0.72rem;
+        line-height: 1.55;
+        -webkit-line-clamp: 4;
     }
 
     .industries-grid {
@@ -2090,9 +2124,6 @@ body.svc-page ol {
     }
 }
 
-/* ============================================================
-   MOBILE (481â€“575px) â€” HOW WE WORK: equal-height ring cards
-   ============================================================ */
 @media (min-width: 481px) and (max-width: 575px) {
     .svc-sec {
         padding: 34px 0;
@@ -2125,8 +2156,7 @@ body.svc-page ol {
 
     .svc-hub-grid {
         grid-template-columns: repeat(3, minmax(0, 1fr));
-        grid-auto-rows: 1fr;
-        gap: 5px;
+        gap: 6px;
     }
 
     .svc-hub-card {
@@ -2135,36 +2165,66 @@ body.svc-page ol {
         border-radius: 10px;
     }
 
-    .svc-hub-name {
-        font-size: 0.64rem;
+    .svc-hub-icon {
+        width: 24px;
+        height: 24px;
+        flex: 0 0 24px;
+        border-radius: 7px;
+    }
+
+    .svc-hub-icon svg {
+        width: 12px;
+        height: 12px;
     }
 
     .svc-hub-num {
-        font-size: 0.46rem;
-        height: 17px;
-        min-width: 22px;
-        padding: 0 5px;
+        font-size: 0.44rem;
+        height: 16px;
+        min-width: 20px;
+        padding: 0 4px;
+    }
+
+    .svc-hub-ghost {
+        font-size: 2rem;
+    }
+
+    .svc-hub-name {
+        font-size: 0.62rem;
+        line-height: 1.28;
     }
 
     .svc-hub-text {
         font-size: 0.52rem;
-        line-height: 1.44;
+        line-height: 1.42;
+        -webkit-line-clamp: 4;
+    }
+
+    .svc-hub-foot {
+        padding-top: 5px;
+        gap: 3px;
+    }
+
+    .svc-hub-avatar {
+        width: 18px;
+        height: 18px;
+        flex: 0 0 18px;
+        font-size: 0.5rem;
     }
 
     .svc-hub-cname {
-        font-size: 0.56rem;
+        font-size: 0.54rem;
     }
 
     .svc-hub-crole {
-        font-size: 0.46rem;
+        font-size: 0.44rem;
     }
 
     .svc-hub-key {
-        font-size: 0.42rem;
+        font-size: 0.4rem;
     }
 
     .svc-hub-chip {
-        font-size: 0.46rem;
+        font-size: 0.44rem;
         padding: 1px 4px;
     }
 
@@ -2183,32 +2243,27 @@ body.svc-page ol {
     .ring {
         display: grid;
         grid-template-columns: repeat(2, minmax(0, 1fr));
-        grid-auto-rows: 1fr;
-        align-items: stretch;
         gap: 0.6rem;
     }
 
     .node {
         position: static;
         width: auto;
-        height: 100%;
         transform: none !important;
     }
 
     .card {
-        height: 100%;
         padding: 0.72rem 0.78rem 0.78rem;
     }
 
     .card .title {
-        font-size: 0.64rem;
-        line-height: 1.26;
+        font-size: 0.85rem;
     }
 
     .card .descr {
-        font-size: 0.52rem;
-        line-height: 1.46;
-        -webkit-line-clamp: 5;
+        font-size: 0.7rem;
+        line-height: 1.52;
+        -webkit-line-clamp: 4;
     }
 
     .industries-grid {
@@ -2231,9 +2286,6 @@ body.svc-page ol {
     }
 }
 
-/* ============================================================
-   MOBILE (380â€“480px) â€” HOW WE WORK: equal-height ring cards
-   ============================================================ */
 @media (min-width: 380px) and (max-width: 480px) {
     .svc-sec {
         padding: 28px 0;
@@ -2277,43 +2329,74 @@ body.svc-page ol {
 
     .svc-hub-grid {
         grid-template-columns: repeat(3, minmax(0, 1fr));
-        grid-auto-rows: 1fr;
-        gap: 4px;
+        gap: 5px;
     }
 
     .svc-hub-card {
         padding: 8px 8px 7px;
-        gap: 3px;
+        gap: 4px;
         border-radius: 9px;
     }
 
-    .svc-hub-name {
-        font-size: 0.6rem;
-        line-height: 1.26;
+    .svc-hub-icon {
+        width: 22px;
+        height: 22px;
+        flex: 0 0 22px;
+        border-radius: 6px;
+    }
+
+    .svc-hub-icon svg {
+        width: 11px;
+        height: 11px;
     }
 
     .svc-hub-num {
-        font-size: 0.44rem;
-        height: 16px;
-        min-width: 20px;
+        font-size: 0.42rem;
+        height: 15px;
+        min-width: 18px;
         padding: 0 4px;
     }
 
+    .svc-hub-ghost {
+        font-size: 1.8rem;
+        top: -4px;
+        right: 4px;
+    }
+
+    .svc-hub-name {
+        font-size: 0.58rem;
+        line-height: 1.26;
+    }
+
     .svc-hub-text {
-        font-size: 0.5rem;
+        font-size: 0.48rem;
         line-height: 1.4;
+        -webkit-line-clamp: 4;
+    }
+
+    .svc-hub-foot {
+        padding-top: 4px;
+        gap: 3px;
+    }
+
+    .svc-hub-avatar {
+        width: 16px;
+        height: 16px;
+        flex: 0 0 16px;
+        font-size: 0.46rem;
     }
 
     .svc-hub-cname {
-        font-size: 0.52rem;
+        font-size: 0.5rem;
     }
 
     .svc-hub-crole {
-        font-size: 0.42rem;
+        font-size: 0.4rem;
     }
 
     .svc-hub-key {
-        font-size: 0.4rem;
+        font-size: 0.38rem;
+        letter-spacing: 0.04em;
     }
 
     .svc-hub-chip {
@@ -2335,43 +2418,33 @@ body.svc-page ol {
 
     .ring {
         display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        grid-auto-rows: 1fr;
-        align-items: stretch;
+        grid-template-columns: 1fr;
         gap: 0.55rem;
     }
 
     .node {
         position: static;
         width: auto;
-        height: 100%;
         transform: none !important;
     }
 
     .card {
-        height: 100%;
-        padding: 0.7rem 0.5rem 0.5rem;
+        padding: 0.72rem 0.8rem 0.78rem;
     }
 
     .card .title {
-        font-size: 0.6rem;
-        line-height: 1.24;
+        font-size: 0.87rem;
     }
 
     .card .descr {
-        font-size: 0.5rem;
-        line-height: 1.42;
+        font-size: 0.72rem;
+        line-height: 1.55;
+        -webkit-line-clamp: 3;
     }
 
     .industries-grid {
-        grid-template-columns: repeat(3, 1fr);
+        grid-template-columns: repeat(2, 1fr);
         gap: 7px;
-    }
-
-    .industry-name {
-        font-size: 0.6rem;
-        font-weight: 700;
-        line-height: 1.1;
     }
 
     .svc-process {
@@ -2408,9 +2481,6 @@ body.svc-page ol {
     }
 }
 
-/* ============================================================
-   MOBILE (â‰¤379px) â€” HOW WE WORK: equal-height ring cards
-   ============================================================ */
 @media (max-width: 379px) {
     .svc-sec {
         padding: 24px 0;
@@ -2462,7 +2532,6 @@ body.svc-page ol {
 
     .svc-hub-grid {
         grid-template-columns: repeat(3, minmax(0, 1fr));
-        grid-auto-rows: 1fr;
         gap: 4px;
     }
 
@@ -2472,25 +2541,56 @@ body.svc-page ol {
         border-radius: 8px;
     }
 
-    .svc-hub-name {
-        font-size: 0.56rem;
-        line-height: 1.24;
+    .svc-hub-icon {
+        width: 20px;
+        height: 20px;
+        flex: 0 0 20px;
+        border-radius: 6px;
+    }
+
+    .svc-hub-icon svg {
+        width: 10px;
+        height: 10px;
     }
 
     .svc-hub-num {
-        font-size: 0.42rem;
-        height: 15px;
-        min-width: 18px;
-        padding: 0 4px;
+        font-size: 0.4rem;
+        height: 14px;
+        min-width: 16px;
+        padding: 0 3px;
+    }
+
+    .svc-hub-ghost {
+        font-size: 1.6rem;
+        top: -4px;
+        right: 3px;
+    }
+
+    .svc-hub-name {
+        font-size: 0.54rem;
+        line-height: 1.24;
     }
 
     .svc-hub-text {
-        font-size: 0.46rem;
-        line-height: 1.38;
+        font-size: 0.44rem;
+        line-height: 1.36;
+        -webkit-line-clamp: 4;
+    }
+
+    .svc-hub-foot {
+        padding-top: 4px;
+        gap: 2px;
+    }
+
+    .svc-hub-avatar {
+        width: 14px;
+        height: 14px;
+        flex: 0 0 14px;
+        font-size: 0.42rem;
     }
 
     .svc-hub-cname {
-        font-size: 0.48rem;
+        font-size: 0.46rem;
     }
 
     .svc-hub-crole {
@@ -2498,7 +2598,7 @@ body.svc-page ol {
     }
 
     .svc-hub-key {
-        font-size: 0.38rem;
+        font-size: 0.34rem;
         letter-spacing: 0.04em;
     }
 
@@ -2521,44 +2621,34 @@ body.svc-page ol {
 
     .ring {
         display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        grid-auto-rows: 1fr;
-        align-items: stretch;
+        grid-template-columns: 1fr;
         gap: 0.5rem;
     }
 
     .node {
         position: static;
         width: auto;
-        height: 100%;
         transform: none !important;
     }
 
     .card {
-        height: 100%;
         padding: 0.65rem 0.72rem 0.72rem;
         border-radius: 11px;
     }
 
     .card .title {
-        font-size: 0.56rem;
-        line-height: 1.22;
+        font-size: 0.83rem;
     }
 
     .card .descr {
-        font-size: 0.46rem;
-        line-height: 1.4;
+        font-size: 0.69rem;
+        line-height: 1.52;
+        -webkit-line-clamp: 3;
     }
 
     .industries-grid {
-        grid-template-columns: repeat(3, 1fr);
+        grid-template-columns: repeat(2, 1fr);
         gap: 6px;
-    }
-
-    .industry-name {
-        font-size: 0.5rem;
-        font-weight: 700;
-        line-height: 1.1;
     }
 
     .svc-process {
@@ -2591,112 +2681,6 @@ body.svc-page ol {
     }
 }
 
-/* ============================================================
-   SERVICE CARD â€” TABLET + MOBILE STACKED LABELS
-   ============================================================ */
-@media (max-width: 1024px) {
-    .svc-hub-detail {
-        flex-direction: column;
-        align-items: stretch;
-        gap: 3px;
-    }
-
-    .svc-hub-key {
-        flex: none;
-        width: auto;
-        padding-top: 0;
-    }
-
-    .svc-hub-consultant-info {
-        width: 100%;
-    }
-
-    .svc-hub-chips {
-        flex: none;
-        width: 100%;
-    }
-}
-
-/* ============================================================
-   SERVICE CARD PAGINATION (MOBILE ONLY)
-   ============================================================ */
-.svc-hub-pager {
-    display: none;
-}
-
-@media (max-width: 767px) {
-    .svc-hub-pager {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        gap: 10px;
-        margin-top: 18px;
-        padding: 4px 0;
-    }
-
-    .svc-hub-pager-btn {
-        width: 32px;
-        height: 32px;
-        border-radius: 50%;
-        border: 1px solid var(--border);
-        background: var(--white);
-        color: var(--text-secondary);
-        cursor: pointer;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        transition:
-            background 0.25s ease,
-            color 0.25s ease,
-            border-color 0.25s ease,
-            transform 0.25s ease,
-            opacity 0.25s ease;
-    }
-
-    .svc-hub-pager-btn:hover:not(:disabled) {
-        background: var(--primary);
-        color: var(--white);
-        border-color: var(--primary);
-        transform: translateY(-1px);
-    }
-
-    .svc-hub-pager-btn:disabled {
-        opacity: 0.35;
-        cursor: not-allowed;
-    }
-
-    .svc-hub-pager-dots {
-        display: flex;
-        align-items: center;
-        gap: 6px;
-    }
-
-    .svc-hub-pager-dot {
-        width: 8px;
-        height: 8px;
-        border-radius: 50%;
-        background: rgba(26, 102, 255, 0.22);
-        border: 0;
-        padding: 0;
-        cursor: pointer;
-        transition:
-            width 0.35s cubic-bezier(0.22, 1, 0.36, 1),
-            background 0.3s ease,
-            box-shadow 0.3s ease;
-    }
-
-    .svc-hub-pager-dot:hover {
-        background: rgba(26, 102, 255, 0.5);
-    }
-
-    .svc-hub-pager-dot.is-active {
-        width: 24px;
-        border-radius: 4px;
-        background: linear-gradient(90deg, var(--primary), var(--primary-light));
-        box-shadow: 0 3px 10px rgba(0, 27, 228, 0.28);
-    }
-}
-
 @media (prefers-reduced-motion: reduce) {
 
     .svc-hero-orbs span,
@@ -2726,16 +2710,10 @@ body.svc-page ol {
     .card {
         transition-duration: 0.01ms;
     }
-
-    .svc-hub-pager-btn,
-    .svc-hub-pager-dot {
-        transition-duration: 0.01ms;
-    }
 }
 
-/* ============================================================
-   WHAT WE OFFER â€” TYPOGRAPHY PATCHES
-   ============================================================ */
+
+
 
 #what-we-offer {
     padding: 16px 0;
@@ -2765,9 +2743,9 @@ body.svc-page ol {
     display: inline-flex;
     align-items: center;
     gap: 8px;
-    font-size: 0.66rem;
+    font-size: 0.72rem;
     font-weight: 800;
-    letter-spacing: 0.16em;
+    letter-spacing: 0.18em;
     text-transform: uppercase;
     color: var(--primary);
     margin-bottom: 10px;
@@ -2787,20 +2765,20 @@ body.svc-page ol {
 }
 
 #what-we-offer .section-title {
-    font-size: clamp(1.4rem, 2.7vw, 1.95rem);
+    font-size: clamp(1.85rem, 3.8vw, 2.9rem);
     font-weight: 800;
     color: var(--text-primary);
-    margin: 0 0 9px;
+    margin: 0 0 10px;
     letter-spacing: -0.03em;
-    line-height: 1.2;
+    line-height: 1.15;
 }
 
 #what-we-offer .section-subtitle {
-    font-size: 0.86rem;
+    font-size: 1.02rem;
     color: var(--text-muted);
-    max-width: 540px;
+    max-width: 700px;
     margin: 0 auto;
-    line-height: 1.6;
+    line-height: 1.7;
 }
 
 #what-we-offer .svg-sprite {
@@ -2974,7 +2952,7 @@ body.svc-page ol {
 }
 
 #what-we-offer .panel__title {
-    font-size: clamp(0.95rem, 0.86rem + 0.4vw, 1.2rem);
+    font-size: clamp(1.05rem, 0.92rem + 0.55vw, 1.5rem);
     font-weight: 700;
     letter-spacing: -0.02em;
     line-height: 1.28;
@@ -2983,7 +2961,7 @@ body.svc-page ol {
 
 #what-we-offer .panel__meta {
     margin-top: 4px;
-    font-size: 0.66rem;
+    font-size: 0.74rem;
     font-weight: 700;
     letter-spacing: 0.1em;
     text-transform: uppercase;
@@ -3095,7 +3073,7 @@ body.svc-page ol {
 
 #what-we-offer .cards .card__num {
     padding: 4px 10px;
-    font-size: 0.6rem;
+    font-size: 0.7rem;
     font-weight: 800;
     letter-spacing: 0.1em;
     font-variant-numeric: tabular-nums;
@@ -3106,23 +3084,18 @@ body.svc-page ol {
 }
 
 #what-we-offer .cards .card__title {
-    font-size: 0.82rem;
+    font-size: 1.02rem;
     font-weight: 700;
     line-height: 1.32;
-    letter-spacing: -0.012em;
+    letter-spacing: -0.015em;
     color: var(--text-primary);
     transition: color 0.3s ease;
-    margin-top: 2px;
-    margin-bottom: 2px;
 }
 
 #what-we-offer .cards .card__text {
-    font-size: 0.72rem;
-    line-height: 1.6;
+    font-size: 0.875rem;
+    line-height: 1.62;
     color: var(--text-muted);
-    margin-top: 3px;
-    margin-bottom: 3px;
-    text-align: justify;
 }
 
 @media (hover: hover) {
@@ -3190,6 +3163,7 @@ body.svc-page ol {
 }
 
 /* ---------- Flip card (What We Offer, desktop) ---------- */
+/* THIS WAS THE MISSING PART - the flip rules from index.css */
 @media (min-width: 768px) {
     #what-we-offer .cards .card.fx-card {
         perspective: 1400px;
@@ -3245,12 +3219,14 @@ body.svc-page ol {
     }
 
     #what-we-offer .cards .fx-back-content {
-        padding: clamp(4px, 1.2vw, 15px);
+        padding: clamp(16px, 1.4vw, 22px);
         display: flex;
         flex-direction: column;
+        gap: 12px;
         width: 100%;
         height: 100%;
         position: relative;
+        justify-content: center;
     }
 
     #what-we-offer .cards .card.fx-card:hover,
@@ -3283,7 +3259,7 @@ body.svc-page ol {
     }
 }
 
-/* Mobile fallback for flip card â€” collapse the flip structure */
+/* Mobile fallback for flip card — collapse the flip structure */
 @media (max-width: 767px) {
 
     #what-we-offer .cards .fx-card-inner,
@@ -3372,7 +3348,7 @@ body.svc-page ol {
 
     #what-we-offer .tab {
         padding: 9px 14px;
-        font-size: 0.78rem;
+        font-size: 0.82rem;
     }
 }
 
@@ -3433,7 +3409,7 @@ body.svc-page ol {
     }
 
     #what-we-offer .section-title {
-        font-size: 1.32rem;
+        font-size: clamp(1.5rem, 6vw, 1.9rem);
     }
 
     #what-we-offer .cards {
@@ -3559,10 +3535,9 @@ body.svc-page ol {
     }
 
     #what-we-offer .tab-dropdown-sub {
-        font-size: 0.82rem;
-        font-weight: 700;
-        line-height: 1.3;
-        letter-spacing: -0.012em;
+        font-size: 10px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
         color: var(--v-blue-500);
         text-transform: uppercase;
     }
@@ -3723,21 +3698,17 @@ body.svc-page ol {
     }
 
     #what-we-offer .cards .card__title {
-        font-size: 0.86rem;
+        font-size: 1.08rem;
     }
 
     #what-we-offer .cards .card__text {
-        font-size: 0.76rem;
+        font-size: 0.9rem;
     }
 }
 
 @media (min-width: 481px) and (max-width: 575px) {
     #what-we-offer {
         padding: 40px 0;
-    }
-
-    #what-we-offer .section-title {
-        font-size: 1.22rem;
     }
 
     #what-we-offer .tabs {
@@ -3770,21 +3741,17 @@ body.svc-page ol {
     }
 
     #what-we-offer .cards .card__title {
-        font-size: 0.82rem;
+        font-size: 1.02rem;
     }
 
     #what-we-offer .cards .card__text {
-        font-size: 0.72rem;
+        font-size: 0.87rem;
     }
 }
 
 @media (min-width: 380px) and (max-width: 480px) {
     #what-we-offer {
         padding: 36px 0;
-    }
-
-    #what-we-offer .section-title {
-        font-size: 1.14rem;
     }
 
     #what-we-offer .tabs {
@@ -3827,11 +3794,11 @@ body.svc-page ol {
     }
 
     #what-we-offer .cards .card__title {
-        font-size: 0.78rem;
+        font-size: 1rem;
     }
 
     #what-we-offer .cards .card__text {
-        font-size: 0.68rem;
+        font-size: 0.85rem;
     }
 }
 
@@ -3845,13 +3812,13 @@ body.svc-page ol {
     }
 
     #what-we-offer .section-label {
-        font-size: 0.6rem;
+        font-size: 0.66rem;
         padding: 4px 11px;
         letter-spacing: 0.14em;
     }
 
     #what-we-offer .section-title {
-        font-size: 1.04rem;
+        font-size: clamp(1.3rem, 6.8vw, 1.65rem);
     }
 
     #what-we-offer .tabs {
@@ -3903,11 +3870,11 @@ body.svc-page ol {
     }
 
     #what-we-offer .cards .card__title {
-        font-size: 0.74rem;
+        font-size: 0.95rem;
     }
 
     #what-we-offer .cards .card__text {
-        font-size: 0.64rem;
+        font-size: 0.82rem;
     }
 }
 
@@ -3926,606 +3893,3 @@ body.svc-page ol {
         scroll-behavior: auto;
     }
 }
-
-/* ============================================================
-   EXTRA-LARGE SCREENS â€” 2560 Ã— 1630 AND ABOVE
-   Scales up layout, typography, spacing and control sizes
-   across every section of the services page.
-   Applies only to viewports â‰¥ 2560px wide AND â‰¥ 1600px tall.
-   ============================================================ */
-@media (min-width: 2560px) and (min-height: 1600px) {
-
-    /* ---------- Global container & section spacing ---------- */
-    .svc-wrap {
-        max-width: 2080px;
-        padding: 0 56px;
-    }
-
-    .svc-sec {
-        padding: 140px 0;
-    }
-
-    .svc-sec-head {
-        max-width: 900px;
-        margin-bottom: 60px;
-    }
-
-    .svc-sec-head-sm {
-        margin-bottom: 44px;
-    }
-
-    .svc-label {
-        font-size: 0.92rem;
-        padding: 9px 22px;
-        letter-spacing: 0.18em;
-        gap: 10px;
-        margin-bottom: 18px;
-    }
-
-    .svc-label::before {
-        width: 7px;
-        height: 7px;
-        box-shadow: 0 0 0 5px rgba(0, 27, 228, 0.14);
-    }
-
-    .svc-sec-title {
-        font-size: 3.4rem;
-        line-height: 1.15;
-        margin-bottom: 16px;
-        letter-spacing: -0.035em;
-    }
-
-    .svc-sec-sub {
-        max-width: 820px;
-        font-size: 1.24rem;
-        line-height: 1.65;
-    }
-
-    /* ---------- HERO ---------- */
-    .svc-hero {
-        padding: calc(var(--navbar-height) + 180px) 0 180px;
-    }
-
-    .svc-hero-grid {
-        background-size: 84px 84px;
-    }
-
-    .svc-hero-orbs span:nth-child(1) {
-        width: 720px;
-        height: 720px;
-        top: -280px;
-        right: -180px;
-    }
-
-    .svc-hero-orbs span:nth-child(2) {
-        width: 540px;
-        height: 540px;
-        bottom: -240px;
-        left: -140px;
-    }
-
-    .svc-hero-orbs span:nth-child(3) {
-        width: 420px;
-        height: 420px;
-    }
-
-    .svc-hero-inner {
-        max-width: 1180px;
-    }
-
-    .svc-hero-pill {
-        font-size: 0.94rem;
-        padding: 10px 24px 10px 20px;
-        gap: 11px;
-        margin-bottom: 32px;
-        letter-spacing: 0.16em;
-    }
-
-    .svc-hero-dot {
-        width: 9px;
-        height: 9px;
-    }
-
-    .svc-hero-title {
-        font-size: 5.6rem;
-        letter-spacing: -0.04em;
-        line-height: 1.05;
-        margin-bottom: 26px;
-    }
-
-    .svc-hero-text {
-        max-width: 820px;
-        font-size: 1.42rem;
-        line-height: 1.7;
-        margin-bottom: 44px;
-    }
-
-    .svc-hero-stats {
-        max-width: 720px;
-        gap: 44px;
-        padding-top: 40px;
-    }
-
-    .svc-hero-stat strong {
-        font-size: 2.1rem;
-    }
-
-    .svc-hero-stat span {
-        font-size: 0.94rem;
-        letter-spacing: 0.12em;
-    }
-
-    .svc-hero-divider {
-        height: 52px;
-    }
-
-    /* ---------- SERVICE HUB (All Services & Verticals) ---------- */
-    .svc-hub {
-        padding: 120px 0 128px;
-    }
-
-    .svc-hub-head {
-        margin-bottom: 60px;
-    }
-
-    .svc-hub-grid {
-        grid-template-columns: repeat(3, minmax(0, 1fr));
-        gap: 28px;
-    }
-
-    .svc-hub-card {
-        padding: 34px 34px 30px;
-        gap: 18px;
-        border-radius: 26px;
-    }
-
-    .svc-hub-name {
-        font-size: 1.42rem;
-        line-height: 1.3;
-    }
-
-    .svc-hub-num {
-        font-size: 0.94rem;
-        height: 36px;
-        min-width: 58px;
-        padding: 0 16px;
-        letter-spacing: 0.16em;
-    }
-
-    .svc-hub-text {
-        font-size: 1.06rem;
-        line-height: 1.65;
-    }
-
-    .svc-hub-divider {
-        margin: 10px 0 6px;
-    }
-
-    .svc-hub-details {
-        gap: 12px;
-    }
-
-    .svc-hub-detail {
-        gap: 14px;
-    }
-
-    .svc-hub-key {
-        flex: 0 0 108px;
-        font-size: 0.84rem;
-        letter-spacing: 0.14em;
-    }
-
-    .svc-hub-cname {
-        font-size: 1.16rem;
-    }
-
-    .svc-hub-crole {
-        font-size: 0.92rem;
-    }
-
-    .svc-hub-chips {
-        gap: 7px;
-    }
-
-    .svc-hub-chip {
-        font-size: 0.92rem;
-        padding: 6px 16px;
-        border-radius: var(--radius-full);
-    }
-
-    /* ---------- INDUSTRIES ---------- */
-    .industries-grid {
-        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-        gap: 26px;
-    }
-
-    .industry-card {
-        padding: 34px 24px;
-        border-radius: 24px;
-    }
-
-    .industry-media {
-        width: 84px;
-        height: 84px;
-        margin-bottom: 20px;
-    }
-
-    .industry-fallback {
-        font-size: 2.4rem;
-        border-radius: 20px;
-    }
-
-    .industry-name {
-        font-size: 1.28rem;
-        line-height: 1.35;
-    }
-
-    /* ---------- HOW WE WORK / PROCESS ORBIT ---------- */
-    .svc-process {
-        padding: 140px 0;
-    }
-
-    .orbit {
-        --size: min(70vw, 1400px);
-    }
-
-    .hub i {
-        font-size: 2.4rem;
-    }
-
-    .hub strong {
-        font-size: 1.7rem;
-    }
-
-    .hub span {
-        font-size: 1.05rem;
-        letter-spacing: 0.2em;
-    }
-
-    .card {
-        padding: 1.6rem 1.8rem 1.7rem;
-        border-radius: 22px;
-    }
-
-    .card::before {
-        height: 5px;
-    }
-
-    .card-top {
-        margin-bottom: 0.6rem;
-    }
-
-    .icon-box {
-        width: 56px;
-        height: 56px;
-        border-radius: 16px;
-    }
-
-    .icon-box i {
-        font-size: 1.4rem;
-    }
-
-    .num-badge {
-        font-size: 0.94rem;
-        padding: 0.5rem 1.05rem;
-        min-width: 3.6rem;
-        letter-spacing: 0.14em;
-    }
-
-    .card .title {
-        font-size: 1.42rem;
-        line-height: 1.28;
-        margin-top: 6px;
-        margin-bottom: 6px;
-    }
-
-    .card .descr {
-        font-size: 1.08rem;
-        line-height: 1.65;
-    }
-
-    /* ---------- CLIENT MARQUEE ---------- */
-    .svc-marquee {
-        padding: 90px 0;
-    }
-
-    .marquee-track {
-        gap: 88px;
-        padding-right: 88px;
-    }
-
-    .marquee-logo {
-        width: 220px;
-        height: 108px;
-    }
-
-    .marquee-logo img {
-        max-width: 200px;
-        max-height: 88px;
-    }
-
-    .marquee-fallback {
-        width: 200px;
-        height: 88px;
-        font-size: 1.2rem;
-        border-radius: 18px;
-    }
-
-    .marquee-tooltip {
-        font-size: 1.1rem;
-        padding: 9px 18px;
-        border-radius: 12px;
-    }
-
-    /* ---------- TECH STACK ---------- */
-    .tech-tabs {
-        gap: 16px;
-        margin-bottom: 52px;
-    }
-
-    .tech-tab {
-        padding: 16px 34px;
-        font-size: 1.24rem;
-        border-radius: var(--radius-full);
-    }
-
-    .tech-logos-grid {
-        grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-        gap: 24px;
-    }
-
-    .tech-logo-item {
-        padding: 32px 20px;
-        gap: 16px;
-        border-radius: 22px;
-    }
-
-    .tech-logo-item img {
-        width: 88px;
-        height: 88px;
-    }
-
-    .tech-logo-placeholder {
-        width: 88px;
-        height: 88px;
-        font-size: 1.9rem;
-        border-radius: 18px;
-    }
-
-    .tech-logo-name {
-        font-size: 1.24rem;
-        line-height: 1.35;
-    }
-
-    .tech-tooltip {
-        font-size: 1.1rem;
-        padding: 8px 16px;
-        border-radius: 10px;
-    }
-
-    .tech-empty {
-        font-size: 1.42rem;
-        padding: 48px;
-    }
-
-    /* ---------- WHAT WE OFFER ---------- */
-    #what-we-offer {
-        padding: 90px 0;
-    }
-
-    #what-we-offer .container {
-        max-width: 2200px;
-        padding: 0 56px;
-    }
-
-    #what-we-offer .section-header {
-        max-width: 1100px;
-        margin-bottom: 60px;
-    }
-
-    #what-we-offer .section-label {
-        font-size: 0.92rem;
-        padding: 9px 22px;
-        margin-bottom: 18px;
-        letter-spacing: 0.18em;
-    }
-
-    #what-we-offer .section-label::before {
-        width: 8px;
-        height: 8px;
-        box-shadow: 0 0 0 5px rgba(0, 27, 228, 0.14);
-    }
-
-    #what-we-offer .section-title {
-        font-size: 3.4rem;
-        margin-bottom: 16px;
-        line-height: 1.15;
-        letter-spacing: -0.035em;
-    }
-
-    #what-we-offer .section-subtitle {
-        font-size: 1.24rem;
-        max-width: 820px;
-        line-height: 1.65;
-    }
-
-    #what-we-offer .ico {
-        width: 1.85rem;
-        height: 1.85rem;
-        stroke-width: 1.9;
-    }
-
-    #what-we-offer .tabs {
-        max-width: 2200px;
-        gap: 18px;
-        margin-bottom: 52px;
-    }
-
-    #what-we-offer .tab {
-        padding: 18px 36px;
-        font-size: 1.28rem;
-        gap: 14px;
-        border-radius: var(--radius-full);
-    }
-
-    #what-we-offer .tab__ico {
-        width: 1.7rem;
-        height: 1.7rem;
-    }
-
-    #what-we-offer .panel {
-        padding: 60px;
-        border-radius: 36px;
-    }
-
-    #what-we-offer .panel__head {
-        padding-bottom: 32px;
-        margin-bottom: 44px;
-        gap: 26px;
-    }
-
-    #what-we-offer .panel__badge {
-        width: 96px;
-        border-radius: 24px;
-    }
-
-    #what-we-offer .panel__badge .ico {
-        width: 42px;
-        height: 42px;
-    }
-
-    #what-we-offer .panel__title {
-        font-size: 2.1rem;
-        line-height: 1.3;
-    }
-
-    #what-we-offer .panel__meta {
-        font-size: 1.1rem;
-        margin-top: 8px;
-        letter-spacing: 0.14em;
-    }
-
-    #what-we-offer .cards {
-        grid-template-columns: repeat(auto-fill, minmax(580px, 1fr));
-        gap: 36px;
-    }
-
-    #what-we-offer .cards .card {
-        padding: 40px;
-        border-radius: 28px;
-        gap: 22px;
-    }
-
-    #what-we-offer .cards .fx-front,
-    #what-we-offer .cards .fx-back {
-        border-radius: 28px;
-    }
-
-    #what-we-offer .cards .fx-front {
-        padding: 40px;
-        gap: 22px;
-    }
-
-    #what-we-offer .cards .fx-back-content {
-        padding: 40px;
-    }
-
-    #what-we-offer .cards .card__icon {
-        width: 92px;
-        border-radius: 22px;
-    }
-
-    #what-we-offer .cards .card__icon .ico {
-        width: 38px;
-        height: 38px;
-    }
-
-    #what-we-offer .cards .card__num {
-        font-size: 1.15rem;
-        padding: 8px 20px;
-    }
-
-    #what-we-offer .cards .card__title {
-        font-size: 1.5rem;
-        line-height: 1.32;
-        margin-top: 6px;
-        margin-bottom: 6px;
-    }
-
-    #what-we-offer .cards .card__text {
-        font-size: 1.24rem;
-        line-height: 1.65;
-        margin-top: 8px;
-        margin-bottom: 8px;
-    }
-
-    #what-we-offer .cards-dots {
-        gap: 14px;
-        margin-top: 32px;
-    }
-
-    #what-we-offer .cards-dot {
-        width: 14px;
-        height: 14px;
-    }
-
-    #what-we-offer .cards-dot.is-active {
-        width: 52px;
-    }
-
-    /* ---------- SERVICE HUB PAGER (not used at this size, but consistent) ---------- */
-    .svc-hub-pager {
-        gap: 18px;
-        margin-top: 32px;
-    }
-
-    .svc-hub-pager-btn {
-        width: 56px;
-        height: 56px;
-    }
-
-    .svc-hub-pager-dot {
-        width: 14px;
-        height: 14px;
-    }
-
-    .svc-hub-pager-dot.is-active {
-        width: 44px;
-    }
-}
-/* =========================================================
-   NEXUS FIELD â€” Hero cursor/starfield accents (append-only)
-   ========================================================= */
-.hero-canvas { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 4; opacity: 1; }
-.hero-content { z-index: 5; }
-
-.hero-swirl {
-  position: absolute;
-  pointer-events: none;
-  z-index: 3;
-  animation: heroSwirlBreathe 7s ease-in-out infinite;
-}
-.hero-swirl-tr { top: -40px; right: -60px; width: 520px; height: 420px; }
-.hero-swirl-bl {
-  bottom: -60px; left: -80px; width: 380px; height: 320px;
-  transform: rotate(180deg);
-  animation-delay: 1.5s;
-}
-
-@keyframes heroSwirlBreathe {
-  0%, 100% { opacity: 0.85; filter: drop-shadow(0 0 14px rgba(43,123,255,0.42)); }
-  50%      { opacity: 1;    filter: drop-shadow(0 0 28px rgba(91,156,255,0.72)); }
-}
-
-@media (max-width: 640px) {
-  .hero-swirl-tr { width: 380px; height: 307px; top: -30px; right: -70px; }
-  .hero-swirl-bl { width: 280px; height: 236px; bottom: -50px; left: -80px; }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .hero-swirl { animation: none; }
-}
-
-/* Nexus Field — ensure hero content stays above canvas */
-.svc-hero .svc-wrap { position: relative; z-index: 5; }
-

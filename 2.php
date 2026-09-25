@@ -131,7 +131,7 @@ $pageTitle = 'Our Services — Creative Web Technologies';
 	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 	<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Exo+2:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
-	<link rel="stylesheet" href="<?= SITE_URL ?>/assets/css/service-1.css">
+	<link rel="stylesheet" href="<?= SITE_URL ?>/assets/css/2.css">
 	<script>document.documentElement.classList.add('js');</script>
 </head>
 <body class="svc-page">
@@ -162,56 +162,62 @@ $pageTitle = 'Our Services — Creative Web Technologies';
 	</div>
 </section>
 
-<section class="svc-sec svc-sec-light" id="all-services" aria-labelledby="all-services-heading">
+<section class="svc-sec svc-hub" id="all-services" aria-labelledby="all-services-heading">
 	<div class="svc-wrap">
-		<div class="svc-sec-head reveal">
+		<div class="svc-hub-head reveal">
 			<span class="svc-label">Explore</span>
 			<h2 class="svc-sec-title" id="all-services-heading">All Services &amp; Verticals</h2>
 		</div>
 
-		<div class="svc-pillars reveal">
-			<?php foreach ($services as $i => $s): ?>
-			<article class="svc-pillar" data-index="<?= $i ?>">
-				<button type="button" class="svc-pillar-head" aria-expanded="false">
-					<span class="svc-pillar-icon" aria-hidden="true">
-						<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><?= $s['icon'] ?></svg>
+		<div class="svc-hub-grid reveal">
+			<?php foreach ($services as $s): ?>
+			<article class="svc-hub-card">
+				<span class="svc-hub-ghost" aria-hidden="true"><?= e($s['num']) ?></span>
+
+				<button type="button" class="svc-hub-card-toggle" aria-expanded="false">
+					<span class="svc-hub-top">
+						<span class="svc-hub-icon" aria-hidden="true">
+							<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><?= $s['icon'] ?></svg>
+						</span>
+						<span class="svc-hub-more" aria-hidden="true">
+							<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+						</span>
 					</span>
-					<span class="svc-pillar-num"><?= e($s['num']) ?></span>
-					<h3 class="svc-pillar-title"><?= $s['title'] ?></h3>
-					<span class="svc-pillar-toggle" aria-hidden="true">
-						<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
-					</span>
+					<h3 class="svc-hub-name"><?= $s['title'] ?></h3>
+					<p class="svc-hub-text"><?= e($s['desc']) ?></p>
 				</button>
-				<div class="svc-pillar-body">
-					<div class="svc-pillar-body-inner">
-						<p class="svc-pillar-desc"><?= e($s['desc']) ?></p>
-						<div class="svc-pillar-consultant">
-							<span class="svc-pillar-avatar"><?= e(mb_substr($s['consultant'][0], 0, 1)) ?></span>
-							<div>
-								<span class="svc-pillar-cname"><?= e($s['consultant'][0]) ?></span>
-								<span class="svc-pillar-crole"><?= e($s['consultant'][1]) ?></span>
+
+				<div class="svc-hub-details">
+					<div class="svc-hub-details-inner">
+						<div class="svc-hub-details-content">
+							<div class="svc-hub-consultant">
+								<span class="svc-hub-avatar"><?= e(mb_substr($s['consultant'][0], 0, 1)) ?></span>
+								<div class="svc-hub-consultant-info">
+									<span class="svc-hub-cname"><?= e($s['consultant'][0]) ?></span>
+									<span class="svc-hub-crole"><?= e($s['consultant'][1]) ?></span>
+								</div>
 							</div>
-						</div>
-						<div class="svc-pillar-group">
-							<span class="svc-pillar-label">Vertical Lead</span>
-							<div class="svc-pillar-chips">
-								<?php foreach ($s['lead'] as $name): ?>
-								<span class="svc-pillar-chip"><?= e($name) ?></span>
-								<?php endforeach; ?>
+							<div class="svc-hub-team-row">
+								<span class="svc-hub-key">Lead</span>
+								<span class="svc-hub-chips">
+									<?php foreach ($s['lead'] as $name): ?>
+									<span class="svc-hub-chip"><?= e($name) ?></span>
+									<?php endforeach; ?>
+								</span>
 							</div>
-						</div>
-						<div class="svc-pillar-group">
-							<span class="svc-pillar-label">Team Members</span>
-							<div class="svc-pillar-chips">
-								<?php foreach ($s['team'] as $name): ?>
-								<span class="svc-pillar-chip"><?= e($name) ?></span>
-								<?php endforeach; ?>
+							<div class="svc-hub-team-row">
+								<span class="svc-hub-key">Team</span>
+								<span class="svc-hub-chips">
+									<?php foreach ($s['team'] as $name): ?>
+									<span class="svc-hub-chip"><?= e($name) ?></span>
+									<?php endforeach; ?>
+								</span>
 							</div>
+							<a href="our-crew.php" class="svc-hub-cta">
+								<span>Meet the team</span>
+								<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+							</a>
 						</div>
-						<a href="our-crew.php" class="svc-pillar-cta">
-							<span>Meet the team</span>
-							<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
-						</a>
 					</div>
 				</div>
 			</article>
@@ -363,6 +369,6 @@ $pageTitle = 'Our Services — Creative Web Technologies';
 </section>
 
 <?php require_once __DIR__ . '/includes/footer.php'; ?>
-<script src="<?= SITE_URL ?>/assets/js/service-1.js"></script>
+<script src="<?= SITE_URL ?>/assets/js/2.js"></script>
 </body>
 </html>

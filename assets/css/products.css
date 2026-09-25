@@ -1,7 +1,13 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Exo+2:wght@300;400;500;600;700;800&display=swap');
+﻿@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Exo+2:wght@300;400;500;600;700;800&display=swap');
 
 /* ==========================================================================
-   PRODUCTS PAGE  — unified with About / Services / Index design system
+   PRODUCTS PAGE
+   ---------------------------------------------------------------------
+   Layout by breakpoint:
+     â€¢ Mobile + Tablet (â‰¤ 1023px)  : vertical stack, 5 cards per page
+     â€¢ Desktop         (â‰¥ 1024px)  : 3 Ã— 2 grid, 6 cards per page
+     â€¢ Large ultrawide (1501â€“2559) : bigger cards, bigger logos
+     â€¢ Ultra-large     (2560â€“5000+): biggest cards, biggest logos
    ========================================================================== */
 
 :root {
@@ -21,43 +27,31 @@
     --text-muted: #666666;
     --text-light: #999999;
 
-    --footer-bg: #2C2C2C;
-    --footer-text: #B0B0B0;
-
     --card-bg: #FFFFFF;
-    --card-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
-    --card-shadow-hover: 0 12px 40px rgba(228, 0, 70, 0.15);
 
     --radius-sm: 6px;
     --radius: 12px;
     --radius-lg: 20px;
     --radius-full: 9999px;
 
-    --transition: 0.3s ease;
-    --transition-slow: 0.5s ease;
-
     --navbar-height: 72px;
-    --section-pad: 90px;
 
-    --v-blue-500: #2b7bff;
     --v-blue-400: #5b9cff;
-    --v-blue-600: #1557c4;
-    --v-blue-700: #0f3b8a;
-    --v-ink: #0d2a5c;
-    --v-ink-soft: #1d3f7d;
-    --v-muted: #5b769f;
-    --v-label: #1557c4;
-    --v-card-bg: #ffffff;
-    --v-panel-bg: #f4f8ff;
-    --v-line: rgba(43, 123, 255, 0.18);
+    --v-blue-500: #2b7bff;
 
     /* Products card-specific tokens */
-    --prd-radius: 14px;
+    --prd-radius: 16px;
     --prd-ease: cubic-bezier(.25, .46, .45, .94);
     --prd-shadow-sm: 0 2px 10px rgba(13, 42, 92, .07);
-    --prd-shadow-lg: 0 14px 36px rgba(0, 27, 228, .18);
-    --prd-card-surface: #EEF3FF;
     --prd-card-border: #C9D7FF;
+
+    /* Card sizing tokens â€” overridden per breakpoint */
+    --prd-card-height: 200px;
+    --prd-logo-size: 84px;
+    --prd-logo-radius: 20px;
+    --prd-logo-glyph: 2.2rem;
+    --prd-title-size: 1rem;
+    --prd-desc-size: 0.78rem;
 }
 
 /* ============================================================
@@ -116,7 +110,7 @@ body.prd-page a {
 }
 
 /* ============================================================
-   HERO  — dark gradient matching About / Services
+   HERO
    ============================================================ */
 .prd-hero {
     position: relative;
@@ -127,7 +121,6 @@ body.prd-page a {
     color: #ffffff;
 }
 
-/* dot-grid overlay */
 .prd-hero-grid {
     position: absolute;
     inset: 0;
@@ -141,7 +134,6 @@ body.prd-page a {
     z-index: 0;
 }
 
-/* ambient orbs */
 .prd-hero-bg {
     position: absolute;
     inset: 0;
@@ -200,7 +192,6 @@ body.prd-page a {
     }
 }
 
-/* inner content */
 .prd-hero-inner {
     position: relative;
     z-index: 1;
@@ -209,7 +200,6 @@ body.prd-page a {
     text-align: center;
 }
 
-/* pill badge */
 .prd-hero-pill {
     display: inline-flex;
     align-items: center;
@@ -251,7 +241,6 @@ body.prd-page a {
     }
 }
 
-/* headline */
 .prd-hero-title {
     font-size: clamp(1.85rem, 4.8vw, 3.05rem);
     font-weight: 900;
@@ -269,7 +258,6 @@ body.prd-page a {
     color: transparent;
 }
 
-/* body copy */
 .prd-hero-text {
     font-size: clamp(0.92rem, 1.5vw, 1.02rem);
     color: rgba(255, 255, 255, 0.72);
@@ -323,38 +311,16 @@ body.prd-page a {
 }
 
 /* ============================================================
-   TRACK — mobile / tablet horizontal scroller
+   GRID / TRACK  â€” base layout (mobile + tablet)
+   Vertical stack of full-width cards.
    ============================================================ */
 .prd-grid {
     display: flex;
-    gap: 16px;
-    padding: 4px 0 22px;
-    overflow-x: auto;
-    overflow-y: hidden;
-    scroll-snap-type: x mandatory;
-    scroll-behavior: smooth;
+    flex-direction: column;
+    gap: 14px;
+    padding: 4px 0 0;
     outline: none;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: thin;
-    scrollbar-color: var(--primary-light) rgba(0, 27, 228, 0.06);
-}
-
-.prd-grid::-webkit-scrollbar {
-    height: 6px;
-}
-
-.prd-grid::-webkit-scrollbar-track {
-    background: rgba(0, 27, 228, 0.04);
-    border-radius: 999px;
-}
-
-.prd-grid::-webkit-scrollbar-thumb {
-    background: var(--primary-light);
-    border-radius: 999px;
-}
-
-.prd-grid::-webkit-scrollbar-thumb:hover {
-    background: var(--primary);
+    overflow: visible;
 }
 
 .prd-grid:focus-visible {
@@ -367,22 +333,21 @@ body.prd-page a {
    ============================================================ */
 .prd-card {
     position: relative;
-    flex: 0 0 auto;
-    width: 250px;
-    height: 190px;
+    width: 100%;
+    height: var(--prd-card-height);
     border-radius: var(--prd-radius);
     background: var(--white);
     border: 1px solid var(--border);
     overflow: hidden;
     cursor: pointer;
     isolation: isolate;
-    scroll-snap-align: center;
     box-shadow: var(--prd-shadow-sm);
     transition:
         transform 0.35s var(--prd-ease),
         box-shadow 0.35s var(--prd-ease),
         border-color 0.35s var(--prd-ease),
-        height 0.35s var(--prd-ease);
+        height 0.35s var(--prd-ease),
+        opacity 0.4s ease;
 }
 
 .prd-card:hover,
@@ -397,7 +362,6 @@ body.prd-page a {
     z-index: 10;
 }
 
-/* decorative shine */
 .prd-card-glow {
     position: absolute;
     inset: -40%;
@@ -438,17 +402,16 @@ body.prd-page a {
     }
 }
 
-/* number badge */
 .prd-card-num {
     position: absolute;
-    top: 12px;
-    right: 14px;
-    font-size: 0.68rem;
+    top: 14px;
+    right: 16px;
+    font-size: 0.7rem;
     font-weight: 800;
     letter-spacing: 0.08em;
     color: var(--text-muted);
     background: var(--light-grey);
-    padding: 4px 10px;
+    padding: 5px 12px;
     border-radius: var(--radius-full);
     z-index: 3;
     transition: all 0.3s ease;
@@ -456,12 +419,15 @@ body.prd-page a {
 }
 
 .prd-card:hover .prd-card-num,
-.prd-card:focus-visible .prd-card-num {
+.prd-card:focus-visible .prd-card-num,
+.prd-card.is-hovered .prd-card-num {
     background: var(--primary);
     color: #fff;
 }
 
-/* FRONT FACE — logo + title */
+/* ------------------------------------------------------------
+   FRONT FACE â€” big logo + title
+   ------------------------------------------------------------ */
 .prd-card-face {
     position: absolute;
     inset: 0;
@@ -469,50 +435,97 @@ body.prd-page a {
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 20px 16px;
-    gap: 14px;
+    padding: 24px 20px;
+    gap: 18px;
     transition: opacity 0.3s ease, transform 0.35s var(--prd-ease);
     z-index: 1;
 }
 
 .prd-card:hover .prd-card-face,
-.prd-card:focus-visible .prd-card-face {
+.prd-card:focus-visible .prd-card-face,
+.prd-card.is-hovered .prd-card-face {
     opacity: 0;
     transform: translateY(-8px);
 }
 
+/* ---- Bigger, redesigned logo ---- */
 .prd-card-logo {
-    width: 56px;
-    height: 56px;
-    border-radius: 14px;
-    background: linear-gradient(135deg, #EEF3FF 0%, #DCE6FF 100%);
-    border: 1px solid var(--prd-card-border);
+    position: relative;
+    width: var(--prd-logo-size);
+    height: var(--prd-logo-size);
+    border-radius: var(--prd-logo-radius);
+    background: linear-gradient(145deg, #FFFFFF 0%, #EAF1FF 50%, #D0DEFF 100%);
+    border: 1px solid rgba(26, 102, 255, 0.22);
     display: flex;
     align-items: center;
     justify-content: center;
     overflow: hidden;
     flex-shrink: 0;
-    transition: transform 0.35s ease;
+    box-shadow:
+        0 10px 26px -10px rgba(0, 27, 228, 0.35),
+        0 2px 6px rgba(13, 42, 92, 0.08),
+        inset 0 1px 0 rgba(255, 255, 255, 0.95);
+    transition: transform 0.4s var(--prd-ease), box-shadow 0.4s var(--prd-ease);
 }
 
-.prd-card:hover .prd-card-logo {
-    transform: scale(1.05);
+/* Highlight ring */
+.prd-card-logo::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: radial-gradient(circle at 28% 22%, rgba(255, 255, 255, 0.85), transparent 55%);
+    pointer-events: none;
+    opacity: 0.75;
+}
+
+/* Subtle accent ring */
+.prd-card-logo::after {
+    content: '';
+    position: absolute;
+    inset: -1px;
+    border-radius: inherit;
+    padding: 1px;
+    background: linear-gradient(140deg, rgba(26, 102, 255, 0.35), transparent 45%, rgba(26, 102, 255, 0.12));
+    -webkit-mask:
+        linear-gradient(#000 0 0) content-box,
+        linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+    opacity: 0.9;
 }
 
 .prd-card-logo img {
-    max-width: 82%;
-    max-height: 82%;
+    position: relative;
+    z-index: 1;
+    max-width: 76%;
+    max-height: 76%;
     object-fit: contain;
     display: block;
+    filter: drop-shadow(0 2px 4px rgba(13, 42, 92, 0.14));
 }
 
 .prd-card-logo-placeholder {
-    font-size: 1.5rem;
+    position: relative;
+    z-index: 1;
+    font-size: var(--prd-logo-glyph);
     line-height: 1;
+    filter: drop-shadow(0 2px 4px rgba(13, 42, 92, 0.18));
+}
+
+.prd-card:hover .prd-card-logo,
+.prd-card:focus-visible .prd-card-logo,
+.prd-card.is-hovered .prd-card-logo {
+    transform: scale(1.06) translateY(-2px);
+    box-shadow:
+        0 18px 36px -14px rgba(0, 27, 228, 0.45),
+        0 3px 8px rgba(13, 42, 92, 0.12),
+        inset 0 1px 0 rgba(255, 255, 255, 0.95);
 }
 
 .prd-card-title {
-    font-size: 0.92rem;
+    font-size: var(--prd-title-size);
     font-weight: 700;
     text-align: center;
     margin: 0;
@@ -529,7 +542,9 @@ body.prd-page a {
     color: var(--primary);
 }
 
-/* REVEAL LAYER — slides up on hover */
+/* ------------------------------------------------------------
+   REVEAL LAYER â€” slides up on hover / tap
+   ------------------------------------------------------------ */
 .prd-card-reveal {
     position: absolute;
     inset: 0;
@@ -544,17 +559,18 @@ body.prd-page a {
 }
 
 .prd-card:hover .prd-card-reveal,
-.prd-card:focus-visible .prd-card-reveal {
+.prd-card:focus-visible .prd-card-reveal,
+.prd-card.is-hovered .prd-card-reveal {
     transform: translateY(0);
 }
 
 .prd-card-reveal-inner {
-    padding: 16px 18px;
+    padding: 20px 22px;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 12px;
+    gap: 14px;
     text-align: center;
     opacity: 0;
     transform: translateY(6px);
@@ -563,22 +579,23 @@ body.prd-page a {
 }
 
 .prd-card:hover .prd-card-reveal-inner,
-.prd-card:focus-visible .prd-card-reveal-inner {
+.prd-card:focus-visible .prd-card-reveal-inner,
+.prd-card.is-hovered .prd-card-reveal-inner {
     opacity: 1;
     transform: translateY(0);
 }
 
 .prd-card-desc {
     margin: 0;
-    font-size: 0.72rem;
+    font-size: var(--prd-desc-size);
     font-weight: 500;
-    line-height: 1.55;
+    line-height: 1.6;
     color: rgba(255, 255, 255, 0.96);
     display: -webkit-box;
     -webkit-line-clamp: 6;
     -webkit-box-orient: vertical;
     overflow: hidden;
-    text-align: justify;
+    text-align: center;
 }
 
 .prd-card:hover .prd-card-desc,
@@ -590,16 +607,15 @@ body.prd-page a {
     overflow: visible;
 }
 
-/* visit-site CTA inside reveal */
 .prd-card-cta {
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    padding: 8px 16px;
+    padding: 9px 18px;
     background: #fff;
     color: var(--primary);
     border-radius: var(--radius-full);
-    font-size: 0.72rem;
+    font-size: 0.78rem;
     font-weight: 700;
     text-decoration: none;
     box-shadow: 0 6px 16px -6px rgba(0, 27, 228, 0.45);
@@ -617,59 +633,30 @@ body.prd-page a {
 }
 
 .prd-card-cta svg {
-    width: 12px;
-    height: 12px;
+    width: 13px;
+    height: 13px;
     fill: currentColor;
     transition: transform 0.25s ease;
 }
 
 /* ============================================================
-   DOTS — mobile / tablet
+   DOTS â€” deprecated, always hidden now
    ============================================================ */
 .prd-dots {
-    display: flex;
-    justify-content: center;
-    flex-wrap: wrap;
-    gap: 6px;
-    margin-top: 10px;
-}
-
-.prd-dot {
-    width: 8px;
-    height: 8px;
-    padding: 0;
-    border: none;
-    border-radius: var(--radius-full);
-    background: rgba(0, 27, 228, 0.18);
-    cursor: pointer;
-    transition: width 0.4s cubic-bezier(0.34, 1.4, 0.5, 1), background 0.3s ease;
-}
-
-.prd-dot:hover {
-    background: rgba(0, 27, 228, 0.45);
-}
-
-.prd-dot.is-active {
-    width: 24px;
-    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
-    box-shadow: 0 4px 12px rgba(0, 27, 228, 0.35);
-}
-
-.prd-dot:focus-visible {
-    outline: 2px solid var(--primary);
-    outline-offset: 2px;
+    display: none !important;
 }
 
 /* ============================================================
-   PAGINATION — desktop
+   PAGINATION â€” shared base styles
    ============================================================ */
-.prd-pagination {
+.prd-pagination,
+.prd-mobile-pagination {
     display: none;
     justify-content: center;
     align-items: center;
     flex-wrap: wrap;
     gap: 8px;
-    margin-top: 36px;
+    margin-top: 32px;
     padding: 10px 0;
     user-select: none;
 }
@@ -677,8 +664,8 @@ body.prd-page a {
 .prd-pag-btn {
     display: inline-grid;
     place-items: center;
-    width: 42px;
-    height: 42px;
+    width: 44px;
+    height: 44px;
     border-radius: 50%;
     background: var(--white);
     border: 1px solid rgba(0, 27, 228, 0.16);
@@ -714,22 +701,23 @@ body.prd-page a {
 }
 
 .prd-page-btn {
-    min-width: 40px;
-    height: 40px;
-    padding: 0 14px;
+    min-width: 42px;
+    height: 42px;
+    padding: 0 16px;
     border: 1px solid rgba(0, 27, 228, 0.18);
     background: var(--white);
     color: var(--primary);
-    font: 600 0.82rem/1 'Inter', sans-serif;
+    font: 600 0.85rem/1 'Inter', sans-serif;
     border-radius: 10px;
     cursor: pointer;
-    transition: background 0.2s, color 0.2s, border-color 0.2s, box-shadow 0.2s;
+    transition: background 0.2s, color 0.2s, border-color 0.2s, box-shadow 0.2s, transform 0.2s;
 }
 
 .prd-page-btn:hover:not(.is-active) {
     background: linear-gradient(135deg, rgba(0, 27, 228, 0.06), rgba(26, 102, 255, 0.04));
     border-color: rgba(0, 27, 228, 0.35);
     box-shadow: 0 4px 12px rgba(0, 27, 228, 0.1);
+    transform: translateY(-1px);
 }
 
 .prd-page-btn:focus-visible {
@@ -751,30 +739,86 @@ body.prd-page a {
 }
 
 /* ============================================================
-   DESKTOP — 5-column grid, 10 cards per page
+   MOBILE + TABLET (â‰¤ 1023px)
+   Vertical stack, 5 cards per page, mobile pagination visible.
    ============================================================ */
-@media (min-width: 1024px) {
+@media (max-width: 1023px) {
 
-    .prd-grid {
-        display: grid;
-        grid-template-columns: repeat(5, minmax(0, 1fr));
-        gap: 18px;
-        padding: 4px 0 0;
-        overflow: visible;
-        scroll-snap-type: none;
-        scroll-behavior: auto;
-        scrollbar-width: none;
-        align-items: start;
+    /* Fade-in effect once JS has paginated the track */
+    html.js .prd-card {
+        opacity: 0;
     }
 
-    .prd-grid::-webkit-scrollbar {
+    html.js .prd-card.is-mobile-visible {
+        opacity: 1;
+    }
+
+    /* Pre-JS guard: hide cards 6+ until JS takes over */
+    html.js .prd-grid.prd-mobile-pending>.prd-card:nth-child(n+6) {
         display: none;
     }
 
+    /* Hide desktop pagination */
+    .prd-pagination {
+        display: none !important;
+    }
+
+    /* Show mobile/tablet pagination */
+    .prd-mobile-pagination {
+        display: flex;
+    }
+
+    /* Slightly larger pagination buttons for touch */
+    .prd-mobile-pagination .prd-page-btn {
+        min-width: 46px;
+        height: 46px;
+        font-size: 0.9rem;
+    }
+}
+
+/* Tablet â€” constrain card width so it doesn't look stretched */
+@media (min-width: 768px) and (max-width: 1023px) {
+    .prd-grid {
+        gap: 16px;
+    }
+
     .prd-card {
-        width: 100%;
-        height: 200px;
-        scroll-snap-align: none;
+        max-width: 640px;
+        margin: 0 auto;
+    }
+}
+
+/* ============================================================
+   DESKTOP (â‰¥ 1024px)
+   3-column Ã— 2-row grid, 6 cards per page.
+   ============================================================ */
+@media (min-width: 1024px) {
+
+    :root {
+        --prd-card-height: 300px;
+        --prd-logo-size: 116px;
+        --prd-logo-radius: 26px;
+        --prd-logo-glyph: 3rem;
+        --prd-title-size: 1.08rem;
+        --prd-desc-size: 0.84rem;
+    }
+
+    .prd-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 22px;
+        padding: 4px 0 0;
+        align-items: stretch;
+    }
+
+    /* Pre-JS guard for desktop: hide cards 7+ */
+    html.js .prd-grid.prd-mobile-pending>.prd-card:nth-child(n+7) {
+        display: none;
+    }
+
+    /* Card visible on desktop by default (mobile opacity rule doesn't apply) */
+    html.js .prd-card {
+        opacity: 1;
     }
 
     .prd-dots {
@@ -784,10 +828,196 @@ body.prd-page a {
     .prd-pagination {
         display: flex;
     }
+
+    .prd-mobile-pagination {
+        display: none !important;
+    }
 }
 
 /* ============================================================
-   CTA SECTION  — matches About / Services dark CTA
+   LARGE ULTRAWIDE (1501px â€“ 2559px)
+   ============================================================ */
+@media (min-width: 1501px) and (max-width: 2559px) {
+
+    :root {
+        --prd-card-height: 340px;
+        --prd-logo-size: 138px;
+        --prd-logo-radius: 30px;
+        --prd-logo-glyph: 3.6rem;
+        --prd-title-size: 1.22rem;
+        --prd-desc-size: 0.94rem;
+    }
+
+    .prd-container {
+        max-width: 1440px;
+    }
+
+    .prd-grid {
+        gap: 26px;
+    }
+
+    .prd-hero {
+        padding: calc(var(--navbar-height) + 96px) 0 96px;
+    }
+
+    .prd-hero-title {
+        font-size: 3.4rem;
+    }
+
+    .prd-section {
+        padding: 84px 0;
+    }
+
+    .prd-pagination,
+    .prd-mobile-pagination {
+        margin-top: 42px;
+    }
+}
+
+/* ============================================================
+   ULTRA-LARGE (2560px â€“ 5000px, and above)
+   ============================================================ */
+@media (min-width: 2560px) {
+
+    :root {
+        --prd-card-height: 420px;
+        --prd-logo-size: 176px;
+        --prd-logo-radius: 38px;
+        --prd-logo-glyph: 4.6rem;
+        --prd-title-size: 1.42rem;
+        --prd-desc-size: 1.05rem;
+    }
+
+    .prd-container {
+        max-width: 2200px;
+        padding: 0 40px;
+    }
+
+    .prd-grid {
+        gap: 34px;
+    }
+
+    .prd-section {
+        padding: 110px 0;
+    }
+
+    .prd-hero {
+        padding: calc(var(--navbar-height) + 130px) 0 130px;
+    }
+
+    .prd-hero-title {
+        font-size: 4.4rem;
+    }
+
+    .prd-hero-text {
+        font-size: 1.15rem;
+        max-width: 720px;
+    }
+
+    .prd-card-num {
+        top: 18px;
+        right: 22px;
+        font-size: 0.85rem;
+        padding: 6px 16px;
+    }
+
+    .prd-card-cta {
+        padding: 11px 24px;
+        font-size: 0.9rem;
+    }
+
+    .prd-card-cta svg {
+        width: 15px;
+        height: 15px;
+    }
+
+    .prd-page-btn {
+        min-width: 52px;
+        height: 52px;
+        font-size: 1rem;
+        border-radius: 14px;
+    }
+
+    .prd-pag-btn {
+        width: 54px;
+        height: 54px;
+        font-size: 1.05rem;
+    }
+
+    .prd-pagination,
+    .prd-mobile-pagination {
+        margin-top: 54px;
+        gap: 12px;
+    }
+
+    .prd-cta {
+        padding: 130px 0;
+    }
+
+    .prd-cta-title {
+        font-size: 3rem;
+    }
+
+    .prd-cta-text {
+        font-size: 1.05rem;
+        max-width: 560px;
+    }
+
+    .prd-cta-btn {
+        padding: 17px 36px;
+        font-size: 1.05rem;
+    }
+}
+
+/* Extreme ultrawide (> 5000px) â€” scale up once more */
+@media (min-width: 5000px) {
+
+    :root {
+        --prd-card-height: 520px;
+        --prd-logo-size: 220px;
+        --prd-logo-radius: 48px;
+        --prd-logo-glyph: 5.8rem;
+        --prd-title-size: 1.72rem;
+        --prd-desc-size: 1.24rem;
+    }
+
+    .prd-container {
+        max-width: 3400px;
+        padding: 0 60px;
+    }
+
+    .prd-grid {
+        gap: 44px;
+    }
+
+    .prd-hero {
+        padding: calc(var(--navbar-height) + 160px) 0 160px;
+    }
+
+    .prd-hero-title {
+        font-size: 5.2rem;
+    }
+
+    .prd-section {
+        padding: 140px 0;
+    }
+
+    .prd-cta {
+        padding: 160px 0;
+    }
+
+    .prd-cta-title {
+        font-size: 3.8rem;
+    }
+
+    .prd-cta-btn {
+        padding: 20px 44px;
+        font-size: 1.15rem;
+    }
+}
+
+/* ============================================================
+   CTA SECTION
    ============================================================ */
 .prd-cta {
     position: relative;
@@ -920,7 +1150,7 @@ body.prd-page a {
 }
 
 /* ============================================================
-   SCROLL-REVEAL  (matches about.css / services.css)
+   SCROLL-REVEAL
    ============================================================ */
 .reveal {
     opacity: 0;
@@ -937,51 +1167,18 @@ body.prd-page a {
 }
 
 /* ============================================================
-   RESPONSIVE BREAKPOINTS
+   SMALL BREAKPOINT SPACING TWEAKS
    ============================================================ */
-
-/* 2560 px + */
-@media (min-width: 2560px) {
-    .prd-container {
-        max-width: 1640px;
-    }
-
+@media (min-width: 992px) and (max-width: 1199px) {
     .prd-section {
-        padding: 90px 0;
+        padding: 56px 0;
     }
 
     .prd-hero {
-        padding: calc(var(--navbar-height) + 100px) 0 100px;
-    }
-
-    .prd-hero-title {
-        font-size: 3.6rem;
-    }
-
-    .prd-cta {
-        padding: 100px 0;
-    }
-
-    .prd-cta-title {
-        font-size: 2.6rem;
+        padding: calc(var(--navbar-height) + 58px) 0 58px;
     }
 }
 
-/* 1501 – 2559 */
-@media (min-width: 1501px) and (max-width: 2559px) {
-    .prd-container {
-        max-width: 1400px;
-    }
-}
-
-/* 1400 – 1500 */
-@media (min-width: 1400px) and (max-width: 1500px) {
-    .prd-container {
-        max-width: 1320px;
-    }
-}
-
-/* 768 – 991 */
 @media (min-width: 768px) and (max-width: 991px) {
     .prd-section {
         padding: 52px 0;
@@ -996,7 +1193,6 @@ body.prd-page a {
     }
 }
 
-/* 576 – 767 */
 @media (min-width: 576px) and (max-width: 767px) {
     .prd-section {
         padding: 44px 0;
@@ -1019,7 +1215,6 @@ body.prd-page a {
     }
 }
 
-/* 481 – 575 */
 @media (min-width: 481px) and (max-width: 575px) {
     .prd-section {
         padding: 40px 0;
@@ -1057,8 +1252,15 @@ body.prd-page a {
     }
 }
 
-/* 380 – 480 */
 @media (min-width: 380px) and (max-width: 480px) {
+    :root {
+        --prd-card-height: 190px;
+        --prd-logo-size: 78px;
+        --prd-logo-radius: 18px;
+        --prd-logo-glyph: 2rem;
+        --prd-title-size: 0.96rem;
+    }
+
     .prd-section {
         padding: 34px 0;
     }
@@ -1097,8 +1299,15 @@ body.prd-page a {
     }
 }
 
-/* < 380 */
 @media (max-width: 379px) {
+    :root {
+        --prd-card-height: 178px;
+        --prd-logo-size: 70px;
+        --prd-logo-radius: 16px;
+        --prd-logo-glyph: 1.8rem;
+        --prd-title-size: 0.9rem;
+    }
+
     .prd-section {
         padding: 30px 0;
     }
@@ -1152,6 +1361,12 @@ body.prd-page a {
         width: 14px;
         height: 14px;
     }
+
+    .prd-mobile-pagination .prd-page-btn {
+        min-width: 42px;
+        height: 42px;
+        font-size: 0.85rem;
+    }
 }
 
 /* ============================================================
@@ -1164,16 +1379,19 @@ body.prd-page a {
         animation: none;
     }
 
-    .prd-grid {
-        scroll-behavior: auto;
-    }
-
     .prd-card,
     .prd-card-cta,
     .prd-card-face,
     .prd-card-reveal,
+    .prd-card-logo,
+    .prd-page-btn,
+    .prd-pag-btn,
     .prd-cta-btn {
         transition: none;
+    }
+
+    html.js .prd-card {
+        opacity: 1;
     }
 
     .reveal {
@@ -1182,3 +1400,39 @@ body.prd-page a {
         transition: none;
     }
 }
+/* =========================================================
+   NEXUS FIELD â€” Hero cursor/starfield accents (append-only)
+   ========================================================= */
+.hero-canvas { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 4; opacity: 1; }
+.hero-content { z-index: 5; }
+
+.hero-swirl {
+  position: absolute;
+  pointer-events: none;
+  z-index: 3;
+  animation: heroSwirlBreathe 7s ease-in-out infinite;
+}
+.hero-swirl-tr { top: -40px; right: -60px; width: 520px; height: 420px; }
+.hero-swirl-bl {
+  bottom: -60px; left: -80px; width: 380px; height: 320px;
+  transform: rotate(180deg);
+  animation-delay: 1.5s;
+}
+
+@keyframes heroSwirlBreathe {
+  0%, 100% { opacity: 0.85; filter: drop-shadow(0 0 14px rgba(43,123,255,0.42)); }
+  50%      { opacity: 1;    filter: drop-shadow(0 0 28px rgba(91,156,255,0.72)); }
+}
+
+@media (max-width: 640px) {
+  .hero-swirl-tr { width: 380px; height: 307px; top: -30px; right: -70px; }
+  .hero-swirl-bl { width: 280px; height: 236px; bottom: -50px; left: -80px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-swirl { animation: none; }
+}
+
+/* Nexus Field — ensure hero content stays above canvas */
+.prd-hero .prd-container { position: relative; z-index: 5; }
+

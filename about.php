@@ -49,7 +49,7 @@ $pageTitle = 'About Us — Creative Web Technologies';
 				About <span class="abt-hero-accent">Creative Web Technologies</span>
 			</h1>
 			<p class="abt-hero-text">
-				Built on expertise, collaboration, and an unwavering commitment to technology excellence.
+				Fueled by tech, backed by strong security, and dedicated to solving global challenges with Sri Lankan ingenuity.
 			</p>
 			<div class="abt-hero-stats">
 				<div class="abt-hero-stat">
@@ -69,6 +69,50 @@ $pageTitle = 'About Us — Creative Web Technologies';
 			</div>
 		</div>
 	</div>
+
+	<!-- Nexus Field decorative swirl arcs -->
+	<svg class="hero-swirl hero-swirl-tr" viewBox="0 0 520 420" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
+	  <defs>
+	    <linearGradient id="heroSwirlGradTR" x1="60" y1="0" x2="520" y2="260" gradientUnits="userSpaceOnUse">
+	      <stop offset="0%"  stop-color="#5b9cff" stop-opacity="0"/>
+	      <stop offset="18%" stop-color="#2b7bff" stop-opacity="0.9"/>
+	      <stop offset="55%" stop-color="#dce9ff" stop-opacity="1"/>
+	      <stop offset="100%" stop-color="#1a66ff" stop-opacity="0"/>
+	    </linearGradient>
+	    <filter id="heroGlowTR" x="-60%" y="-60%" width="220%" height="220%">
+	      <feGaussianBlur stdDeviation="4.5" result="blur"/>
+	      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+	    </filter>
+	  </defs>
+	  <g filter="url(#heroGlowTR)" stroke-linecap="round" fill="none">
+	    <path d="M 300 -20 C 190 40, 150 140, 230 210 C 300 270, 400 250, 560 150" stroke="url(#heroSwirlGradTR)" stroke-width="2.5" opacity="0.55" transform="translate(-14,-10)"/>
+	    <path d="M 300 -20 C 190 40, 150 140, 230 210 C 300 270, 400 250, 560 150" stroke="url(#heroSwirlGradTR)" stroke-width="3"   opacity="0.75" transform="translate(-4,-2)"/>
+	    <path d="M 300 -20 C 190 40, 150 140, 230 210 C 300 270, 400 250, 560 150" stroke="url(#heroSwirlGradTR)" stroke-width="2.2" opacity="1"/>
+	    <path d="M 300 -20 C 190 40, 150 140, 230 210 C 300 270, 400 250, 560 150" stroke="#ffffff" stroke-width="0.9" opacity="0.85" transform="translate(6,6)"/>
+	  </g>
+	</svg>
+
+	<svg class="hero-swirl hero-swirl-bl" viewBox="0 0 520 420" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
+	  <defs>
+	    <linearGradient id="heroSwirlGradBL" x1="60" y1="0" x2="520" y2="260" gradientUnits="userSpaceOnUse">
+	      <stop offset="0%"  stop-color="#7ea0f8" stop-opacity="0"/>
+	      <stop offset="18%" stop-color="#2b7bff" stop-opacity="0.9"/>
+	      <stop offset="55%" stop-color="#dce9ff" stop-opacity="1"/>
+	      <stop offset="100%" stop-color="#1a66ff" stop-opacity="0"/>
+	    </linearGradient>
+	    <filter id="heroGlowBL" x="-60%" y="-60%" width="220%" height="220%">
+	      <feGaussianBlur stdDeviation="4" result="blur"/>
+	      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+	    </filter>
+	  </defs>
+	  <g filter="url(#heroGlowBL)" stroke-linecap="round" fill="none">
+	    <path d="M 300 -20 C 190 40, 150 140, 230 210 C 300 270, 400 250, 560 150" stroke="url(#heroSwirlGradBL)" stroke-width="2.5" opacity="0.5" transform="translate(-14,-10)"/>
+	    <path d="M 300 -20 C 190 40, 150 140, 230 210 C 300 270, 400 250, 560 150" stroke="url(#heroSwirlGradBL)" stroke-width="2.8" opacity="0.7" transform="translate(-4,-2)"/>
+	    <path d="M 300 -20 C 190 40, 150 140, 230 210 C 300 270, 400 250, 560 150" stroke="url(#heroSwirlGradBL)" stroke-width="2"   opacity="1"/>
+	  </g>
+	</svg>
+
+	<canvas id="heroCanvas" class="hero-canvas" aria-hidden="true"></canvas>
 </section>
 
 <section class="abt-section abt-section-light" id="about-cwt" aria-labelledby="about-heading">
@@ -227,12 +271,12 @@ $pageTitle = 'About Us — Creative Web Technologies';
 		<div class="abt-values-grid reveal">
 			<?php
 			$values = [
-				['fa-trophy',    'Excellence',    'We set high standards and deliver nothing less.'],
-				['fa-handshake', 'Integrity',     'Transparency and honesty in every engagement.'],
-				['fa-lightbulb', 'Innovation',    'Embracing emerging tech to solve real problems.'],
-				['fa-lock',      'Security',      'ISO-certified processes protecting your assets.'],
-				['fa-seedling',  'Growth',        'We grow together — our team and your business.'],
-				['fa-globe',     'Collaboration', 'True partnership, not just vendor relationships.'],
+				['fa-trophy',    'Customer Success',    'Start with customer needs and remain accountable for outcomes'],
+				['fa-handshake', 'Integrity',     'Be transparent, honest and responsible in decisions and delivery'],
+				['fa-lightbulb', 'Excellence',    'Maintain high standards in architecture, engineering, governance and service'],
+				['fa-lock',      'Collaboration',      'Work across practices and with customers as one delivery team'],
+				['fa-seedling',  'Innovation',        'Challenge conventional approaches and apply new technologies responsibly'],
+				['fa-globe',     'Ownership', 'Take responsibility for commitments, quality and results'],
 			];
 			foreach ($values as $val):
 			?>

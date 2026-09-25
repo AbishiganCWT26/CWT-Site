@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Exo+2:wght@300;400;500;600;700;800&display=swap');
+﻿@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Exo+2:wght@300;400;500;600;700;800&display=swap');
 
 :root {
     --primary: #001be4;
@@ -917,7 +917,7 @@ body.ct-page ol {
 }
 
 /* =============================================
-   TABLET — 768px to 991px
+   TABLET â€” 768px to 991px
    ============================================= */
 @media (max-width: 991px) {
 
@@ -1128,7 +1128,7 @@ body.ct-page ol {
 }
 
 /* =============================================
-   MOBILE — 576px to 767px
+   MOBILE â€” 576px to 767px
    ============================================= */
 @media (max-width: 767px) {
 
@@ -1329,7 +1329,7 @@ body.ct-page ol {
 }
 
 /* =============================================
-   SMALL MOBILE — 481px to 575px
+   SMALL MOBILE â€” 481px to 575px
    ============================================= */
 @media (max-width: 575px) {
 
@@ -1467,7 +1467,7 @@ body.ct-page ol {
 }
 
 /* =============================================
-   EXTRA SMALL MOBILE — 380px to 480px
+   EXTRA SMALL MOBILE â€” 380px to 480px
    ============================================= */
 @media (max-width: 480px) {
 
@@ -1647,7 +1647,7 @@ body.ct-page ol {
 }
 
 /* =============================================
-   TINY MOBILE — below 380px
+   TINY MOBILE â€” below 380px
    ============================================= */
 @media (max-width: 379px) {
 
@@ -1821,3 +1821,39 @@ body.ct-page ol {
         transform: none;
     }
 }
+/* =========================================================
+   NEXUS FIELD â€” Hero cursor/starfield accents (append-only)
+   ========================================================= */
+.hero-canvas { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 4; opacity: 1; }
+.hero-content { z-index: 5; }
+
+.hero-swirl {
+  position: absolute;
+  pointer-events: none;
+  z-index: 3;
+  animation: heroSwirlBreathe 7s ease-in-out infinite;
+}
+.hero-swirl-tr { top: -40px; right: -60px; width: 520px; height: 420px; }
+.hero-swirl-bl {
+  bottom: -60px; left: -80px; width: 380px; height: 320px;
+  transform: rotate(180deg);
+  animation-delay: 1.5s;
+}
+
+@keyframes heroSwirlBreathe {
+  0%, 100% { opacity: 0.85; filter: drop-shadow(0 0 14px rgba(43,123,255,0.42)); }
+  50%      { opacity: 1;    filter: drop-shadow(0 0 28px rgba(91,156,255,0.72)); }
+}
+
+@media (max-width: 640px) {
+  .hero-swirl-tr { width: 380px; height: 307px; top: -30px; right: -70px; }
+  .hero-swirl-bl { width: 280px; height: 236px; bottom: -50px; left: -80px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-swirl { animation: none; }
+}
+
+/* Nexus Field — ensure hero content stays above canvas */
+.ct-hero .ct-container { position: relative; z-index: 5; }
+

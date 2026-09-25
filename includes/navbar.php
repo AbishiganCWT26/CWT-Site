@@ -1015,13 +1015,16 @@ $currentPage = basename($_SERVER['PHP_SELF']);
 
 		<ul class="cwt-nav" role="navigation">
 			<li>
+				<a href="<?= SITE_URL ?>/index.php" class="cwt-nav-link <?= $currentPage === 'index.php' ? 'is-active' : '' ?>">Home</a>
+			</li>
+			<li>
 				<a href="<?= SITE_URL ?>/services.php" class="cwt-nav-link <?= $currentPage === 'services.php' ? 'is-active' : '' ?>">Our Services</a>
 			</li>
 			<li>
 				<a href="<?= SITE_URL ?>/about.php" class="cwt-nav-link <?= $currentPage === 'about.php' ? 'is-active' : '' ?>">About Us</a>
 			</li>
 			<li>
-				<a href="<?= SITE_URL ?>/our-crew.php" class="cwt-nav-link <?= $currentPage === 'crew.php' ? 'is-active' : '' ?>">Our Crew</a>
+				<a href="<?= SITE_URL ?>/our-crew.php" class="cwt-nav-link <?= $currentPage === 'our-crew.php' ? 'is-active' : '' ?>">Our Crew</a>
 			</li>
 			<li>
 				<a href="<?= SITE_URL ?>/products.php" class="cwt-nav-link <?= $currentPage === 'products.php' ? 'is-active' : '' ?>">Our Products</a>
@@ -1052,7 +1055,7 @@ $currentPage = basename($_SERVER['PHP_SELF']);
 		<a href="<?= SITE_URL ?>/index.php" class="cwt-mobile-link <?= $currentPage === 'index.php' ? 'is-active' : '' ?>">Home</a>
 		<a href="<?= SITE_URL ?>/services.php" class="cwt-mobile-link <?= $currentPage === 'services.php' ? 'is-active' : '' ?>">Our Services</a>
 		<a href="<?= SITE_URL ?>/about.php" class="cwt-mobile-link <?= $currentPage === 'about.php' ? 'is-active' : '' ?>">About Us</a>
-		<a href="<?= SITE_URL ?>/our-crew.php" class="cwt-mobile-link <?= $currentPage === 'crew.php' ? 'is-active' : '' ?>">Our Crew</a>
+		<a href="<?= SITE_URL ?>/our-crew.php" class="cwt-mobile-link <?= $currentPage === 'our-crew.php' ? 'is-active' : '' ?>">Our Crew</a>
 		<a href="<?= SITE_URL ?>/products.php" class="cwt-mobile-link <?= $currentPage === 'products.php' ? 'is-active' : '' ?>">Our Products</a>
 		<a href="<?= SITE_URL ?>/clients-say.php" class="cwt-mobile-link <?= $currentPage === 'clients-say.php' ? 'is-active' : '' ?>">Clients Say</a>
 		<a href="<?= SITE_URL ?>/insights.php" class="cwt-mobile-link <?= $currentPage === 'insights.php' ? 'is-active' : '' ?>">Insights</a>
