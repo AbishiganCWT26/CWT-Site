@@ -384,24 +384,6 @@ $pageTitle = 'Privacy Policy — Creative Web Technologies';
 	</div>
 </section>
 
-<section class="pp-cta">
-	<div class="pp-cta-bg" aria-hidden="true">
-		<span></span>
-		<span></span>
-	</div>
-	<div class="pp-container">
-		<div class="pp-cta-inner reveal">
-			<span class="pp-cta-eyebrow">Your Trust</span>
-			<h2 class="pp-cta-title">Questions About Your Data?</h2>
-			<p class="pp-cta-text">Our team is here to help. Reach out anytime and we'll get back to you within one business day.</p>
-			<a href="<?= SITE_URL ?>/contact.php" class="pp-cta-btn">
-				<span>Contact Us</span>
-				<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
-			</a>
-		</div>
-	</div>
-</section>
-
 <button type="button" class="pp-top" id="ppTop" aria-label="Back to top">
 	<i class="fa-solid fa-chevron-up" aria-hidden="true"></i>
 </button>
