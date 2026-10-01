@@ -87,12 +87,12 @@
     if (heroCanvas && heroCanvas.getContext) {
         (function () {
             const hero = heroCanvas.parentElement;
-            const ctx  = heroCanvas.getContext('2d');
+            const ctx = heroCanvas.getContext('2d');
             if (!ctx || !hero) return;
 
             const DENSITY_DIVISOR = 1200, MAX_STARS = 900, MOUSE_RADIUS = 220, MOUSE_FORCE = 2.2;
             const SPRING = 0.012, DAMPING = 0.91, CONSTELLATION_RANGE = 90, CONSTELLATION_ALPHA = 0.16;
-            const COLORS = { white:[255,255,255], paleBlue:[200,220,255], blue400:[91,156,255], blue500:[43,123,255], pink:[126,160,248] };
+            const COLORS = { white: [255, 255, 255], paleBlue: [200, 220, 255], blue400: [91, 156, 255], blue500: [43, 123, 255], pink: [126, 160, 248] };
             let w = 0, h = 0, stars = [], running = true;
             const mouse = { x: 0, y: 0, active: false };
 
@@ -116,20 +116,22 @@
                     const depth = Math.random() < 0.55 ? 0 : (Math.random() < 0.7 ? 1 : 2);
                     const baseR = depth === 0 ? Math.random() * 0.5 + 0.25 : depth === 1 ? Math.random() * 0.9 + 0.4 : Math.random() * 1.4 + 0.6;
                     const r = Math.random(), shape = r < 0.78 ? 'dot' : r < 0.94 ? 'sparkle' : 'streak';
-                    return { x, y, homeX: x, homeY: y, vx: 0, vy: 0, r: baseR, depth, shape, color: pickColor(),
+                    return {
+                        x, y, homeX: x, homeY: y, vx: 0, vy: 0, r: baseR, depth, shape, color: pickColor(),
                         baseAlpha: (depth === 0 ? 0.20 : depth === 1 ? 0.35 : 0.55) + Math.random() * 0.30,
                         phase: Math.random() * Math.PI * 2, speed: Math.random() * 0.018 + 0.005,
                         twinkleAmp: Math.random() * 0.30 + 0.15,
                         driftX: (Math.random() - 0.5) * 0.04 * (depth + 1), driftY: (Math.random() - 0.5) * 0.04 * (depth + 1),
-                        angle: Math.random() * Math.PI * 2, proximity: 0 };
+                        angle: Math.random() * Math.PI * 2, proximity: 0
+                    };
                 });
             }
             function setPointer(cx, cy) { const rect = hero.getBoundingClientRect(); mouse.x = cx - rect.left; mouse.y = cy - rect.top; mouse.active = true; }
             hero.addEventListener('mousemove', function (e) { setPointer(e.clientX, e.clientY); });
             hero.addEventListener('mouseleave', function () { mouse.active = false; });
             hero.addEventListener('touchstart', function (e) { const t = e.touches[0]; if (t) setPointer(t.clientX, t.clientY); }, { passive: true });
-            hero.addEventListener('touchmove',  function (e) { const t = e.touches[0]; if (t) setPointer(t.clientX, t.clientY); }, { passive: true });
-            hero.addEventListener('touchend',   function () { mouse.active = false; });
+            hero.addEventListener('touchmove', function (e) { const t = e.touches[0]; if (t) setPointer(t.clientX, t.clientY); }, { passive: true });
+            hero.addEventListener('touchend', function () { mouse.active = false; });
 
             function drawDot(s, drawR, alpha) { ctx.beginPath(); ctx.fillStyle = 'rgba(' + s.color.join(',') + ',' + alpha + ')'; ctx.arc(s.x, s.y, drawR, 0, Math.PI * 2); ctx.fill(); }
             function drawSparkle(s, drawR, alpha, gb) {
@@ -310,7 +312,7 @@
             },
             {
                 id: 'cyber',
-                label: 'Cybersecurity, Network, Infrastructure, Partner Management, Cloud, Support & Services',
+                label: 'Network, Infrastructure, Security, Partner Management, Support & Services',
                 icon: 'shield',
                 accent: '#2b7bff',
                 accent2: '#1557c4',
@@ -345,7 +347,7 @@
             {
                 id: 'legal',
                 label: 'Legal, Internal Operations & HR',
-                icon: 'users',
+                icon: 'clipboard',
                 accent: '#1d3f7d',
                 accent2: '#0d2a5c',
                 soft: 'rgba(29, 63, 125, 0.16)',
@@ -372,6 +374,23 @@
                     { t: 'Marketing & Branding', i: 'star', d: 'Creates awareness and positive perception of the company\'s offerings. It communicates value propositions to target audiences.' },
                     { t: 'Proposals & RFPs', i: 'file', d: 'Responds to client solicitations with tailored, competitive bids. It demonstrates capability and secures new business contracts.' },
                     { t: 'Market Expansion', i: 'globe', d: 'Identifies and enters new geographic or demographic markets. It drives growth by capturing new customer segments.' }
+                ]
+            },
+            {
+                id: 'bd',
+                label: 'Professional training & consultancy services',
+                icon: 'users',
+                accent: '#71a5f9ff',
+                accent2: '#3860a0ff',
+                soft: 'rgba(126, 160, 248, 0.22)',
+                cards: [
+                    { t: 'Financial Planning & Analysis', i: 'dollar', d: 'Develop financial strategies, analyze performance, and deliver insights to support informed decisions and sustainable business growth.' },
+                    { t: 'Strategic & Commercial', i: 'target', d: 'Drive business growth through strategic planning, commercial opportunities, resource optimization, and competitive positioning.' },
+                    { t: 'Corporate Governance', i: 'shield', d: 'Ensure transparency, accountability, ethical practices, and compliance through effective corporate oversight and governance frameworks.' },
+                    { t: 'MInternal Controls', i: 'check-circle', d: 'Strengthen operational processes, minimize risks, safeguard assets, and ensure accuracy through effective internal control mechanisms.' },
+                    { t: 'Performance Management', i: 'activity', d: 'Monitor organizational performance, measure outcomes, identify improvement opportunities, and enhance operational effectiveness.' },
+                    { t: 'Market Expansion', i: 'globe', d: 'Identify new opportunities, explore emerging markets, expand customer reach, and strengthen competitive market positioning.' },
+                    { t: 'Capability & Team Development', i: 'users', d: 'Enhance workforce capabilities through continuous learning, leadership development, collaboration, and effective talent management.' }
                 ]
             }
         ];

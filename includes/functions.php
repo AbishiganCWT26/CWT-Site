@@ -258,6 +258,47 @@ function renderBlogContent(string $jsonContent): string {
     return $html;
 }
 
+// ─── Project Details (Rich Content) ──────────────────────────────────────────
+function getProjectDetails(PDO $pdo, int $projectId): array {
+	$stmt = $pdo->prepare("SELECT * FROM project_details WHERE project_id = ?");
+	$stmt->execute([$projectId]);
+	return $stmt->fetch() ?: [];
+}
+
+function saveProjectDetails(PDO $pdo, int $projectId, array $data): void {
+	$existing = getProjectDetails($pdo, $projectId);
+	if (!empty($existing)) {
+		$sql = "UPDATE project_details SET banner_image=?, client_name=?, industry=?, duration=?, technologies=?, content=? WHERE project_id=?";
+		$pdo->prepare($sql)->execute([
+			$data['banner_image'] ?? null,
+			$data['client_name'] ?? null,
+			$data['industry'] ?? null,
+			$data['duration'] ?? null,
+			$data['technologies'] ?? null,
+			$data['content'] ?? '',
+			$projectId
+		]);
+	} else {
+		$sql = "INSERT INTO project_details (project_id, banner_image, client_name, industry, duration, technologies, content) VALUES (?,?,?,?,?,?,?)";
+		$pdo->prepare($sql)->execute([
+			$projectId,
+			$data['banner_image'] ?? null,
+			$data['client_name'] ?? null,
+			$data['industry'] ?? null,
+			$data['duration'] ?? null,
+			$data['technologies'] ?? null,
+			$data['content'] ?? ''
+		]);
+	}
+}
+
+function getProjectWithDetails(PDO $pdo, string $slug): array {
+	$project = getProjectBySlug($pdo, $slug);
+	if (empty($project)) return [];
+	$project['details'] = getProjectDetails($pdo, (int)$project['id']);
+	return $project;
+}
+
 // ─── CSRF Token ───────────────────────────────────────────────────────────────
 function csrfToken(): string {
     if (empty($_SESSION['csrf_token'])) {
@@ -272,4 +313,111 @@ function verifyCsrf(): void {
         http_response_code(403);
         die('Invalid CSRF token.');
     }
+}
+
+// ─── Solution Categories ──────────────────────────────────────────────────────
+function getSolutionCategories(PDO $pdo, bool $activeOnly = true): array {
+	$sql = "SELECT * FROM solution_category";
+	if ($activeOnly) $sql .= " WHERE is_active = 1";
+	$sql .= " ORDER BY sort_order ASC, id ASC";
+	$stmt = $pdo->query($sql);
+	return $stmt->fetchAll();
+}
+
+function getSolutionCategory(PDO $pdo, int $id): array {
+	$stmt = $pdo->prepare("SELECT * FROM solution_category WHERE id = ?");
+	$stmt->execute([$id]);
+	return $stmt->fetch() ?: [];
+}
+
+// ─── Projects ─────────────────────────────────────────────────────────────────
+function getProjectsByCategory(PDO $pdo, int $categoryId, bool $activeOnly = true): array {
+	$sql = "SELECT * FROM projects WHERE category_id = ?";
+	if ($activeOnly) $sql .= " AND is_active = 1";
+	$sql .= " ORDER BY sort_order ASC, id ASC";
+	$stmt = $pdo->prepare($sql);
+	$stmt->execute([$categoryId]);
+	return $stmt->fetchAll();
+}
+
+function getAllProjects(PDO $pdo, bool $activeOnly = true): array {
+	$sql = "SELECT p.*, c.name AS category_name, c.color AS category_color FROM projects p LEFT JOIN solution_category c ON p.category_id = c.id";
+	if ($activeOnly) $sql .= " WHERE p.is_active = 1";
+	$sql .= " ORDER BY c.sort_order ASC, p.sort_order ASC, p.id ASC";
+	$stmt = $pdo->query($sql);
+	return $stmt->fetchAll();
+}
+
+function getProjectById(PDO $pdo, int $id): array {
+	$stmt = $pdo->prepare("SELECT * FROM projects WHERE id = ?");
+	$stmt->execute([$id]);
+	return $stmt->fetch() ?: [];
+}
+
+function getProjectBySlug(PDO $pdo, string $slug): array {
+	$stmt = $pdo->prepare("SELECT p.*, c.name AS category_name, c.color AS category_color, c.icon AS category_icon FROM projects p LEFT JOIN solution_category c ON p.category_id = c.id WHERE p.slug = ?");
+	$stmt->execute([$slug]);
+	return $stmt->fetch() ?: [];
+}
+
+function projectSlug(string $name): string {
+	$clean = preg_replace('/[^a-zA-Z0-9\s-]/', '', $name);
+	$clean = preg_replace('/[\s-]+/', '-', $clean);
+	return trim($clean, '-');
+}
+
+// ─── Project Mockups ──────────────────────────────────────────────────────────
+/**
+ * Get all mockup images for a project (ordered).
+ */
+function getProjectMockups(PDO $pdo, int $projectId): array {
+	$stmt = $pdo->prepare("SELECT * FROM project_mockups WHERE project_id = ? ORDER BY sort_order ASC, id ASC");
+	$stmt->execute([$projectId]);
+	return $stmt->fetchAll();
+}
+
+/**
+ * Add a mockup image reference to a project.
+ */
+function addProjectMockup(PDO $pdo, int $projectId, string $imagePath): int {
+	$stmt = $pdo->prepare("SELECT COALESCE(MAX(sort_order), 0) + 1 FROM project_mockups WHERE project_id = ?");
+	$stmt->execute([$projectId]);
+	$next = (int)$stmt->fetchColumn();
+
+	$stmt = $pdo->prepare("INSERT INTO project_mockups (project_id, image_path, sort_order) VALUES (?, ?, ?)");
+	$stmt->execute([$projectId, $imagePath, $next]);
+	return (int)$pdo->lastInsertId();
+}
+
+/**
+ * Delete a mockup image (both DB row and physical file).
+ */
+function deleteProjectMockup(PDO $pdo, int $mockupId, int $projectId): bool {
+	$stmt = $pdo->prepare("SELECT image_path FROM project_mockups WHERE id = ? AND project_id = ?");
+	$stmt->execute([$mockupId, $projectId]);
+	$row = $stmt->fetch();
+	if (!$row) return false;
+
+	// Delete physical file
+	$fullPath = UPLOAD_DIR . $row['image_path'];
+	if (is_file($fullPath)) {
+		@unlink($fullPath);
+	}
+
+	$stmt = $pdo->prepare("DELETE FROM project_mockups WHERE id = ? AND project_id = ?");
+	return $stmt->execute([$mockupId, $projectId]);
+}
+
+/**
+ * Get mockup images as public URLs.
+ */
+function getProjectMockupUrls(PDO $pdo, int $projectId): array {
+	$mockups = getProjectMockups($pdo, $projectId);
+	$urls = [];
+	foreach ($mockups as $m) {
+		if (!empty($m['image_path'])) {
+			$urls[] = imgUrl($m['image_path']);
+		}
+	}
+	return $urls;
 }

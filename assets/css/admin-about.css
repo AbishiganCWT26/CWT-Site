@@ -1,0 +1,6 @@
+.form-hint {
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    margin-top: 4px;
+    line-height: 1.4;
+}

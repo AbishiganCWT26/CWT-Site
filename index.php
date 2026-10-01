@@ -4,30 +4,7 @@ require_once __DIR__ . '/includes/db.php';
 require_once __DIR__ . '/includes/functions.php';
 
 $clients  = getClients($pdo);
-$pageTitle = 'Creative Web Technologies — Expert Tech Teams';
-
-$services = [
-  ['icon'=> 'assets/Images/Software Engineering.png',  'title'=>'Software Engineering & Development',       'desc'=>'We design, build, and modernize enterprise applications, platforms, APIs, and digital products across all major technology stacks. Our teams support dedicated delivery pods, staff augmentation, fixed-scope projects, and managed engineering engagements.'],
-  ['icon'=> 'assets/Images/DevOps, DataOps & SRE.png',  'title'=>'DevOps, DataOps & SRE',                    'desc'=>'We streamline build, release, data, and reliability workflows to accelerate delivery and reduce failure risk. Services include CI/CD, infrastructure as code, observability, SLOs, incident response, and platform engineering.'],
-  ['icon'=> 'assets/Images/Data Engineering & Analytics.png',  'title'=>'Data Engineering & Analytics',             'desc'=>'We build modern data architectures, pipelines, warehouses, and lakehouses that make enterprise data trustworthy and analytics-ready. Our solutions improve decision-making, operational visibility, governance, and cost savings.'],
-  ['icon'=> 'assets/Images/AI Engineering & Big Data.png',  'title'=>'AI Engineering & Big Data',                'desc'=>'We turn data into intelligent systems using AI, machine learning, generative AI, IoT, and advanced analytics. From model development to MLOps and deployment, we help extract maximum value from enterprise data.'],
-  ['icon'=> 'assets/Images/Cybersecurity, Network & Infrastructure.png',  'title'=>'Cybersecurity, Network & Infrastructure',  'desc'=>'We design, build, and protect the technology backbone with secure network architecture, cloud and on-prem infrastructure, identity management, and monitoring. Our security services include risk assessments, penetration testing, compliance support, and incident response.'],
-  ['icon'=> 'assets/Images/Support & Maintenance.png',  'title'=>'Support & Maintenance',                    'desc'=>'We provide 24/7 global application and infrastructure support aligned to SLAs. Services include proactive monitoring, patching, troubleshooting, enhancements, root-cause analysis, and continuous service improvement.'],
-];
-
-
-$offerings = [
-  ['icon'=>'🛒','title'=>'eCommerce Solutions','desc'=>'We help you make your online transactions in a flash. Our team ensures secure, scalable, and highly responsive e-commerce platforms that enhance the digital shopping experience.'],
-  ['icon'=>'🏢','title'=>'Corporate Website Development','desc'=>'We develop appealing and innovative corporate websites. We craft digital storefronts that effectively communicate your brand identity and engage your target audience.'],
-  ['icon'=>'🔧','title'=>'Support and Maintenance','desc'=>'We assist you in keeping your software applications up-to-date and attend to bugs/defects, 24/7. Our dedicated support ensures your operations run seamlessly without downtime.'],
-  ['icon'=>'🎨','title'=>'User Experience (UX) Design','desc'=>'We provide innovative software solutions while ensuring the highest level of creativity. We focus on user-centric designs that make complex applications intuitive and enjoyable.'],
-  ['icon'=>'👥','title'=>'Resource Outsourcing','desc'=>'We provide dedicated IT professionals to manage your IT operations more conveniently and effectively. Scale your team with our expert resources aligned with your business goals.'],
-  ['icon'=>'📱','title'=>'Mobile Applications','desc'=>'We utilize cutting-edge technologies to provide your customers with innovative and incredible mobile experiences. From iOS to Android, we build apps that perform flawlessly.'],
-  ['icon'=>'📣','title'=>'Digital Marketing','desc'=>'We help to upsurge your annual turnover by utilizing comprehensive digital marketing strategies. Our data-driven campaigns are designed to maximize your online reach and ROI.'],
-  ['icon'=>'🔐','title'=>'Cybersecurity & Infrastructure Solutions','desc'=>'We safeguard your digital assets with robust security protocols and scalable infrastructure. Our proactive approach ensures your systems remain resilient against evolving cyber threats.'],
-  ['icon'=>'📋','title'=>'Project Delivery & PMO','desc'=>'We ensure end-to-end project management and seamless delivery. Our senior consultants oversee the lifecycle of your projects, guaranteeing timely execution and quality standards.'],
-  ['icon'=>'🧠','title'=>'Data & AI Engineering','desc'=>'Unlock the power of your data. We design robust data pipelines and integrate advanced AI models to drive automation, insights, and intelligent decision-making for your business.'],
-];
+$pageTitle = 'Creative Web Technologies';
 ?>
 <!DOCTYPE html>
 <html lang="en">

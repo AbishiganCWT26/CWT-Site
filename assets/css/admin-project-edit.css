@@ -1,0 +1,470 @@
+/* ==========================================================================
+   Admin — Edit Project Content
+   ========================================================================== */
+
+.pe-page-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+
+.pe-page-header-left {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    min-width: 0;
+    flex: 1;
+}
+
+.pe-back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-decoration: none;
+    transition: color var(--transition), transform var(--transition);
+    align-self: flex-start;
+}
+
+.pe-back-link:hover {
+    color: var(--primary);
+    transform: translateX(-3px);
+}
+
+.pe-title-block h1 {
+    font-size: 20px;
+    font-weight: 800;
+    color: var(--text-primary);
+    letter-spacing: -0.3px;
+    margin-top: 6px;
+}
+
+.pe-title-block p {
+    font-size: 12.5px;
+    color: var(--text-muted);
+    margin-top: 2px;
+}
+
+.pe-cat-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 12px;
+    border-radius: 99px;
+    color: #fff;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.4px;
+    text-transform: uppercase;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+}
+
+.pe-page-header-right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.pe-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 320px;
+    gap: 18px;
+    align-items: start;
+}
+
+.pe-main {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    min-width: 0;
+}
+
+.pe-side {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    position: sticky;
+    top: 80px;
+}
+
+/* ─── Banner ────────────────────────────────────────────────────────────── */
+.pe-banner-wrap {
+    position: relative;
+    aspect-ratio: 16 / 9;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 2px dashed var(--border);
+    background: #f8faff;
+    transition: border-color var(--transition);
+    cursor: pointer;
+}
+
+.pe-banner-wrap:hover {
+    border-color: var(--primary-light);
+}
+
+.pe-banner-wrap img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.pe-banner-empty {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    color: var(--text-muted);
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.pe-banner-empty i {
+    font-size: 26px;
+    color: var(--primary-light);
+    opacity: 0.55;
+}
+
+.pe-banner-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 27, 228, 0.75);
+    color: #fff;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    opacity: 0;
+    transition: opacity var(--transition);
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.pe-banner-overlay i {
+    font-size: 22px;
+}
+
+.pe-banner-wrap:hover .pe-banner-overlay {
+    opacity: 1;
+}
+
+.pe-remove-banner {
+    display: inline-flex;
+    align-items: center;
+    margin-top: 10px;
+    background: none;
+    border: none;
+    color: #ef4444;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 0;
+    transition: color var(--transition);
+    font-family: inherit;
+}
+
+.pe-remove-banner:hover {
+    color: #b91c1c;
+    text-decoration: underline;
+}
+
+/* ─── Actions ───────────────────────────────────────────────────────────── */
+.pe-actions {
+    position: sticky;
+    bottom: 20px;
+}
+
+.pe-save-btn {
+    width: 100%;
+    justify-content: center;
+    padding: 12px 20px;
+    font-size: 13.5px;
+    box-shadow: 0 8px 24px var(--primary-glow);
+}
+
+/* ─── Quill editor ──────────────────────────────────────────────────────── */
+#quillEditor {
+    min-height: 520px;
+    background: #fff;
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    line-height: 1.7;
+}
+
+.ql-toolbar {
+    background: #f8faff;
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+    border-color: var(--border) !important;
+}
+
+.ql-container {
+    border-bottom-left-radius: 10px;
+    border-bottom-right-radius: 10px;
+    border-color: var(--border) !important;
+    font-size: 14px !important;
+    font-family: 'Inter', sans-serif !important;
+}
+
+.ql-editor {
+    min-height: 480px;
+    padding: 20px 22px;
+}
+
+.ql-editor h1 {
+    font-size: 1.7em;
+    font-weight: 800;
+    margin: 18px 0 12px;
+    color: var(--text-primary);
+}
+
+.ql-editor h2 {
+    font-size: 1.35em;
+    font-weight: 700;
+    margin: 16px 0 10px;
+    color: var(--text-primary);
+}
+
+.ql-editor h3 {
+    font-size: 1.15em;
+    font-weight: 700;
+    margin: 14px 0 8px;
+    color: var(--text-primary);
+}
+
+.ql-editor p {
+    margin-bottom: 12px;
+}
+
+.ql-editor ul,
+.ql-editor ol {
+    padding-left: 24px;
+    margin-bottom: 12px;
+}
+
+.ql-editor li {
+    margin-bottom: 6px;
+}
+
+.ql-editor blockquote {
+    border-left: 4px solid var(--primary-light);
+    padding: 8px 16px;
+    margin: 12px 0;
+    background: var(--v-panel-bg);
+    border-radius: 0 8px 8px 0;
+    color: var(--text-secondary);
+    font-style: italic;
+}
+
+.ql-editor pre.ql-syntax,
+.ql-editor pre {
+    background: #0d2a5c;
+    color: #e0e8ff;
+    padding: 14px 16px;
+    border-radius: 8px;
+    overflow-x: auto;
+    font-size: 12.5px;
+    font-family: 'SFMono-Regular', Consolas, monospace;
+    margin: 12px 0;
+}
+
+.ql-editor img {
+    max-width: 100%;
+    border-radius: 10px;
+    margin: 12px 0;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+}
+
+.ql-editor a {
+    color: var(--primary);
+    text-decoration: underline;
+}
+
+.ql-snow .ql-stroke {
+    stroke: var(--text-secondary);
+}
+
+.ql-snow .ql-fill,
+.ql-snow .ql-stroke.ql-fill {
+    fill: var(--text-secondary);
+}
+
+.ql-snow .ql-picker {
+    color: var(--text-secondary);
+}
+
+.ql-snow .ql-active .ql-stroke {
+    stroke: var(--primary) !important;
+}
+
+.ql-snow .ql-active .ql-fill {
+    fill: var(--primary) !important;
+}
+
+/* ==========================================================================
+   Mockup uploader
+   ========================================================================== */
+
+.pe-mockup-dropzone {
+    position: relative;
+    border: 2px dashed var(--border);
+    border-radius: 12px;
+    background: #f8faff;
+    padding: 22px 16px;
+    text-align: center;
+    cursor: pointer;
+    transition: border-color var(--transition), background var(--transition), transform var(--transition);
+}
+
+.pe-mockup-dropzone:hover {
+    border-color: var(--primary-light);
+    background: #eef4ff;
+}
+
+.pe-mockup-dropzone.is-dragover {
+    border-color: var(--primary);
+    background: #e4edff;
+    transform: scale(1.01);
+}
+
+.pe-mockup-dropzone-inner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    color: var(--text-muted);
+    font-size: 12px;
+}
+
+.pe-mockup-dropzone-inner i {
+    font-size: 28px;
+    color: var(--primary-light);
+    margin-bottom: 4px;
+}
+
+.pe-mockup-dropzone-inner strong {
+    color: var(--text-primary);
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.pe-mockup-recommend {
+    display: inline-block;
+    margin-top: 2px;
+    padding: 3px 10px;
+    border-radius: 99px;
+    background: rgba(59, 130, 246, 0.1);
+    color: var(--primary);
+    font-size: 10.5px;
+    font-weight: 700;
+    letter-spacing: 0.2px;
+}
+
+.pe-mockup-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+    margin-top: 14px;
+}
+
+.pe-mockup-item {
+    position: relative;
+    aspect-ratio: 16 / 10;
+    border-radius: 10px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    background: #fff;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    transition: transform var(--transition), box-shadow var(--transition);
+}
+
+.pe-mockup-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 22px rgba(0, 0, 0, 0.12);
+}
+
+.pe-mockup-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.pe-mockup-delete {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    border: none;
+    background: rgba(239, 68, 68, 0.92);
+    color: #fff;
+    font-size: 11px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity var(--transition), transform var(--transition);
+    padding: 0;
+}
+
+.pe-mockup-item:hover .pe-mockup-delete {
+    opacity: 1;
+}
+
+.pe-mockup-delete:hover {
+    background: #b91c1c;
+    transform: scale(1.08);
+}
+
+.pe-mockup-hint {
+    margin-top: 12px;
+    line-height: 1.5;
+}
+
+/* ─── Responsive ────────────────────────────────────────────────────────── */
+@media (max-width: 991px) {
+    .pe-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .pe-side {
+        position: static;
+    }
+
+    .pe-actions {
+        position: static;
+    }
+}
+
+@media (max-width: 575px) {
+    .pe-page-header h1 {
+        font-size: 17px;
+    }
+
+    .ql-editor {
+        padding: 14px;
+        min-height: 400px;
+    }
+
+    #quillEditor {
+        min-height: 440px;
+    }
+
+    .pe-mockup-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}

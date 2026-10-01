@@ -90,8 +90,8 @@ $services = [
 	],
 	[
 		'num'   => '09',
-		'title' => 'Training',
-		'desc'  => '---',
+		'title' => 'Professional training & consultancy services',
+		'desc'  => 'Through our structured training programs, we empower your team with essential technical expertise and practical skills. Furthermore, our consulting services deliver tailored guidance and strategic insights to help you overcome complex challenges and achieve your business objectives.',
 		'consultant' => ['Ulinda', 'Senior Finance & Advisory Consultant'],
 		'lead'  => ['TBC'],
 		'team'  => ['Chenuli', 'Lehan'],

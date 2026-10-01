@@ -1,0 +1,14 @@
+.thumb-wide {
+    width: 56px;
+    height: 38px;
+    object-fit: cover;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+}
+
+.empty-block {
+    text-align: center;
+    padding: 36px;
+    color: var(--text-muted);
+    font-size: 0.82rem;
+}

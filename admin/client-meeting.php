@@ -23,19 +23,36 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 	}
 
 	if ($action === 'delete' && $id > 0) {
-		$pdo->prepare("DELETE FROM client_meetings WHERE id = ?")->execute([$id]);
-		header('Location: ' . ADMIN_URL . '/client-meeting.php');
-		exit;
+		$password = $_POST['admin_password'] ?? '';
+		$stmt = $pdo->prepare("SELECT password_hash FROM admin_users WHERE username = ? LIMIT 1");
+		$stmt->execute([$_SESSION['admin_username'] ?? '']);
+		$user = $stmt->fetch();
+		if ($user && password_verify($password, $user['password_hash'])) {
+			$pdo->prepare("DELETE FROM client_meetings WHERE id = ?")->execute([$id]);
+			header('Content-Type: application/json');
+			echo json_encode(['success' => true]);
+			exit;
+		} else {
+			header('Content-Type: application/json');
+			http_response_code(401);
+			echo json_encode(['success' => false, 'message' => 'Incorrect admin password.']);
+			exit;
+		}
 	}
 }
 
-$meetings = $pdo->query("SELECT * FROM client_meetings ORDER BY is_read ASC, created_at DESC")->fetchAll();
+$filter = $_GET['filter'] ?? 'all';
+if (!in_array($filter, ['all', 'unread', 'read'], true)) $filter = 'all';
 
-$totalMeetings = count($meetings);
-$unreadMeetings = 0;
-foreach ($meetings as $m) {
-	if ((int)$m['is_read'] === 0) $unreadMeetings++;
-}
+$sql = "SELECT * FROM client_meetings";
+if ($filter === 'unread') $sql .= " WHERE is_read = 0";
+elseif ($filter === 'read') $sql .= " WHERE is_read = 1";
+$sql .= " ORDER BY is_read ASC, created_at DESC";
+$meetings = $pdo->query($sql)->fetchAll();
+
+$totalMeetings = (int)$pdo->query("SELECT COUNT(*) FROM client_meetings")->fetchColumn();
+$unreadMeetings = (int)$pdo->query("SELECT COUNT(*) FROM client_meetings WHERE is_read = 0")->fetchColumn();
+$readMeetings = $totalMeetings - $unreadMeetings;
 
 $pageTitle = 'Client Meetings';
 include __DIR__ . '/layout_top.php';
@@ -52,35 +69,31 @@ include __DIR__ . '/layout_top.php';
 		<p class="cm-page-sub">Contact requests submitted through the public contact form.</p>
 	</div>
 	<div class="cm-page-header-right">
-		<div class="cm-stat">
-			<span class="cm-stat-value"><?= $totalMeetings ?></span>
-			<span class="cm-stat-label">Total</span>
-		</div>
-		<div class="cm-stat cm-stat-accent">
-			<span class="cm-stat-value"><?= $unreadMeetings ?></span>
-			<span class="cm-stat-label">Unread</span>
-		</div>
+		<div class="cm-stat"><span class="cm-stat-value"><?= $totalMeetings ?></span><span class="cm-stat-label">Total</span></div>
+		<div class="cm-stat cm-stat-accent"><span class="cm-stat-value"><?= $unreadMeetings ?></span><span class="cm-stat-label">Unread</span></div>
 		<?php if ($unreadMeetings > 0): ?>
-		<form method="post" class="cm-inline-form" onsubmit="return confirm('Mark all as read?');">
+		<form method="post" class="cm-inline-form" id="markAllForm">
 			<input type="hidden" name="action" value="mark_all_read">
-			<button type="submit" class="cm-btn cm-btn-ghost">
-				<i class="fa-solid fa-check-double"></i>
-				<span>Mark All Read</span>
-			</button>
+			<button type="submit" class="cm-btn cm-btn-ghost"><i class="fa-solid fa-check-double"></i><span>Mark All Read</span></button>
 		</form>
 		<?php endif; ?>
 	</div>
 </div>
 
+<div class="cm-filters" role="tablist">
+	<a href="?filter=all" class="cm-filter <?= $filter==='all'?'active':'' ?>"><i class="fa-solid fa-layer-group"></i><span>All</span><em><?= $totalMeetings ?></em></a>
+	<a href="?filter=unread" class="cm-filter <?= $filter==='unread'?'active':'' ?>"><i class="fa-solid fa-circle-dot"></i><span>Unread</span><em><?= $unreadMeetings ?></em></a>
+	<a href="?filter=read" class="cm-filter <?= $filter==='read'?'active':'' ?>"><i class="fa-solid fa-circle-check"></i><span>Read</span><em><?= $readMeetings ?></em></a>
+</div>
+
 <?php if (empty($meetings)): ?>
 <div class="cm-empty">
 	<span class="cm-empty-icon"><i class="fa-solid fa-inbox"></i></span>
-	<h3 class="cm-empty-title">No meetings yet</h3>
-	<p class="cm-empty-text">Client submissions will appear here once they come in.</p>
+	<h3 class="cm-empty-title">No meetings found</h3>
+	<p class="cm-empty-text">Nothing to show for the selected filter.</p>
 </div>
 <?php else: ?>
 <div class="cm-list">
-
 	<?php foreach ($meetings as $m): ?>
 	<?php
 		$isRead = (int)$m['is_read'] === 1;
@@ -92,72 +105,38 @@ include __DIR__ . '/layout_top.php';
 		}
 	?>
 	<article class="cm-card <?= $isRead ? 'is-read' : 'is-unread' ?>" data-id="<?= (int)$m['id'] ?>">
-		<span class="cm-card-status" aria-hidden="true"></span>
-		<span class="cm-card-glow" aria-hidden="true"></span>
-
-		<div class="cm-card-avatar">
-			<span class="cm-card-avatar-letter"><?= e($initial) ?></span>
-			<span class="cm-card-avatar-ring" aria-hidden="true"></span>
-		</div>
-
+		<span class="cm-card-status"></span>
+		<div class="cm-card-avatar"><span class="cm-card-avatar-letter"><?= e($initial) ?></span></div>
 		<div class="cm-card-body">
 			<header class="cm-card-head">
 				<div class="cm-card-head-left">
 					<h2 class="cm-card-name"><?= e($m['client_name']) ?></h2>
-					<?php if (!$isRead): ?>
-					<span class="cm-badge cm-badge-new">
-						<i class="fa-solid fa-circle"></i>
-						New
+					<span class="cm-badge <?= $isRead ? 'cm-badge-read' : 'cm-badge-new' ?>">
+						<i class="fa-solid <?= $isRead ? 'fa-circle-check' : 'fa-circle' ?>"></i>
+						<?= $isRead ? 'Read' : 'New' ?>
 					</span>
-					<?php else: ?>
-					<span class="cm-badge cm-badge-read">
-						<i class="fa-solid fa-circle-check"></i>
-						Read
-					</span>
-					<?php endif; ?>
 				</div>
-				<?php if ($date !== ''): ?>
-				<span class="cm-card-date">
-					<i class="fa-regular fa-clock"></i>
-					<?= e($date) ?>
-				</span>
-				<?php endif; ?>
+				<?php if ($date !== ''): ?><span class="cm-card-date"><i class="fa-regular fa-clock"></i><?= e($date) ?></span><?php endif; ?>
 			</header>
-
 			<div class="cm-card-meta">
-				<a href="mailto:<?= e($m['email']) ?>" class="cm-chip cm-chip-mail">
+				<div class="cm-chip cm-chip-mail">
 					<i class="fa-solid fa-at"></i>
-					<span><?= e($m['email']) ?></span>
-				</a>
+					<span class="cm-chip-text"><?= e($m['email']) ?></span>
+					<button type="button" class="cm-copy-btn" data-copy="<?= e($m['email']) ?>" aria-label="Copy email"><i class="fa-regular fa-copy"></i></button>
+				</div>
 				<?php if (!empty($m['phone'])): ?>
-				<a href="tel:<?= e(preg_replace('/\s+/', '', $m['phone'])) ?>" class="cm-chip cm-chip-phone">
-					<i class="fa-solid fa-phone"></i>
-					<span><?= e($m['phone']) ?></span>
-				</a>
+				<a href="tel:<?= e(preg_replace('/\s+/', '', $m['phone'])) ?>" class="cm-chip cm-chip-phone"><i class="fa-solid fa-phone"></i><span><?= e($m['phone']) ?></span></a>
 				<?php endif; ?>
 				<?php if (!empty($m['website'])): ?>
-				<a href="<?= e($websiteUrl) ?>" target="_blank" rel="noopener noreferrer" class="cm-chip cm-chip-web">
-					<i class="fa-solid fa-globe"></i>
-					<span><?= e($m['website']) ?></span>
-				</a>
+				<a href="<?= e($websiteUrl) ?>" target="_blank" rel="noopener noreferrer" class="cm-chip cm-chip-web"><i class="fa-solid fa-globe"></i><span><?= e($m['website']) ?></span></a>
 				<?php endif; ?>
 			</div>
-
 			<div class="cm-card-message">
-				<span class="cm-card-message-label">
-					<i class="fa-solid fa-comment-dots"></i>
-					Message
-				</span>
+				<span class="cm-card-message-label"><i class="fa-solid fa-comment-dots"></i>Message</span>
 				<p class="cm-card-message-text"><?= nl2br(e($m['message'])) ?></p>
 			</div>
 		</div>
-
 		<div class="cm-card-actions">
-			<a href="mailto:<?= e($m['email']) ?>?subject=Re: Your enquiry&body=Hi <?= e($m['client_name']) ?>," class="cm-btn cm-btn-primary" title="Reply by email">
-				<i class="fa-solid fa-reply"></i>
-				<span>Reply</span>
-			</a>
-
 			<form method="post" class="cm-inline-form">
 				<input type="hidden" name="action" value="toggle_read">
 				<input type="hidden" name="id" value="<?= (int)$m['id'] ?>">
@@ -166,22 +145,14 @@ include __DIR__ . '/layout_top.php';
 					<span><?= $isRead ? 'Unread' : 'Read' ?></span>
 				</button>
 			</form>
-
-			<form method="post" class="cm-inline-form cm-inline-form-delete" data-confirm="Delete this meeting request?">
-				<input type="hidden" name="action" value="delete">
-				<input type="hidden" name="id" value="<?= (int)$m['id'] ?>">
-				<button type="submit" class="cm-btn cm-btn-danger" title="Delete">
-					<i class="fa-solid fa-trash"></i>
-					<span>Delete</span>
-				</button>
-			</form>
+			<button type="button" class="cm-btn cm-btn-danger" data-delete-meeting data-id="<?= (int)$m['id'] ?>" data-name="<?= e($m['client_name']) ?>">
+				<i class="fa-solid fa-trash"></i><span>Delete</span>
+			</button>
 		</div>
 	</article>
 	<?php endforeach; ?>
-
 </div>
 <?php endif; ?>
 
 <script src="<?= SITE_URL ?>/assets/js/admin-client-meeting.js"></script>
-
 <?php include __DIR__ . '/layout_bottom.php'; ?>
