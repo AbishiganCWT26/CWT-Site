@@ -1,0 +1,38 @@
+.world-map-preview-card { margin-bottom:24px; }
+#worldMapSave[hidden] { display:none; }
+.world-map-preview { position:relative;max-width:980px;margin:auto;aspect-ratio:2640.041/1226.7573;background:#edf3ff;border-radius:12px; }
+.world-map-preview > img { display:block;width:100%;height:100%;object-fit:contain;opacity:.18; }
+.world-map-preview-pin { position:absolute;transform:translate(-50%,-50%);width:10px;height:10px;background:#245bdb;border:2px solid #fff;border-radius:50%;box-shadow:0 0 0 4px #245bdb22; }
+.world-map-preview-pin[hidden] { display:none; }
+.world-map-preview-pin span { position:absolute;bottom:16px;left:50%;transform:translateX(-50%);white-space:nowrap;background:#123a9c;color:white;border-radius:6px;padding:4px 8px;font-size:11px;display:none;z-index:2; }
+.world-map-preview-pin:hover span { display:block; }
+.world-map-country-grid { display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;margin-top:20px; }
+.world-map-country { display:flex;align-items:center;justify-content:space-between;gap:12px;border:1px solid #dae4f3;border-radius:9px;padding:13px 14px;cursor:pointer;position:relative; }
+.world-map-country[hidden] { display:none; }
+.world-map-country:has(input:checked) { background:#edf3ff;border-color:#b4cdf8; }
+.world-map-country input { position:absolute;right:16px;width:36px;height:22px;opacity:0; }
+.world-map-switch { flex-shrink:0;width:36px;height:22px;border-radius:22px;background:#c6d2e3;position:relative;transition:background .2s; }
+.world-map-switch::before { content:'';position:absolute;top:3px;left:3px;width:16px;height:16px;border-radius:50%;background:white;transition:transform .2s; }
+.world-map-country input:checked + .world-map-switch { background:#245bdb; }
+.world-map-country input:checked + .world-map-switch::before { transform:translateX(14px); }
+.world-map-country input:focus-visible + .world-map-switch { outline:3px solid #85b4ff;outline-offset:3px; }
+.world-map-country:has(input:disabled) { opacity:.6;cursor:wait; }
+#worldMapStatus { margin-top:12px;font-size:13px;color:#526580;min-height:20px; }
+#worldMapStatus.is-error { color:#b42318; }
+@media(prefers-reduced-motion:reduce) { .world-map-switch,.world-map-switch::before { transition:none; } }
+
+/* Block image copy, save, drag */
+img {
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    -webkit-user-drag: none;
+    -khtml-user-drag: none;
+    -moz-user-drag: none;
+    -o-user-drag: none;
+    user-drag: none;
+    -webkit-touch-callout: none;
+    pointer-events: none;
+    -webkit-tap-highlight-color: transparent;
+}

@@ -1,0 +1,19 @@
+body {
+    background: linear-gradient(135deg, #0d2a5c, #001be4);
+    min-height: 100vh;
+}
+/* Block image copy, save, drag */
+img {
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    -webkit-user-drag: none;
+    -khtml-user-drag: none;
+    -moz-user-drag: none;
+    -o-user-drag: none;
+    user-drag: none;
+    -webkit-touch-callout: none;
+    pointer-events: none;
+    -webkit-tap-highlight-color: transparent;
+}
