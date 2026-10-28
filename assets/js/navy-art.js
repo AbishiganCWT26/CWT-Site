@@ -6,6 +6,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const selectors = '.home-cta, .cwt-footer, .prd-cta, .cs-cta, .ins-cta';
 
     document.querySelectorAll(selectors).forEach((element, surfaceIndex) => {
+        // The current footer already has its own particle animation.
+        if (element.querySelector('.cwt-footer-particles')) return;
         const canvas = document.createElement('canvas');
         canvas.className = 'cwt-navy-art';
         canvas.setAttribute('aria-hidden', 'true');

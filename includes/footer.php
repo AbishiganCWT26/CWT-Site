@@ -144,6 +144,9 @@ $footerThemeAttr = in_array($footerTheme, ['light', 'dark'], true)
 	<svg viewBox="0 0 24 24"><path d="m18 15-6-6-6 6"/></svg>
 </button>
 
+<!-- Shared page motion: typography, fluid navigation, card effects and slider. -->
+<script src="<?= SITE_URL ?>/assets/js/interactions.js?v=<?= filemtime(__DIR__ . '/../assets/js/interactions.js') ?>" defer></script>
+<script src="<?= SITE_URL ?>/assets/js/navy-art.js?v=<?= filemtime(__DIR__ . '/../assets/js/navy-art.js') ?>" defer></script>
 <!-- particles.js must load before footer.js (both deferred = executed in order) -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/particles.js/2.0.0/particles.min.js" defer></script>
 <script src="<?= SITE_URL ?>/assets/js/footer.js?v=<?= filemtime(__DIR__ . '/../assets/js/footer.js') ?>" defer></script>
