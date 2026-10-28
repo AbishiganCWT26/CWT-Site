@@ -1666,10 +1666,14 @@ body.cwt-public {
     overflow-x: auto;
     overscroll-behavior-x: contain;
     scroll-snap-type: x mandatory;
-    scrollbar-width: thin;
-    scrollbar-color: #91b2f1 transparent;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
     padding: 8px 0 20px;
     text-align: justify;
+}
+
+.home-service-grid.home-service-slider::-webkit-scrollbar {
+    display: none;
 }
 
 .home-service-slider .home-service-card {
