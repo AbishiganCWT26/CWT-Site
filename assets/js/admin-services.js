@@ -140,6 +140,7 @@ document.addEventListener('DOMContentLoaded', function () {
             serviceForm.querySelector('[name="num"]').value = data.num || '';
             serviceForm.querySelector('[name="title"]').value = data.title || '';
             serviceForm.querySelector('[name="description"]').value = data.description || '';
+            serviceForm.querySelector('[name="short_description"]').value = data.short_description || '';
             serviceForm.querySelector('[name="consultant_name"]').value = data.consultant_name || '';
             serviceForm.querySelector('[name="consultant_role"]').value = data.consultant_role || '';
             serviceForm.querySelector('[name="sort_order"]').value = data.sort_order || 0;

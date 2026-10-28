@@ -7,13 +7,15 @@ $about = getAboutUs($pdo);
 $projects = $about['projects_count'] ?? 50;
 $years = !empty($about['start_year']) ? calcYearsExperience((int)$about['start_year']) : 20;
 $home_showcase = getHomeShowcase($pdo);
-$services = [
-	['01', 'Software engineering', 'Thoughtfully designed applications and digital platforms, built to grow with your business.', '<path d="m8 6-6 6 6 6m8-12 6 6-6 6m-3-15-2 18"/>'],
-	['02', 'AI & intelligent automation', 'Turn emerging technology into practical solutions that save time and unlock new possibilities.', '<path d="m12 3 2.5 6.5L21 12l-6.5 2.5L12 21l-2.5-6.5L3 12l6.5-2.5L12 3Z"/>'],
-	['03', 'Data engineering & analytics', 'Bring your data together. Find the insights that help you make your next move with confidence.', '<path d="M4 3v17h17M8 15v-4m5 4V7m5 8V4"/>'],
-	['04', 'Cloud & cybersecurity', 'Secure, resilient infrastructure and dependable support for the way you work today.', '<path d="m12 3 8 3v6c0 4-4 7-8 9-4-2-8-5-8-9V6l8-3Z"/><path d="m8 12 3 3 5-6"/>'],
-	['05', 'Optimization', 'Make your systems faster, your delivery smoother, and your technology work harder for you.', '<path d="m13 2-9 12h7l-1 8 10-13h-7l1-7Z"/>'],
-	['06', 'Project delivery & consulting', 'Expert guidance and clear governance, from your first conversation through to launch.', '<path d="m12 3 10 5-10 5L2 8l10-5Zm-10 9 10 5 10-5M2 16l10 5 10-5"/>'],
+$services = $pdo->query("SELECT num, title, short_description FROM services WHERE is_active = 1 ORDER BY sort_order ASC, id ASC")->fetchAll(PDO::FETCH_ASSOC);
+$service_icons = [
+	'<path d="m8 6-6 6 6 6m8-12 6 6-6 6m-3-15-2 18"/>',
+	'<path d="m12 3 2.5 6.5L21 12l-6.5 2.5L12 21l-2.5-6.5L3 12l6.5-2.5L12 3Z"/>',
+	'<path d="M4 3v17h17M8 15v-4m5 4V7m5 8V4"/>',
+	'<path d="m12 3 8 3v6c0 4-4 7-8 9-4-2-8-5-8-9V6l8-3Z"/><path d="m8 12 3 3 5-6"/>',
+	'<path d="m13 2-9 12h7l-1 8 10-13h-7l1-7Z"/>',
+	'<path d="m12 3 10 5-10 5L2 8l10-5Zm-10 9 10 5 10-5M2 16l10 5 10-5"/>',
+	'<path d="M3 7h18v13H3V7Zm6 0V4h6v3M3 12h18"/>',
 ];
 ?>
 <!DOCTYPE html>
@@ -30,9 +32,9 @@ $services = [
 	<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 	<link rel="stylesheet" href="<?= SITE_URL ?>/assets/css/index.css?v=<?= filemtime(__DIR__ . '/assets/css/index.css') ?>">
 	<link rel="stylesheet" href="<?= SITE_URL ?>/assets/css/modern.css?v=<?= filemtime(__DIR__ . '/assets/css/modern.css') ?>">
-<link rel="stylesheet" href="<?= SITE_URL ?>/assets/css/design.css?v=<?= filemtime(__DIR__ . '/assets/css/design.css') ?>">
-<?php require_once __DIR__ . '/includes/theme.php'; ?>
-<?php require_once __DIR__ . '/includes/loader.php'; ?>
+	<link rel="stylesheet" href="<?= SITE_URL ?>/assets/css/design.css?v=<?= filemtime(__DIR__ . '/assets/css/design.css') ?>">
+	<?php require_once __DIR__ . '/includes/theme.php'; ?>
+	<?php require_once __DIR__ . '/includes/loader.php'; ?>
 </head>
 <body class="cwt-public home-page">
 <?php require_once __DIR__ . '/includes/navbar.php'; ?>
@@ -53,7 +55,6 @@ $services = [
 				</h1>
 				<p>We bring the right people and technology together to turn your ambitions into real progress. Your vision. Our expertise. One team.</p>
 				<div class="home-actions"><a class="home-button" href="<?= SITE_URL ?>/contact.php">Let’s build together <span aria-hidden="true">↗</span></a><a class="home-text-link" href="<?= SITE_URL ?>/services.php">Explore our services <span aria-hidden="true">→</span></a></div>
-				<a class="hero-discover" href="#services-expertise"><span>Discover what we can build</span><span aria-hidden="true">&#8595;</span></a>
 				<div class="hero-footnote"><span class="footnote-line"></span> Based in Sri Lanka. Building for the world.</div>
 			</div>
 			<div class="column-art" aria-label="Illustration of CWT's delivery workflow">
@@ -193,7 +194,7 @@ $services = [
 				<div><span class="home-eyebrow">WHAT WE DO</span><h2>The expertise you need.<br><span>The <span class="home-font-cycle"><span class="home-font-default">possibilities</span><span class="home-font-frames" aria-hidden="true">possibilities</span></span> you want.</span></h2></div>
 				<p>From your first idea to your next big milestone, we help you build, evolve, and scale with confidence.</p>
 			</div>
-			<div class="home-service-filters" role="group" aria-label="Filter services" hidden>
+			<div class="home-service-filters" role="group" aria-label="Filter services">
 				<button type="button" data-filter="all" aria-pressed="true" aria-controls="home-service-grid">All services</button>
 				<button type="button" data-filter="engineering" aria-pressed="false" aria-controls="home-service-grid">Engineering</button>
 				<button type="button" data-filter="intelligence" aria-pressed="false" aria-controls="home-service-grid">AI &amp; data</button>
@@ -201,12 +202,11 @@ $services = [
 			</div>
 			<p class="cwt-sr-only" id="service-filter-status" role="status" aria-live="polite" aria-atomic="true"></p>
 			<div class="home-service-grid home-service-slider" id="home-service-grid" role="region" aria-label="Technology services" tabindex="0">
-				<?php foreach ($services as [$number, $title, $description, $icon]): ?>
-					<a href="<?= SITE_URL ?>/services.php" class="home-service-card" data-category="<?= e(in_array($number, ['01', '06'], true) ? 'engineering' : (in_array($number, ['02', '03'], true) ? 'intelligence' : 'operations')) ?>">
-						<div class="service-card-top"><svg viewBox="0 0 24 24" aria-hidden="true"><?= $icon ?></svg><span><?= $number ?></span></div>
-						<h3><?= e($title) ?></h3>
-						<p><?= e($description) ?></p>
-						<span class="service-card-link">Explore service <span aria-hidden="true">↗</span></span>
+				<?php foreach ($services as $index => $service): ?>
+					<a href="<?= SITE_URL ?>/services.php" class="home-service-card" data-category="<?= e(in_array($service['num'], ['01', '06'], true) ? 'engineering' : (in_array($service['num'], ['02', '03'], true) ? 'intelligence' : 'operations')) ?>">
+						<div class="service-card-top"><svg viewBox="0 0 24 24" aria-hidden="true"><?= $service_icons[$index % count($service_icons)] ?></svg><span><?= e($service['num']) ?></span></div>
+						<h3><?= e($service['title']) ?></h3>
+						<p><?= e($service['short_description']) ?></p>
 					</a>
 				<?php endforeach; ?>
 			</div>
