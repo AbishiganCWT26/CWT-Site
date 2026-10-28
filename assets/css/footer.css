@@ -1,0 +1,799 @@
+/* ==========================================================
+   Creative Web Technologies – Footer
+   Theme tokens (light + dark) · Editorial Signature bottom bar
+   ========================================================== */
+
+/* ----------------------------------------------------------
+   1. THEME TOKENS
+   ---------------------------------------------------------- */
+
+/* ---------- LIGHT theme (default) ---------- */
+.cwt-footer {
+    /* shared brand tokens */
+    --cwt-blue: #2563eb;
+    --cwt-blue-strong: #163fc5;
+    --cwt-blue-soft: #7dd5ff;
+    --cwt-radius-sm: 8px;
+    --cwt-radius-md: 12px;
+    --cwt-radius-lg: 16px;
+
+    /* page surface */
+    --cwt-bg: radial-gradient(ellipse at 0 0, #dbe8ff, transparent 60%), #f4f8ff;
+
+    /* typography */
+    --cwt-text: #172840;
+    --cwt-heading: #0b1a30;
+    --cwt-muted: #526178;
+
+    /* brand block */
+    --cwt-logo-bg: linear-gradient(145deg, #126dff, #163fc5);
+    --cwt-logo-shadow: 0 5px 16px #2563eb33;
+    --cwt-brand-title: #0b1a30;
+    --cwt-brand-sub: #6b7c95;
+
+    /* social buttons */
+    --cwt-social-bg: #ffffff;
+    --cwt-social-border: #d9e5fa;
+    --cwt-social-color: #2563eb;
+    --cwt-social-hover-bg: #2563eb;
+    --cwt-social-hover-border: #2563eb;
+    --cwt-social-hover-color: #ffffff;
+
+    /* quick links */
+    --cwt-link: #526178;
+    --cwt-link-hover: #2563eb;
+
+    /* contacts */
+    --cwt-icon: #2563eb;
+    --cwt-contact: #526178;
+    --cwt-contact-hover: #2563eb;
+
+    /* ---- bottom bar (editorial signature) ---- */
+    --cwt-bottom-border: #d9e5fa;
+    --cwt-bottom-glow: #2563eb0d;
+    --cwt-bottom-accent: linear-gradient(90deg,
+            transparent 0%, #2563eb 50%, transparent 100%);
+    --cwt-bottom-text: #526178;
+    --cwt-bottom-strong: #172840;
+    --cwt-bottom-brand-gradient: linear-gradient(135deg, #2563eb 0%, #7dd5ff 100%);
+    --cwt-bottom-link: #2563eb;
+    --cwt-bottom-link-hover: #163fc5;
+
+    /* focus + particles */
+    --cwt-focus: #2563eb;
+    --cwt-particles-color: #2563eb;
+    --cwt-particles-line: #93b4e8;
+    --cwt-particles-opacity: 0.45;
+    --cwt-particles-line-opacity: 0.35;
+}
+
+/* ---------- DARK theme ---------- */
+.cwt-footer[data-theme="dark"] {
+    --cwt-bg: radial-gradient(ellipse at 0 0, #183c79, transparent 60%), #0a1d3b !important;
+
+    --cwt-text: #edf4ff !important;
+    --cwt-heading: #edf4ff !important;
+    --cwt-muted: #aec2df !important;
+
+    --cwt-logo-bg: linear-gradient(145deg, #126dff, #163fc5) !important;
+    --cwt-logo-shadow: 0 5px 16px #2563eb33 !important;
+    --cwt-brand-title: #edf4ff !important;
+    --cwt-brand-sub: #aec2df !important;
+
+    --cwt-social-bg: #163259 !important;
+    --cwt-social-border: #31517d !important;
+    --cwt-social-color: #bbd2f5 !important;
+    --cwt-social-hover-bg: #2452a0 !important;
+    --cwt-social-hover-border: #3f6bb0 !important;
+    --cwt-social-hover-color: #ffffff !important;
+
+    --cwt-link: #aec2df !important;
+    --cwt-link-hover: #7dd5ff !important;
+
+    --cwt-icon: #8dbaff !important;
+    --cwt-contact: #aec2df !important;
+    --cwt-contact-hover: #7dd5ff !important;
+
+    /* ---- bottom bar (editorial signature) ---- */
+    --cwt-bottom-border: #27456f !important;
+    --cwt-bottom-glow: #3f8bff1a !important;
+    --cwt-bottom-accent: linear-gradient(90deg,
+            transparent 0%, #7dd5ff 50%, transparent 100%) !important;
+    --cwt-bottom-text: #aec2df !important;
+    --cwt-bottom-strong: #edf4ff !important;
+    --cwt-bottom-brand-gradient: linear-gradient(135deg, #7dd5ff 0%, #ffffff 100%) !important;
+    --cwt-bottom-link: #7dd5ff !important;
+    --cwt-bottom-link-hover: #ffffff !important;
+
+    --cwt-focus: #7dd5ff !important;
+    --cwt-particles-color: #4169e1 !important;
+    --cwt-particles-line: #4682b4 !important;
+    --cwt-particles-opacity: 0.5 !important;
+    --cwt-particles-line-opacity: 0.4 !important;
+}
+
+/* ---------- DARK theme via OS preference (unless forced) ---------- */
+@media (prefers-color-scheme: dark) {
+    .cwt-footer:not([data-theme="light"]) {
+        --cwt-bg: radial-gradient(ellipse at 0 0, #183c79, transparent 60%), #0a1d3b !important;
+
+        --cwt-text: #edf4ff !important;
+        --cwt-heading: #edf4ff !important;
+        --cwt-muted: #aec2df !important;
+
+        --cwt-brand-title: #edf4ff !important;
+        --cwt-brand-sub: #aec2df !important;
+
+        --cwt-social-bg: #163259 !important;
+        --cwt-social-border: #31517d !important;
+        --cwt-social-color: #bbd2f5 !important;
+        --cwt-social-hover-bg: #2452a0 !important;
+        --cwt-social-hover-border: #3f6bb0 !important;
+        --cwt-social-hover-color: #ffffff !important;
+
+        --cwt-link: #aec2df !important;
+        --cwt-link-hover: #7dd5ff !important;
+
+        --cwt-icon: #8dbaff !important;
+        --cwt-contact: #aec2df !important;
+        --cwt-contact-hover: #7dd5ff !important;
+
+        --cwt-bottom-border: #27456f !important;
+        --cwt-bottom-glow: #3f8bff1a !important;
+        --cwt-bottom-accent: linear-gradient(90deg,
+                transparent 0%, #7dd5ff 50%, transparent 100%) !important;
+        --cwt-bottom-text: #aec2df !important;
+        --cwt-bottom-strong: #edf4ff !important;
+        --cwt-bottom-brand-gradient: linear-gradient(135deg, #7dd5ff 0%, #ffffff 100%) !important;
+        --cwt-bottom-link: #7dd5ff !important;
+        --cwt-bottom-link-hover: #ffffff !important;
+
+        --cwt-focus: #7dd5ff !important;
+        --cwt-particles-color: #4169e1 !important;
+        --cwt-particles-line: #4682b4 !important;
+        --cwt-particles-opacity: 0.5 !important;
+        --cwt-particles-line-opacity: 0.4 !important;
+    }
+}
+
+/* ----------------------------------------------------------
+   2. SHELL
+   ---------------------------------------------------------- */
+
+.cwt-footer {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+    background: var(--cwt-bg);
+    font-family: Poppins, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-weight: 600;
+    color: var(--cwt-text);
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* ---------- Animated background: particles ---------- */
+
+.cwt-footer-particles {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+}
+
+.cwt-footer-particles canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+}
+
+/* ---------- Footer content ---------- */
+
+.cwt-footer-main {
+    position: relative;
+    z-index: 1;
+    padding: 40px 0 5px;
+}
+
+.cwt-footer-container {
+    width: min(1280px, calc(100% - 80px));
+    margin: auto;
+}
+
+.cwt-footer-grid {
+    display: grid;
+    grid-template-columns: 1.5fr 1fr 1fr;
+    gap: 72px;
+}
+
+/* ----------------------------------------------------------
+   3. BRAND COLUMN
+   ---------------------------------------------------------- */
+
+.cwt-brand-head {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.cwt-brand-logo {
+    width: 40px;
+    height: 40px;
+    display: grid;
+    place-items: center;
+    border-radius: var(--cwt-radius-sm);
+    color: #fff;
+    background: var(--cwt-logo-bg);
+    box-shadow: var(--cwt-logo-shadow);
+    font-size: 12px;
+    font-weight: 800;
+    object-fit: contain;
+}
+
+.cwt-brand-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--cwt-brand-title) !important;
+    line-height: 1.5;
+}
+
+.cwt-brand-title span {
+    display: block;
+    font-size: 11px;
+    font-weight: 400;
+    color: var(--cwt-brand-sub);
+}
+
+.cwt-brand-para {
+    font-size: 13px;
+    line-height: 1.85;
+    margin: 22px 0;
+    max-width: 340px;
+    color: var(--cwt-muted);
+}
+
+/* ----------------------------------------------------------
+   4. SOCIAL BUTTONS
+   ---------------------------------------------------------- */
+
+.cwt-socials {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.cwt-social {
+    width: 34px;
+    height: 34px;
+    display: grid;
+    place-items: center;
+    border: 1px solid var(--cwt-social-border);
+    border-radius: var(--cwt-radius-sm);
+    color: var(--cwt-social-color);
+    background: var(--cwt-social-bg);
+}
+
+.cwt-social svg {
+    width: 14px;
+    height: 14px;
+    fill: currentColor;
+}
+
+.cwt-social:is(:hover, :focus-visible) {
+    background: var(--cwt-social-hover-bg);
+    border-color: var(--cwt-social-hover-border);
+    color: var(--cwt-social-hover-color);
+}
+
+/* ----------------------------------------------------------
+   5. QUICK LINKS
+   ---------------------------------------------------------- */
+
+.cwt-col-heading {
+    margin: 0 0 20px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--cwt-heading) !important;
+}
+
+.cwt-links {
+    display: grid;
+    gap: 12px;
+}
+
+.cwt-links a {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    color: var(--cwt-link);
+    font-size: 13px;
+}
+
+.cwt-links a:is(:hover, :focus-visible) {
+    color: var(--cwt-link-hover);
+}
+
+.cwt-links svg {
+    display: none;
+}
+
+/* ----------------------------------------------------------
+   6. CONTACTS
+   ---------------------------------------------------------- */
+
+.cwt-contacts {
+    display: grid;
+    gap: 15px;
+}
+
+.cwt-contact {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    color: var(--cwt-contact);
+    font-size: 13px;
+    overflow-wrap: anywhere;
+}
+
+.cwt-contact-icon {
+    display: flex;
+    padding-top: 3px;
+}
+
+.cwt-contact-icon svg {
+    width: 14px;
+    height: 14px;
+    fill: var(--cwt-icon);
+}
+
+.cwt-contact-value {
+    color: var(--cwt-contact);
+    line-height: 1.8;
+    transition: color 0.2s ease;
+}
+
+.cwt-contact:is(:hover, :focus-visible) .cwt-contact-value {
+    color: var(--cwt-contact-hover);
+}
+
+.cwt-footer .cwt-navy-art {
+    opacity: 0.5;
+}
+
+/* ----------------------------------------------------------
+   7. BOTTOM BAR — EDITORIAL SIGNATURE
+   Centered · stacked · borderless · ambient glow
+   ---------------------------------------------------------- */
+
+.cwt-footer-bottom {
+    position: relative;
+    margin-top: 60px;
+    padding: 46px 20px 10px;
+    text-align: center;
+    background-image: radial-gradient(ellipse 520px 90px at 50% 0%,
+            var(--cwt-bottom-glow),
+            transparent 70%);
+    background-repeat: no-repeat;
+    transition: background 0.3s ease;
+}
+
+/* Full-width hairline */
+.cwt-footer-bottom::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: var(--cwt-bottom-border);
+    pointer-events: none;
+}
+
+/* Centered accent segment sitting on the hairline */
+.cwt-footer-bottom::after {
+    content: "";
+    position: absolute;
+    top: -1px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 72px;
+    height: 3px;
+    border-radius: 3px;
+    background: var(--cwt-bottom-accent);
+    pointer-events: none;
+}
+
+.cwt-footer-bottom-inner {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+}
+
+/* Copyright — primary line, on top */
+.cwt-copy {
+    order: 1;
+    margin: 0;
+    max-width: 640px;
+    font-size: 12.5px;
+    line-height: 1.7;
+    letter-spacing: 0.02em;
+    color: var(--cwt-bottom-text);
+    transition: color 0.3s ease;
+}
+
+/* Brand name — gradient-filled */
+.cwt-copy strong {
+    font-weight: 700;
+    color: var(--cwt-bottom-strong);
+    background: var(--cwt-bottom-brand-gradient);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    padding: 0 1px;
+}
+
+/* Privacy — micro-label link below */
+.cwt-footer-bottom a {
+    order: 2;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 2px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    text-decoration: none;
+    color: var(--cwt-bottom-link);
+    transition: color 0.2s ease;
+}
+
+.cwt-footer-bottom a::after {
+    content: "↗";
+    display: inline-block;
+    font-size: 12px;
+    letter-spacing: 0;
+    transform: translate(0, 0);
+    transition: transform 0.28s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.cwt-footer-bottom a:is(:hover, :focus-visible) {
+    color: var(--cwt-bottom-link-hover);
+}
+
+.cwt-footer-bottom a:is(:hover, :focus-visible)::after {
+    transform: translate(3px, -3px);
+}
+
+/* ----------------------------------------------------------
+   8. BACK TO TOP
+   ---------------------------------------------------------- */
+
+.cwt-back-top {
+    --bt-bg: #ffffff;
+    --bt-border: #d9e5fa;
+    --bt-color: #245bdb;
+    --bt-shadow: 0 6px 18px #111a4a1a;
+
+    position: fixed;
+    bottom: 22px;
+    right: 22px;
+    width: 44px;
+    height: 44px;
+    border: 1px solid var(--bt-border);
+    background: var(--bt-bg);
+    color: var(--bt-color);
+    border-radius: 10px;
+    box-shadow: var(--bt-shadow);
+    opacity: 0;
+    visibility: hidden;
+    z-index: 100;
+    cursor: pointer;
+    display: grid;
+    place-items: center;
+    transition:
+        opacity 0.2s ease,
+        visibility 0.2s ease,
+        background 0.2s ease,
+        color 0.2s ease,
+        border-color 0.2s ease,
+        box-shadow 0.2s ease,
+        translate 0.2s ease;
+}
+
+.cwt-back-top.is-visible {
+    opacity: 1;
+    visibility: visible;
+}
+
+.cwt-back-top svg {
+    width: 18px;
+    height: 18px;
+    stroke: currentColor;
+    stroke-width: 2;
+    fill: none;
+}
+
+@media (prefers-color-scheme: dark) {
+    .cwt-back-top {
+        --bt-bg: #0f2444 !important;
+        --bt-border: #27456f !important;
+        --bt-color: #7dd5ff !important;
+        --bt-shadow: 0 8px 22px #00000073 !important;
+    }
+}
+
+.cwt-footer[data-theme="light"]~.cwt-back-top {
+    --bt-bg: #ffffff;
+    --bt-border: #d9e5fa;
+    --bt-color: #245bdb;
+    --bt-shadow: 0 6px 18px #111a4a1a;
+}
+
+.cwt-footer[data-theme="dark"]~.cwt-back-top {
+    --bt-bg: #0f2444 !important;
+    --bt-border: #27456f !important;
+    --bt-color: #7dd5ff !important;
+    --bt-shadow: 0 8px 22px #00000073 !important;
+}
+
+/* ----------------------------------------------------------
+   9. FOCUS + TRANSITIONS
+   ---------------------------------------------------------- */
+
+.cwt-footer a:focus-visible,
+.cwt-back-top:focus-visible {
+    outline: 2px solid var(--cwt-focus);
+    outline-offset: 3px;
+    border-radius: 6px;
+}
+
+.cwt-links a,
+.cwt-social,
+.cwt-back-top {
+    transition:
+        color 0.2s,
+        background 0.2s,
+        translate 0.2s,
+        box-shadow 0.2s,
+        border-color 0.2s;
+}
+
+.cwt-links a:is(:hover, :focus-visible) {
+    translate: 4px 0;
+}
+
+.cwt-social:is(:hover, :focus-visible),
+.cwt-back-top:is(:hover, :focus-visible) {
+    translate: 0 -3px;
+    box-shadow: 0 6px 16px #2563eb26;
+}
+
+/* ----------------------------------------------------------
+   10. RESPONSIVE
+   ---------------------------------------------------------- */
+
+@media (min-width: 1200px) {
+    .cwt-footer-container {
+        width: min(1200px, calc(100% - 80px));
+    }
+
+    .cwt-footer-grid {
+        gap: 64px;
+    }
+}
+
+@media (min-width: 1400px) {
+    .cwt-footer-container {
+        width: min(1400px, calc(100% - 96px));
+    }
+
+    .cwt-footer-grid {
+        gap: 80px;
+    }
+
+    .cwt-footer-main {
+        padding: 30px 0 5px;
+    }
+
+    .cwt-footer-bottom {
+        margin-top: 72px;
+        padding: 52px 20px 12px;
+    }
+}
+
+@media (max-width: 1000.98px) {
+    .cwt-footer-container {
+        width: calc(100% - 64px);
+    }
+
+    .cwt-footer-grid {
+        gap: 48px;
+    }
+}
+
+@media (max-width: 991.98px) {
+    .cwt-footer-container {
+        width: calc(100% - 56px);
+    }
+
+    .cwt-footer-main {
+        padding: 20px 0 5px;
+    }
+
+    .cwt-footer-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: 40px 36px;
+    }
+
+    .cwt-brand {
+        grid-column: 1 / -1;
+    }
+
+    .cwt-brand-para {
+        max-width: 100%;
+    }
+
+    .cwt-footer-bottom {
+        margin-top: 48px;
+        padding: 40px 16px 8px;
+    }
+}
+
+@media (max-width: 767.98px) {
+    .cwt-footer-container {
+        width: calc(100% - 48px);
+    }
+
+    .cwt-footer-main {
+        padding: 15px 0 5px;
+    }
+
+    .cwt-footer-grid {
+        gap: 32px 28px;
+    }
+
+    .cwt-footer-bottom {
+        margin-top: 40px;
+        padding: 36px 12px 6px;
+    }
+
+    .cwt-footer-bottom-inner {
+        gap: 12px;
+    }
+}
+
+@media (max-width: 575.98px) {
+    .cwt-footer-container {
+        width: calc(100% - 40px);
+    }
+
+    .cwt-footer-main {
+        padding: 15px 0 5px;
+    }
+
+    .cwt-footer-grid {
+        gap: 28px 24px;
+    }
+
+    .cwt-footer-bottom {
+        margin-top: 36px;
+        padding: 32px 10px 4px;
+    }
+
+    .cwt-footer-bottom::after {
+        width: 60px;
+    }
+
+    .cwt-copy {
+        font-size: 11.5px;
+    }
+
+    .cwt-footer-bottom a {
+        font-size: 10.5px;
+        letter-spacing: 0.14em;
+    }
+}
+
+@media (max-width: 480.98px) {
+    .cwt-footer-container {
+        width: calc(100% - 36px);
+    }
+
+    .cwt-footer-main {
+        padding: 15px 0 5px;
+    }
+
+    .cwt-footer-grid {
+        grid-template-columns: 1fr;
+        gap: 32px;
+    }
+
+    .cwt-brand {
+        grid-column: auto;
+    }
+
+    .cwt-footer-bottom {
+        margin-top: 32px;
+        padding: 30px 6px 4px;
+    }
+
+    .cwt-footer-bottom-inner {
+        gap: 10px;
+    }
+}
+
+@media (max-width: 379.98px) {
+    .cwt-footer-container {
+        width: calc(100% - 32px);
+    }
+
+    .cwt-footer-main {
+        padding: 15px 0 5px;
+    }
+
+    .cwt-footer-grid {
+        gap: 28px;
+    }
+
+    .cwt-brand-head {
+        gap: 10px;
+    }
+
+    .cwt-brand-logo {
+        width: 36px;
+        height: 36px;
+    }
+
+    .cwt-brand-title {
+        font-size: 12px;
+    }
+
+    .cwt-brand-para {
+        font-size: 12px;
+    }
+
+    .cwt-footer-bottom {
+        margin-top: 28px;
+        padding: 26px 4px 2px;
+    }
+
+    .cwt-footer-bottom::after {
+        width: 50px;
+    }
+
+    .cwt-copy {
+        font-size: 10.5px;
+    }
+
+    .cwt-footer-bottom a {
+        font-size: 10px;
+        letter-spacing: 0.12em;
+    }
+
+    .cwt-back-top {
+        width: 38px;
+        height: 38px;
+        bottom: 16px;
+        right: 16px;
+    }
+}
+
+/* ----------------------------------------------------------
+   11. REDUCED MOTION
+   ---------------------------------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+
+    .cwt-social,
+    .cwt-links a,
+    .cwt-back-top,
+    .cwt-footer-bottom a,
+    .cwt-footer-bottom a::after {
+        translate: none !important;
+        transform: none !important;
+        transition: none !important;
+    }
+}

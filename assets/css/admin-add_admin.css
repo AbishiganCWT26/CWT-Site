@@ -1,0 +1,384 @@
+/* --------------------------------------------------------------
+   1. Root Custom Properties (variables)
+   -------------------------------------------------------------- */
+:root {
+    --primary: #001be4;
+    --primary-dark: #0050b8;
+    --primary-light: #1a66ff;
+    --primary-glow: rgba(34, 0, 228, 0.15);
+    --white: #FFFFFF;
+    --border: #E8E8E8;
+    --text-primary: #1A1A1A;
+    --text-secondary: #333333;
+    --text-muted: #666666;
+    --radius-sm: 6px;
+    --radius: 12px;
+    --transition: 0.3s ease;
+    --v-panel-bg: #f4f8ff;
+}
+
+/* --------------------------------------------------------------
+   2. Global Reset / Box‑sizing
+   -------------------------------------------------------------- */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* --------------------------------------------------------------
+   3. Body for Admin Layouts
+   -------------------------------------------------------------- */
+body.admin-body,
+body.admin-login-page {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont,
+                 'Segoe UI', sans-serif;
+    background: #f4f6fb;
+    color: var(--text-primary);
+    font-size: 14px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+}
+
+/* --------------------------------------------------------------
+   4. Body helpers
+   -------------------------------------------------------------- */
+body.no-scroll {
+    overflow: hidden;
+}
+
+/* --------------------------------------------------------------
+   5. Text selection & focus-visible
+   -------------------------------------------------------------- */
+::selection {
+    background: var(--primary);
+    color: #fff;
+}
+:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+}
+
+/* --------------------------------------------------------------
+   6. Reduced‑motion fallback
+   -------------------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+}
+
+/* --------------------------------------------------------------
+   7. Block image copy / drag protection
+   -------------------------------------------------------------- */
+img {
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    -webkit-user-drag: none;
+    -khtml-user-drag: none;
+    -moz-user-drag: none;
+    -o-user-drag: none;
+    user-drag: none;
+    -webkit-touch-callout: none;
+    pointer-events: none;
+    -webkit-tap-highlight-color: transparent;
+}
+
+/* --------------------------------------------------------------
+   8. .admin-content > *:last-child utility
+   -------------------------------------------------------------- */
+.admin-content > *:last-child {
+    margin-bottom: 0;
+}
+
+/* --------------------------------------------------------------
+   9. Simple helper classes
+   -------------------------------------------------------------- */
+.hide { display: none !important; }
+.show { display: block !important; }
+.text-center { text-align: center; }
+
+/* ==============================================================
+   Page-specific: Add Admin
+   ============================================================== */
+
+/* Card fade-in-up on load */
+@keyframes addAdminFadeUp {
+    from {
+        opacity: 0;
+        transform: translateY(18px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ── Wrap ── */
+.add-admin-wrap {
+    max-width: 640px;
+    margin: 0 auto;
+    padding: 0 0 2rem;
+}
+
+/* ── Card entrance animation ── */
+.add-admin-wrap .add-admin-card {
+    animation: addAdminFadeUp 0.4s ease both;
+}
+
+/* ── Form layout ── */
+.add-admin-form {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+}
+
+.add-admin-form .form-group {
+    margin-bottom: 1.25rem;
+}
+
+/* ── Labels ── */
+.add-admin-form .form-label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 6px;
+    color: var(--text-secondary);
+    font-size: 13.5px;
+}
+
+.add-admin-form .form-label .req {
+    color: #e53e3e;
+    margin-left: 2px;
+}
+
+/* ── Inputs ── */
+.add-admin-form .form-control {
+    display: block;
+    width: 100%;
+    padding: 12px 14px;
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    font-size: 14px;
+    font-family: inherit;
+    color: var(--text-primary);
+    background: var(--white);
+    transition: border-color var(--transition), box-shadow var(--transition);
+    appearance: none;
+    -webkit-appearance: none;
+}
+
+.add-admin-form .form-control:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px var(--primary-glow);
+    outline: none;
+}
+
+.add-admin-form .form-control.is-invalid {
+    border-color: #e53e3e;
+    box-shadow: 0 0 0 3px rgba(229, 62, 62, 0.12);
+}
+
+.add-admin-form .form-control::placeholder {
+    color: #aaa;
+}
+
+/* ── Password field wrapper (for eye toggle) ── */
+.password-field {
+    position: relative;
+}
+
+.password-field .form-control {
+    padding-right: 46px;
+}
+
+/* ── Eye toggle button ── */
+.toggle-password {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 4px;
+    border-radius: 4px;
+    transition: color var(--transition);
+}
+
+.toggle-password:hover {
+    color: var(--primary);
+}
+
+.toggle-password:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+}
+
+/* ── Hint text ── */
+.form-hint {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-top: 5px;
+    line-height: 1.4;
+}
+
+.form-hint code {
+    background: #f0f0f0;
+    border-radius: 3px;
+    padding: 0 3px;
+    font-size: 11px;
+}
+
+/* ── Inline field error ── */
+.form-error {
+    font-size: 12px;
+    color: #e53e3e;
+    margin-top: 5px;
+    font-weight: 500;
+    line-height: 1.4;
+    min-height: 1em;
+}
+
+/* ── Global error alert block ── */
+.form-alert {
+    border-radius: var(--radius-sm);
+    padding: 14px 18px;
+    margin-bottom: 1.5rem;
+    font-size: 13.5px;
+    line-height: 1.5;
+}
+
+.form-alert.form-alert-error {
+    background: #fff5f5;
+    border-left: 4px solid #e53e3e;
+    color: #c53030;
+}
+
+.form-alert.form-alert-error ul {
+    margin: 6px 0 0 18px;
+    padding: 0;
+}
+
+.form-alert.form-alert-error li {
+    margin-bottom: 2px;
+}
+
+/* ── Password strength meter ── */
+.password-strength {
+    height: 4px;
+    background: #e8e8e8;
+    border-radius: 99px;
+    margin-top: 8px;
+    overflow: hidden;
+}
+
+.password-strength-bar {
+    height: 100%;
+    width: 0%;
+    border-radius: 99px;
+    transition: width 0.3s ease, background 0.3s ease;
+    background: #e53e3e;
+}
+
+.password-strength-label {
+    font-size: 11.5px;
+    font-weight: 600;
+    margin-top: 4px;
+    color: var(--text-muted);
+    min-height: 16px;
+    letter-spacing: 0.02em;
+}
+
+/* ── Form actions row ── */
+.form-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 1.5rem;
+    flex-wrap: wrap;
+}
+
+/* ── Buttons ── */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 22px;
+    border-radius: var(--radius-sm);
+    font-size: 14px;
+    font-weight: 600;
+    font-family: inherit;
+    cursor: pointer;
+    border: none;
+    text-decoration: none;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease, opacity 0.2s ease;
+    line-height: 1;
+    white-space: nowrap;
+}
+
+.btn:disabled {
+    opacity: 0.65;
+    cursor: not-allowed;
+    transform: none !important;
+    box-shadow: none !important;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, var(--primary-light), var(--primary));
+    color: var(--white);
+    box-shadow: 0 2px 8px rgba(0, 27, 228, 0.25);
+}
+
+.btn-primary:hover:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 18px rgba(0, 27, 228, 0.35);
+}
+
+.btn-primary:active:not(:disabled) {
+    transform: translateY(0);
+    box-shadow: 0 2px 6px rgba(0, 27, 228, 0.2);
+}
+
+.btn-secondary {
+    background: var(--white);
+    color: var(--text-secondary);
+    border: 1.5px solid var(--border);
+}
+
+.btn-secondary:hover:not(:disabled) {
+    background: #f4f6fb;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.btn-sm {
+    padding: 8px 16px;
+    font-size: 13px;
+}
+
+/* ── Responsive ── */
+@media (max-width: 600px) {
+    .add-admin-wrap {
+        padding: 0 0 1.5rem;
+    }
+
+    .form-actions {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .form-actions .btn {
+        justify-content: center;
+    }
+}

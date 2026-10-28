@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 2640.041 1226.7573">
+  <style>
+    .ripple {
+      fill: none;
+      stroke: #245bdb;
+      stroke-width: 1.5;
+      vector-effect: non-scaling-stroke;
+      opacity: .65;
+      animation: ripple 6s ease-out infinite;
+    }
+    .ripple-second { animation-delay: -3s; }
+    @keyframes ripple {
+      0% { r: 12; opacity: .75; }
+      80%, 100% { r: 85; opacity: 0; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .ripple { animation: none; r: 32; opacity: .5; }
+      .ripple-second { display: none; }
+    }
+  </style>
+  <circle class="ripple" cx="1815.0205" cy="559.3787" r="18"/>
+  <circle class="ripple ripple-second" cx="1815.0205" cy="559.3787" r="18"/>
+  <g fill="#245bdb">
+    <circle cx="1810.5205" cy="550.3787" r="3.6312"/>
+    <circle cx="1819.5205" cy="550.3787" r="3.6312"/>
+    <circle cx="1810.5205" cy="559.3787" r="3.6312"/>
+    <circle cx="1819.5205" cy="559.3787" r="3.6312"/>
+    <circle cx="1810.5205" cy="568.3787" r="3.6312"/>
+    <circle cx="1819.5205" cy="568.3787" r="3.6312"/>
+  </g>
+</svg>

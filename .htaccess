@@ -1,0 +1,46 @@
+# ============================================================
+#  1. Server Options
+# ============================================================
+Options +FollowSymLinks -MultiViews
+
+# ============================================================
+#  2. Enable Rewrite Engine
+# ============================================================
+RewriteEngine On
+
+# ============================================================
+#  3. CUSTOM ERROR PAGES (your existing rules)
+# ============================================================
+ErrorDocument 400 /CWT%20Site/error.php
+ErrorDocument 401 /CWT%20Site/error.php
+ErrorDocument 403 /CWT%20Site/error.php
+ErrorDocument 404 /CWT%20Site/error.php
+ErrorDocument 405 /CWT%20Site/error.php
+ErrorDocument 408 /CWT%20Site/error.php
+ErrorDocument 410 /CWT%20Site/error.php
+ErrorDocument 413 /CWT%20Site/error.php
+ErrorDocument 414 /CWT%20Site/error.php
+ErrorDocument 415 /CWT%20Site/error.php
+ErrorDocument 422 /CWT%20Site/error.php
+ErrorDocument 429 /CWT%20Site/error.php
+ErrorDocument 500 /CWT%20Site/error.php
+ErrorDocument 501 /CWT%20Site/error.php
+ErrorDocument 502 /CWT%20Site/error.php
+ErrorDocument 503 /CWT%20Site/error.php
+ErrorDocument 504 /CWT%20Site/error.php
+
+# ============================================================
+#  4. REMOVE .php EXTENSION (external redirect)
+#     /services.php  ->  /services   (301 permanent)
+# ============================================================
+RewriteCond %{THE_REQUEST} \s/+(.+?)\.php[\s?] [NC]
+RewriteRule ^ /%1 [R=301,L,NE]
+
+# ============================================================
+#  5. INTERNAL REWRITE (clean URL -> .php file)
+#     /services  ->  serves services.php  (URL stays clean)
+# ============================================================
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteCond %{REQUEST_FILENAME}.php -f
+RewriteRule ^(.+?)/?$ $1.php [L]
