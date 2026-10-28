@@ -15,7 +15,7 @@ $currentPage = ['project-detail.php' => 'products.php', 'insight-detail.php' => 
 })();
 </script>
 
-<link rel="stylesheet" href="<?= SITE_URL ?>/assets/css/navbar.css?v=<?= filemtime(__DIR__ . '/assets/css/navbar.css') ?>">
+<link rel="stylesheet" href="<?= SITE_URL ?>/assets/css/navbar.css?v=<?= filemtime(__DIR__ . '/../assets/css/navbar.css') ?>">
 <a class="cwt-skip-link" href="#main-content">Skip to content</a>
 <nav class="cwt-navbar" id="cwtNavbar" aria-label="Main navigation">
 	<div class="cwt-navbar-inner">

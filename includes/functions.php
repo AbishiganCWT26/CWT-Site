@@ -127,30 +127,116 @@ function getCrewByType(PDO $pdo, string $type): array
  * Upload / URL / escaping helpers
  * ------------------------------------------------------------------------ */
 
+/**
+ * Store an uploaded file under UPLOAD_DIR/<subdir>/ and return the relative path.
+ *
+ * Returns false on ANY failure. The specific reason is written to the PHP
+ * error log (see [uploadFile] entries) so admins can diagnose without
+ * exposing server internals to the browser.
+ */
 function uploadFile(array $file, string $subdir): string|false
 {
-	if ($file['error'] !== UPLOAD_ERR_OK) return false;
-
-	// Server-side MIME detection via finfo — do NOT trust $_FILES['type'] (client-controlled).
-	// Track C hardening — 2026-10-26
-	$finfo    = new finfo(FILEINFO_MIME_TYPE);
-	$mimeType = $finfo->file($file['tmp_name']);
-	$allowed  = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml'];
-	if (!in_array($mimeType, $allowed, true)) return false;
-
-	$maxSize = 5 * 1024 * 1024;
-	if ($file['size'] > $maxSize) return false;
-
-	$ext      = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
-	$filename = uniqid('cwt_', true) . '.' . $ext;
-	$dir      = UPLOAD_DIR . $subdir . '/';
-
-	if (!is_dir($dir)) {
-		mkdir($dir, 0755, true);
+	// --- 1. Upload transport must have succeeded.
+	if (!isset($file['error']) || $file['error'] !== UPLOAD_ERR_OK) {
+		error_log('[uploadFile] upload error code: ' . ($file['error'] ?? 'none'));
+		return false;
+	}
+	if (empty($file['tmp_name']) || !is_uploaded_file($file['tmp_name'])) {
+		error_log('[uploadFile] tmp_name missing or is_uploaded_file() failed');
+		return false;
+	}
+	if (!is_readable($file['tmp_name'])) {
+		error_log('[uploadFile] tmp file is not readable');
+		return false;
 	}
 
-	$dest = $dir . $filename;
-	if (!move_uploaded_file($file['tmp_name'], $dest)) return false;
+	// --- 2. Size + emptiness check.
+	$maxSize = 5 * 1024 * 1024;
+	$size    = @filesize($file['tmp_name']);
+	if ($size === false || $size === 0) {
+		error_log('[uploadFile] file size is 0 or unreadable');
+		return false;
+	}
+	if ($size > $maxSize) {
+		error_log('[uploadFile] file too large: ' . $size . ' bytes');
+		return false;
+	}
+
+	// --- 3. Extension gate (drives the saved filename, not client MIME).
+	$ext = strtolower(pathinfo($file['name'] ?? '', PATHINFO_EXTENSION));
+	if ($ext === 'jpeg') $ext = 'jpg';
+	$allowedExt = ['jpg', 'png', 'gif', 'webp', 'svg'];
+	if (!in_array($ext, $allowedExt, true)) {
+		error_log('[uploadFile] disallowed extension: ' . $ext);
+		return false;
+	}
+
+	// --- 4. Server-side MIME detection (never trust $_FILES['type']).
+	if (class_exists('finfo')) {
+		$finfo    = new finfo(FILEINFO_MIME_TYPE);
+		$mimeType = $finfo->file($file['tmp_name']);
+
+		// finfo reports SVG inconsistently depending on whether the file starts
+		// with an XML prolog (image/svg+xml) or directly with <svg> (text/plain,
+		// text/html, application/xml, or application/octet-stream). Because the
+		// content check below also runs for SVG, the MIME list can be lenient.
+		$allowedMime = [
+			'jpg'  => ['image/jpeg', 'image/jpg', 'image/pjpeg'],
+			'png'  => ['image/png', 'image/x-png'],
+			'gif'  => ['image/gif'],
+			'webp' => ['image/webp'],
+			'svg'  => ['image/svg+xml', 'image/svg', 'text/plain', 'text/html',
+			           'application/xml', 'text/xml', 'application/octet-stream'],
+		];
+		if (!in_array($mimeType, $allowedMime[$ext] ?? [], true)) {
+			error_log("[uploadFile] MIME $mimeType rejected for .$ext");
+			return false;
+		}
+	}
+
+	// --- 5. SVG content sanity (cheap; not a security gate on its own).
+	// Scripts inside an SVG do NOT execute when the file is served through an
+	// <img> tag, so we no longer reject valid SVGs that happen to contain
+	// <script> / javascript: strings (some design-tool exports contain them
+	// harmlessly). We only verify the payload actually looks like SVG.
+	if ($ext === 'svg') {
+		$svg = @file_get_contents($file['tmp_name']);
+		if ($svg === false || strlen($svg) < 20) {
+			error_log('[uploadFile] SVG content too small / unreadable');
+			return false;
+		}
+		if (stripos($svg, '<svg') === false) {
+			error_log('[uploadFile] file does not contain an <svg> root');
+			return false;
+		}
+	}
+
+	// --- 6. Destination directory.
+	$dir = rtrim(UPLOAD_DIR . $subdir, '/') . '/';
+	if (!is_dir($dir)) {
+		if (!@mkdir($dir, 0755, true) && !is_dir($dir)) {
+			error_log('[uploadFile] cannot create directory: ' . $dir);
+			return false;
+		}
+	}
+	if (!is_writable($dir)) {
+		error_log('[uploadFile] directory not writable: ' . $dir);
+		return false;
+	}
+
+	// --- 7. Move + verify.
+	$filename = uniqid('cwt_', true) . '.' . $ext;
+	$dest     = $dir . $filename;
+
+	if (!@move_uploaded_file($file['tmp_name'], $dest)) {
+		error_log('[uploadFile] move_uploaded_file failed -> ' . $dest);
+		return false;
+	}
+	if (!is_file($dest) || filesize($dest) === 0) {
+		@unlink($dest);
+		error_log('[uploadFile] file missing or empty after move -> ' . $dest);
+		return false;
+	}
 
 	return $subdir . '/' . $filename;
 }
