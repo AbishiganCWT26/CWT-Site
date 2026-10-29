@@ -18,6 +18,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 		$num = trim((string)($_POST['num'] ?? ''));
 		$title = trim((string)($_POST['title'] ?? ''));
 		$description = trim((string)($_POST['description'] ?? ''));
+		$short_description = trim((string)($_POST['short_description'] ?? ''));
 		$consultant_name = trim((string)($_POST['consultant_name'] ?? ''));
 		$consultant_role = trim((string)($_POST['consultant_role'] ?? ''));
 		$sort_order = (int)($_POST['sort_order'] ?? 0);
@@ -29,11 +30,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 			$err = 'Service title is required.';
 		} else {
 			if ($id > 0) {
-				$pdo->prepare("UPDATE services SET num=?, title=?, description=?, consultant_name=?, consultant_role=?, sort_order=?, is_active=? WHERE id=?")
-					->execute([$num, $title, $description, $consultant_name, $consultant_role, $sort_order, $is_active, $id]);
+				$pdo->prepare("UPDATE services SET num=?, title=?, description=?, short_description=?, consultant_name=?, consultant_role=?, sort_order=?, is_active=? WHERE id=?")
+					->execute([$num, $title, $description, $short_description, $consultant_name, $consultant_role, $sort_order, $is_active, $id]);
 			} else {
-				$pdo->prepare("INSERT INTO services (num, title, description, consultant_name, consultant_role, sort_order, is_active) VALUES (?,?,?,?,?,?,?)")
-					->execute([$num, $title, $description, $consultant_name, $consultant_role, $sort_order, $is_active]);
+				$pdo->prepare("INSERT INTO services (num, title, description, short_description, consultant_name, consultant_role, sort_order, is_active) VALUES (?,?,?,?,?,?,?,?)")
+					->execute([$num, $title, $description, $short_description, $consultant_name, $consultant_role, $sort_order, $is_active]);
 				$id = (int)$pdo->lastInsertId();
 			}
 			$pdo->prepare("DELETE FROM service_leads WHERE service_id = ?")->execute([$id]);
@@ -182,13 +183,16 @@ include __DIR__ . '/layout_top.php';
 			</div>
 			<?php else: ?>
 			<div class="svc-grid">
-				<?php foreach ($services as $k => $s): ?>
+				<?php foreach ($services as $k => $s):
+					$tileDesc = trim((string)($s['short_description'] ?? ''));
+					if ($tileDesc === '') $tileDesc = (string)($s['description'] ?? '');
+				?>
 				<article class="svc-tile" style="--i:<?= (int)$k ?>">
 					<div class="svc-tile-main">
 						<span class="svc-num"><?= e($s['num']) ?></span>
 						<div class="svc-info">
 							<h3 title="<?= e($s['title']) ?>"><?= e($s['title']) ?></h3>
-							<p><?= e(mb_substr($s['description'] ?? '', 0, 100)) ?><?= mb_strlen($s['description'] ?? '') > 100 ? '…' : '' ?></p>
+							<p><?= e(mb_substr($tileDesc, 0, 100)) ?><?= mb_strlen($tileDesc) > 100 ? '…' : '' ?></p>
 						</div>
 					</div>
 					<div class="svc-tile-foot">
@@ -311,6 +315,10 @@ include __DIR__ . '/layout_top.php';
 				<div class="svc-field">
 					<label class="svc-label">Description</label>
 					<textarea name="description" class="svc-input" rows="3"></textarea>
+				</div>
+				<div class="svc-field">
+					<label class="svc-label">Short Description</label>
+					<input type="text" name="short_description" class="svc-input" maxlength="255" placeholder="Shown on cards / tiles">
 				</div>
 				<div class="svc-row svc-row-2">
 					<div class="svc-field">
