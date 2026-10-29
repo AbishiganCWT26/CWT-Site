@@ -21,11 +21,6 @@ usort($categories, function($a, $b) {
 	return $b['project_count'] - $a['project_count'];
 });
 
-function decideGridSpan(int $count): int {
-	if ($count <= 1) return 1;
-	return 2;
-}
-
 $pageTitle = 'Our Digital Solutions Portfolio — Creative Web Technologies';
 ?>
 <!DOCTYPE html>
@@ -160,82 +155,50 @@ $pageTitle = 'Our Digital Solutions Portfolio — Creative Web Technologies';
 				<p class="prd-empty-text">Solutions coming soon. <a href="<?= ADMIN_URL ?>/solution-category.php">Add via admin</a>.</p>
 			</div>
 		<?php else: ?>
-			<div class="prd-portfolio-grid">
-
-				<?php foreach ($categories as $solution): ?>
+			<div class="prd-portfolio-rows">
+				<?php foreach ($categories as $index => $solution): ?>
 				<?php
-					$count        = (int)$solution['project_count'];
-					$span         = decideGridSpan($count);
-					$isPaginated  = $count >= 3;
-					$itemIndex    = 0;
+					$rowSide       = ($index % 2 === 0) ? 'left' : 'right';
+					$projects      = $solution['projects'];
+					$projectCount  = count($projects);
+					$isSingle      = ($projectCount === 1);
+					$fullWidthLast = ($projectCount > 1 && $projectCount % 2 !== 0);
 				?>
-				<div class="prd-cat-card prd-span-<?= $span ?> reveal"
-					style="--cat-color: <?= e($solution['color']) ?>;">
-
-					<div class="prd-cat-card-head">
-						<span class="prd-cat-icon">
-							<i class="fas <?= e($solution['icon']) ?>" aria-hidden="true"></i>
-						</span>
-						<h2 class="prd-cat-title"><?= e(strtoupper($solution['name'])) ?></h2>
-					</div>
-
-					<?php if (!empty($solution['description'])): ?>
-					<p class="prd-cat-desc"><?= e($solution['description']) ?></p>
-					<?php endif; ?>
-
-					<?php if (empty($solution['projects'])): ?>
-						<div class="prd-cat-empty">
-							<span class="prd-cat-empty-icon"><i class="fas fa-folder-open" aria-hidden="true"></i></span>
-							<span class="prd-cat-empty-text">No projects yet.</span>
-						</div>
-					<?php else: ?>
-						<div class="prd-cat-items">
-							
-							<?php foreach ($solution['projects'] as $item): ?>
-							<?php
-								$isHidden    = ($isPaginated && $itemIndex >= 2) ? 'prd-item-hidden' : '';
-								$projectImageUrl = projectImageUrl($item);
-                                $hasImg = $projectImageUrl !== '';
-                                $projectLogoUrl = $hasImg && !empty($item['product_logo_path']) ? imgUrl($item['product_logo_path']) : '';
-								$bgStyle     = $hasImg ? 'style="--item-bg-image: url(\'' . e($projectImageUrl) . '\');"' : '';
-							?>
-							<article class="prd-item <?= $isHidden ?> <?= $projectLogoUrl ? 'prd-item-has-logo' : '' ?>" data-project-index="<?= $itemIndex ?>" <?= $bgStyle ?>>
-                                <?php if ($projectLogoUrl): ?><span class="prd-project-logo"><img src="<?= e($projectLogoUrl) ?>" alt="<?= e($item['product_logo_name']) ?>" loading="lazy"></span><?php endif; ?>
-								<a href="project-detail.php?slug=<?= urlencode($item['slug']) ?>">
-								<h4 class="prd-item-title">
-									<?= e($item['project_name']) ?>
-								</h4>
-
-								<?php if (!empty($item['short_description'])): ?>
-								<p class="prd-item-desc"><?= e($item['short_description']) ?></p>
-								<?php endif; ?>
-
-								<a href="project-detail.php?slug=<?= urlencode($item['slug']) ?>" class="prd-item-btn">
-									<span>View More</span>
-									<i class="fas fa-arrow-right" aria-hidden="true"></i>
+				<div class="prd-row prd-row-<?= $rowSide ?> reveal" style="--cat-color: <?= e($solution['color']) ?>;">
+					<div class="prd-image-area">
+						<div class="prd-project-grid">
+							<?php if (empty($projects)): ?>
+							<div class="prd-project-card prd-project-card-empty prd-project-card-full">
+								<h4>No projects yet</h4>
+								<p>Coming soon</p>
+							</div>
+							<?php else: ?>
+								<?php foreach ($projects as $pIndex => $item): ?>
+								<?php
+									$isLast    = ($pIndex === $projectCount - 1);
+									$fullClass = ($isSingle || ($fullWidthLast && $isLast)) ? ' prd-project-card-full' : '';
+									$hasImg    = !empty($item['image_path']);
+									$bgStyle   = $hasImg ? 'style="--item-bg: url(\'' . e(imgUrl($item['image_path'])) . '\');"' : '';
+								?>
+								<a href="project-detail.php?slug=<?= urlencode($item['slug']) ?>" class="prd-project-card<?= $fullClass ?>" <?= $bgStyle ?>>
+									<h4><?= e($item['project_name']) ?></h4>
+									<?php if (!empty($item['short_description'])): ?>
+									<p><?= e($item['short_description']) ?></p>
+									<?php endif; ?>
 								</a>
-							</article>
-							<?php $itemIndex++; ?>
-							<?php endforeach; ?>
-							</a>
+								<?php endforeach; ?>
+							<?php endif; ?>
 						</div>
-
-						<?php if ($isPaginated): ?>
-						<button type="button"
-							class="prd-item-loadmore"
-							data-total="<?= $count ?>"
-							data-visible="2"
-							aria-label="View more projects in <?= e($solution['name']) ?>">
-							<span>View More Projects</span>
-							<i class="fas fa-chevron-down" aria-hidden="true"></i>
-						</button>
+					</div>
+					<div class="prd-text-area">
+						<h3><?= e(strtoupper($solution['name'])) ?></h3>
+						<div class="prd-line"></div>
+						<?php if (!empty($solution['description'])): ?>
+						<p><?= e($solution['description']) ?></p>
 						<?php endif; ?>
-
-					<?php endif; ?>
-
+					</div>
 				</div>
 				<?php endforeach; ?>
-
 			</div>
 		<?php endif; ?>
 	</div>

@@ -155,6 +155,21 @@ body.svc-page ol {
     border-radius: 50%;
     background: var(--primary);
     box-shadow: 0 0 0 3px rgba(0, 27, 228, 0.14);
+    animation: svcPulse 2.4s infinite;
+}
+
+@keyframes svcPulse {
+    0% {
+        box-shadow: 0 0 0 0 rgba(126, 160, 248, 0.7);
+    }
+
+    70% {
+        box-shadow: 0 0 0 9px rgba(126, 160, 248, 0);
+    }
+
+    100% {
+        box-shadow: 0 0 0 0 rgba(126, 160, 248, 0);
+    }
 }
 
 .svc-label i,
@@ -177,10 +192,24 @@ body.svc-page ol {
 .svc-sec-title em {
     font-style: normal;
     background: linear-gradient(100deg, var(--primary-light), var(--v-blue-500) 55%, var(--light-pink));
+    background-size: 200% auto;
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
     color: transparent;
+    animation: svcTitleGradient 6s ease infinite;
+}
+
+@keyframes svcTitleGradient {
+
+    0%,
+    100% {
+        background-position: 0% center;
+    }
+
+    50% {
+        background-position: 100% center;
+    }
 }
 
 .svc-sec-sub {
@@ -295,6 +324,19 @@ body.svc-page ol {
     border-radius: var(--radius-full);
     -webkit-backdrop-filter: blur(12px);
     backdrop-filter: blur(12px);
+    animation: svcHeroPillFloat 4s ease-in-out infinite;
+}
+
+@keyframes svcHeroPillFloat {
+
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(-4px);
+    }
 }
 
 .svc-hero-dot {
@@ -330,10 +372,24 @@ body.svc-page ol {
 
 .svc-hero-accent {
     background: linear-gradient(100deg, var(--light-pink) 0%, var(--v-blue-400) 45%, var(--primary-light) 100%);
+    background-size: 200% auto;
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
     color: transparent;
+    animation: svcHeroAccentShift 6s ease infinite;
+}
+
+@keyframes svcHeroAccentShift {
+
+    0%,
+    100% {
+        background-position: 0% center;
+    }
+
+    50% {
+        background-position: 100% center;
+    }
 }
 
 .svc-hero-text {
@@ -368,9 +424,23 @@ body.svc-page ol {
     font-weight: 800;
     letter-spacing: -0.02em;
     background: linear-gradient(120deg, #ffffff, #a5c5ff);
+    background-size: 200% auto;
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
+    animation: svcStatShimmer 3.5s ease infinite;
+}
+
+@keyframes svcStatShimmer {
+
+    0%,
+    100% {
+        background-position: 0% center;
+    }
+
+    50% {
+        background-position: 100% center;
+    }
 }
 
 .svc-hero-stat span {
@@ -779,6 +849,54 @@ body.svc-page ol {
     gap: 12px;
 }
 
+.industries-grid .reveal:nth-child(1) {
+    transition-delay: 0.02s;
+}
+
+.industries-grid .reveal:nth-child(2) {
+    transition-delay: 0.04s;
+}
+
+.industries-grid .reveal:nth-child(3) {
+    transition-delay: 0.06s;
+}
+
+.industries-grid .reveal:nth-child(4) {
+    transition-delay: 0.08s;
+}
+
+.industries-grid .reveal:nth-child(5) {
+    transition-delay: 0.1s;
+}
+
+.industries-grid .reveal:nth-child(6) {
+    transition-delay: 0.12s;
+}
+
+.industries-grid .reveal:nth-child(7) {
+    transition-delay: 0.14s;
+}
+
+.industries-grid .reveal:nth-child(8) {
+    transition-delay: 0.16s;
+}
+
+.industries-grid .reveal:nth-child(9) {
+    transition-delay: 0.18s;
+}
+
+.industries-grid .reveal:nth-child(10) {
+    transition-delay: 0.2s;
+}
+
+.industries-grid .reveal:nth-child(11) {
+    transition-delay: 0.22s;
+}
+
+.industries-grid .reveal:nth-child(12) {
+    transition-delay: 0.24s;
+}
+
 .industry-card {
     position: relative;
     isolation: isolate;
@@ -846,6 +964,24 @@ body.svc-page ol {
     border-radius: 12px;
     background: linear-gradient(140deg, rgba(26, 102, 255, 0.14), rgba(0, 27, 228, 0.06));
     border: 1px solid rgba(26, 102, 255, 0.18);
+}
+
+.industry-card:hover .industry-fallback {
+    animation: svcIndustryBounce 0.55s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes svcIndustryBounce {
+    0% {
+        transform: scale(1) rotate(0);
+    }
+
+    50% {
+        transform: scale(1.15) rotate(-8deg);
+    }
+
+    100% {
+        transform: scale(1) rotate(0);
+    }
 }
 
 .industry-name {
@@ -1255,6 +1391,10 @@ body.svc-page ol {
     padding: 4px 0;
 }
 
+.marquee-wrap:hover .marquee-track {
+    animation-play-state: paused;
+}
+
 .marquee-track {
     display: flex;
     gap: 44px;
@@ -1494,7 +1634,7 @@ body.svc-page ol {
     width: 38px;
     height: 38px;
     object-fit: contain;
-    transition: transform 0.45s cubic-bezier(0.34, 1.3, 0.5, 1);
+    transition: transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 .tech-logo-item:hover img {
@@ -1513,7 +1653,7 @@ body.svc-page ol {
     border-radius: 9px;
     background: linear-gradient(140deg, rgba(26, 102, 255, 0.14), rgba(0, 27, 228, 0.06));
     border: 1px solid rgba(26, 102, 255, 0.2);
-    transition: transform 0.45s cubic-bezier(0.34, 1.3, 0.5, 1);
+    transition: transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 .tech-logo-item:hover .tech-logo-placeholder {
@@ -2339,6 +2479,16 @@ body.svc-page ol {
         gap: 7px;
     }
 
+    .industry-card {
+        padding: 12px 6px;
+    }
+
+    .industry-media {
+        width: 38px;
+        height: 38px;
+        margin-bottom: 6px;
+    }
+
     .industry-name {
         font-size: 0.6rem;
         font-weight: 700;
@@ -2521,6 +2671,20 @@ body.svc-page ol {
         gap: 6px;
     }
 
+    .industry-card {
+        padding: 10px 5px;
+    }
+
+    .industry-media {
+        width: 34px;
+        height: 34px;
+        margin-bottom: 5px;
+    }
+
+    .industry-fallback {
+        font-size: 0.9rem;
+    }
+
     .industry-name {
         font-size: 0.5rem;
         font-weight: 700;
@@ -2665,7 +2829,11 @@ body.svc-page ol {
     .tech-tab[aria-selected="true"]::after,
     .orbit-dash,
     .hub::before,
-    .svc-hub-card {
+    .svc-hub-card,
+    .svc-hero-accent,
+    .svc-hero-pill,
+    .svc-hero-stat strong,
+    .svc-sec-title em {
         animation: none !important;
     }
 
@@ -2683,8 +2851,18 @@ body.svc-page ol {
     .svc-hub-ghost,
     .card,
     .svc-hub-pager-btn,
-    .svc-hub-pager-dot {
+    .svc-hub-pager-dot,
+    .industries-grid .reveal {
         transition-duration: 0.01ms;
+        transition-delay: 0s !important;
+    }
+
+    .industry-card:hover .industry-fallback {
+        animation: none !important;
+    }
+
+    .marquee-wrap:hover .marquee-track {
+        animation-play-state: running;
     }
 }
 
@@ -4499,6 +4677,19 @@ body.svc-page ol {
         transform var(--transition),
         box-shadow var(--transition);
     box-shadow: 0 6px 16px -8px rgba(0, 27, 228, 0.6);
+    animation: svcViewBtnPulse 3s ease-in-out infinite;
+}
+
+@keyframes svcViewBtnPulse {
+
+    0%,
+    100% {
+        box-shadow: 0 6px 16px -8px rgba(0, 27, 228, 0.6);
+    }
+
+    50% {
+        box-shadow: 0 10px 24px -6px rgba(0, 27, 228, 0.85), 0 0 0 4px rgba(0, 27, 228, 0.06);
+    }
 }
 
 .svc-hub-view-btn:hover {

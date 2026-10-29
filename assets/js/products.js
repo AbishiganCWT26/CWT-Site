@@ -84,7 +84,6 @@ document.addEventListener('DOMContentLoaded', function () {
                         placeMap(true);
                     }
                 } else if (mapArrived && entry.boundingClientRect.top > (entry.rootBounds?.top ?? 0)) {
-                    // Return only when scrolling back toward the header, not past the section.
                     mapArrived = false;
                     placeMap(true);
                 }
@@ -119,104 +118,6 @@ document.addEventListener('DOMContentLoaded', function () {
         revealObserver.observe(el);
     });
 
-    /* ============================================================
-       MOBILE ACCORDION — toggle category cards on tap/click
-       Only active on screens <= 639px.
-       ============================================================ */
-    const mobileMQ = window.matchMedia('(max-width: 639px)');
-    const catCards = document.querySelectorAll('.prd-cat-card');
-
-    function syncAccordionA11y() {
-        catCards.forEach(function (card) {
-            const title = card.querySelector('.prd-cat-title');
-            if (!title) return;
-            if (mobileMQ.matches) {
-                title.setAttribute('role', 'button');
-                title.setAttribute('tabindex', '0');
-                title.setAttribute('aria-expanded', card.classList.contains('open') ? 'true' : 'false');
-            } else {
-                title.removeAttribute('role');
-                title.removeAttribute('tabindex');
-                title.removeAttribute('aria-expanded');
-            }
-        });
-    }
-
-    function toggleCard(card) {
-        const title = card.querySelector('.prd-cat-title');
-        const isOpen = card.classList.toggle('open');
-        if (title) title.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
-        if (isOpen) {
-            setTimeout(function () {
-                card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-            }, 420);
-        }
-    }
-
-    catCards.forEach(function (card) {
-        const head = card.querySelector('.prd-cat-card-head');
-        const title = card.querySelector('.prd-cat-title');
-        if (!head || !title) return;
-
-        head.addEventListener('click', function (e) {
-            if (!mobileMQ.matches) return;
-            if (e.target.closest('a') || e.target.closest('button')) return;
-            toggleCard(card);
-        });
-
-        title.addEventListener('keydown', function (e) {
-            if (!mobileMQ.matches) return;
-            if (e.key === 'Enter' || e.key === ' ') {
-                e.preventDefault();
-                toggleCard(card);
-            }
-        });
-    });
-
-    syncAccordionA11y();
-    if (mobileMQ.addEventListener) {
-        mobileMQ.addEventListener('change', syncAccordionA11y);
-    } else if (mobileMQ.addListener) {
-        mobileMQ.addListener(syncAccordionA11y);
-    }
-
-    /* ============================================================
-       VIEW MORE PROJECTS — paginate items within each category card
-       Shows 2 items at a time.
-       ============================================================ */
-    document.querySelectorAll('.prd-item-loadmore').forEach(function (btn) {
-        btn.addEventListener('click', function () {
-            var card = btn.closest('.prd-cat-card');
-            if (!card) return;
-
-            var hiddenItems = card.querySelectorAll('.prd-item.prd-item-hidden');
-            if (hiddenItems.length === 0) {
-                btn.disabled = true;
-                btn.classList.add('is-exhausted');
-                return;
-            }
-
-            var toShow = Math.min(2, hiddenItems.length);
-            for (var i = 0; i < toShow; i++) {
-                var el = hiddenItems[i];
-                el.classList.remove('prd-item-hidden');
-                el.classList.remove('prd-item-reveal');
-                void el.offsetWidth;
-                el.classList.add('prd-item-reveal');
-            }
-
-            var remaining = card.querySelectorAll('.prd-item.prd-item-hidden');
-            if (remaining.length === 0) {
-                btn.disabled = true;
-                btn.classList.add('is-exhausted');
-                btn.style.display = 'none';
-            }
-        });
-    });
-
-    /* ============================================================
-       HERO STARFIELD CANVAS
-       ============================================================ */
     const heroCanvas = document.getElementById('heroCanvas');
     if (heroCanvas && heroCanvas.getContext) {
         (function () {
@@ -367,9 +268,6 @@ document.addEventListener('DOMContentLoaded', function () {
         })();
     }
 
-    /* ============================================================
-       CLIENT LOGOS + COUNTRIES MARQUEE
-       ============================================================ */
     const marqueeMedia = window.matchMedia('(max-width: 950px)');
 
     function setupMarquee(el) {
