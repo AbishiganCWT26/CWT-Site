@@ -150,6 +150,9 @@ if (!empty($_SESSION['flash_success'])) {
 // Always refresh mockups after any action
 $mockups = getProjectMockups($pdo, $projectId);
 
+$defaultBannerUrl = imgUrl($project['image_path'] ?? '');
+$bannerPreviewUrl = projectBannerUrl($project, $details);
+$hasCustomBanner = trim((string)($details['banner_image'] ?? '')) !== '';
 $pageTitle = 'Edit Project Content — ' . $project['project_name'];
 include __DIR__ . '/layout_top.php';
 ?>
@@ -255,10 +258,10 @@ include __DIR__ . '/layout_top.php';
 			<div class="admin-card-header"><h2>Banner Image</h2></div>
 			<div class="admin-card-body">
 				<div class="pe-banner-wrap">
-					<img id="bannerPreview" src="<?= imgUrl($details['banner_image'] ?? '') ?>" alt="Banner Preview" style="<?= empty($details['banner_image']) ? 'display:none;' : '' ?>">
-					<div class="pe-banner-empty" id="bannerEmpty" style="<?= empty($details['banner_image']) ? '' : 'display:none;' ?>">
+					<img id="bannerPreview" src="<?= e($bannerPreviewUrl) ?>" data-default-src="<?= e($defaultBannerUrl) ?>" alt="Banner Preview" style="<?= $bannerPreviewUrl === '' ? 'display:none;' : '' ?>">
+					<div class="pe-banner-empty" id="bannerEmpty" style="<?= $bannerPreviewUrl === '' ? '' : 'display:none;' ?>">
 						<i class="fa-solid fa-image"></i>
-						<span>No banner yet</span>
+						<span>Add a project image or a custom banner</span>
 					</div>
 					<label for="bannerInput" class="pe-banner-overlay">
 						<i class="fa-solid fa-cloud-arrow-up"></i>
@@ -267,7 +270,8 @@ include __DIR__ . '/layout_top.php';
 					<input type="file" name="banner_image" id="bannerInput" accept="image/*" hidden>
 				</div>
 				<input type="hidden" name="remove_banner" id="removeBannerFlag" value="0">
-				<button type="button" class="pe-remove-banner" id="removeBannerBtn">Remove banner</button>
+				<button type="button" class="pe-remove-banner" id="removeBannerBtn" <?= $hasCustomBanner ? '' : 'disabled' ?>>Use project image</button>
+                <p class="form-hint">Uses this project's image by default. Upload a custom banner to override it.</p>
 				<p class="form-hint">Recommended: 1600×900 JPG/PNG. Max 5MB.</p>
 			</div>
 		</div>

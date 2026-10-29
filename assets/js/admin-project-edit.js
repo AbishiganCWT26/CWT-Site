@@ -193,6 +193,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 bannerPreview.style.display = 'block';
                 if (bannerEmpty) bannerEmpty.style.display = 'none';
                 removeBannerFlag.value = '0';
+                if (removeBannerBtn) removeBannerBtn.disabled = false;
             };
             reader.readAsDataURL(bannerInput.files[0]);
         });
@@ -200,9 +201,11 @@ document.addEventListener('DOMContentLoaded', function () {
 
     if (removeBannerBtn) {
         removeBannerBtn.addEventListener('click', function () {
-            bannerPreview.src = '';
-            bannerPreview.style.display = 'none';
-            if (bannerEmpty) bannerEmpty.style.display = 'flex';
+            var defaultSrc = bannerPreview.dataset.defaultSrc || '';
+            bannerPreview.src = defaultSrc;
+            bannerPreview.style.display = defaultSrc ? 'block' : 'none';
+            if (bannerEmpty) bannerEmpty.style.display = defaultSrc ? 'none' : 'flex';
+            removeBannerBtn.disabled = true;
             if (bannerInput) bannerInput.value = '';
             removeBannerFlag.value = '1';
         });

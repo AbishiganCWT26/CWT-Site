@@ -6,6 +6,11 @@ require_once __DIR__ . '/../includes/auth.php';
 if (!defined('ADMIN_URL')) define('ADMIN_URL', SITE_URL . '/admin');
 requireAuth();
 
+$productLogos = getProducts($pdo);
+$availableLogos = [];
+foreach ($productLogos as $productLogo) {
+    if (!empty($productLogo['logo_path'])) $availableLogos[(int)$productLogo['id']] = $productLogo;
+}
 $msg = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -16,30 +21,36 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 		$category_id = (int)($_POST['category_id'] ?? 0);
 		$name        = trim($_POST['project_name'] ?? '');
 		$desc        = trim($_POST['short_description'] ?? '');
+        $logoProductId = (int)($_POST['logo_product_id'] ?? 0);
 		$sort_order  = (int)($_POST['sort_order'] ?? 0);
 		$is_active   = isset($_POST['is_active']) ? 1 : 0;
 
 		$imagePath = '';
 		if ($action === 'edit') {
-			$existing = $pdo->prepare("SELECT image_path, slug FROM projects WHERE id=?");
+			$existing = $pdo->prepare("SELECT image_path, slug, logo_product_id FROM projects WHERE id=?");
 			$existing->execute([$id]);
 			$row = $existing->fetch();
 			$imagePath = $row['image_path'] ?? '';
+            if (!array_key_exists('logo_product_id', $_POST)) $logoProductId = (int)($row['logo_product_id'] ?? 0);
 		}
+
+        if (($_POST['remove_image'] ?? '0') === '1') $imagePath = '';
 
 		if (!empty($_FILES['image']['name'])) {
 			$uploaded = uploadFile($_FILES['image'], 'projects');
 			if ($uploaded) $imagePath = $uploaded;
 		}
 
-		if ($name === '' || $category_id <= 0) {
+        if ($logoProductId > 0 && !isset($availableLogos[$logoProductId])) {
+            $msg = 'error_logo';
+        } elseif ($name === '' || $category_id <= 0) {
 			$msg = 'error_required';
 		} else {
 			$slug = availableProjectSlug($pdo, $name, $id);
 
 			if ($action === 'add') {
-				$pdo->prepare("INSERT INTO projects (category_id, project_name, short_description, image_path, slug, sort_order, is_active) VALUES (?,?,?,?,?,?,?)")
-					->execute([$category_id, $name, $desc, $imagePath, $slug, $sort_order, $is_active]);
+				$pdo->prepare("INSERT INTO projects (category_id, project_name, short_description, image_path, logo_product_id, slug, sort_order, is_active) VALUES (?,?,?,?,?,?,?,?)")
+					->execute([$category_id, $name, $desc, $imagePath, $logoProductId ?: null, $slug, $sort_order, $is_active]);
 				$msg = 'added';
 			} else {
                 $pdo->beginTransaction();
@@ -47,8 +58,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $oldSlug = $pdo->prepare('SELECT slug FROM projects WHERE id = ? FOR UPDATE');
                     $oldSlug->execute([$id]);
                     rememberProjectSlug($pdo, $id, (string)$oldSlug->fetchColumn());
-				$pdo->prepare("UPDATE projects SET category_id=?, project_name=?, short_description=?, image_path=?, slug=?, sort_order=?, is_active=? WHERE id=?")
-					->execute([$category_id, $name, $desc, $imagePath, $slug, $sort_order, $is_active, $id]);
+				$pdo->prepare("UPDATE projects SET category_id=?, project_name=?, short_description=?, image_path=?, logo_product_id=?, slug=?, sort_order=?, is_active=? WHERE id=?")
+					->execute([$category_id, $name, $desc, $imagePath, $logoProductId ?: null, $slug, $sort_order, $is_active, $id]);
                     $pdo->commit();
                 } catch (Throwable $error) {
                     if ($pdo->inTransaction()) $pdo->rollBack();
@@ -124,6 +135,8 @@ while ($row = $contentStmt->fetch()) {
 
 <?php if ($msg === 'added' || $msg === 'updated' || $msg === 'deleted'): ?>
 <div class="alert alert-success" data-auto-dismiss="2600">Project <?= $msg ?> successfully.</div>
+<?php elseif ($msg === 'error_logo'): ?>
+<div class="alert alert-danger">Please select a product with an uploaded logo, or choose No product logo.</div>
 <?php elseif ($msg === 'error_required'): ?>
 <div class="alert alert-danger" data-auto-dismiss="3000">Project name and category are required.</div>
 <?php endif; ?>
@@ -189,8 +202,24 @@ while ($row = $contentStmt->fetch()) {
 				<div class="form-group">
 					<label class="form-label">Project Image</label>
 					<input type="file" name="image" class="form-control-file" accept="image/*" data-preview="projImg">
-					<img id="projImg" src="<?= imgUrl($editProj['image_path'] ?? '') ?>" class="img-preview" style="<?= empty($editProj['image_path']) ? 'display:none;' : '' ?>">
-					<div class="form-hint">Recommended: 1200×600 JPG/PNG. Max 5MB.</div>
+					<div class="project-image-preview" id="projectImagePreview" <?= projectImageUrl($editProj ?? []) === '' ? 'hidden' : '' ?>>
+                        <img id="projImg" src="<?= e(projectImageUrl($editProj ?? [])) ?>" data-default-src="<?= e(imgUrl($editProj['fallback_banner_image'] ?? '')) ?>" data-custom="<?= empty($editProj['image_path']) ? '0' : '1' ?>" class="img-preview" style="<?= projectImageUrl($editProj ?? []) === '' ? 'display:none;' : '' ?>">
+                        <span class="project-image-logo" id="projectLogoBadge" hidden><img id="projectLogoOverlay" src="" alt=""></span>
+                    </div>
+                    <input type="hidden" name="remove_image" id="removeProjectImageFlag" value="0">
+                    <button type="button" class="btn btn-secondary btn-sm project-image-remove" id="removeProjectImageBtn" aria-controls="projectImagePreview" <?= empty($editProj['image_path']) ? 'hidden' : '' ?>>Remove project image</button>
+                    <div class="form-group project-logo-field">
+                        <label class="form-label" for="projectLogoSelect">Product logo</label>
+                        <select id="projectLogoSelect" name="logo_product_id" class="form-control">
+                            <option value="0" data-logo="">No product logo</option>
+                            <?php foreach ($productLogos as $logo): ?>
+                            <option value="<?= (int)$logo['id'] ?>" data-logo="<?= e(imgUrl($logo['logo_path'] ?? '')) ?>" <?= (int)($editProj['logo_product_id'] ?? 0) === (int)$logo['id'] ? 'selected' : '' ?> <?= empty($logo['logo_path']) ? 'disabled' : '' ?>><?= e($logo['product_name']) ?><?= empty($logo['logo_path']) ? ' (no logo uploaded)' : '' ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                        <div class="form-hint">The selected logo appears in the top-right of the project image. Manage these logos in Products.</div>
+                    </div>
+					<div class="form-hint">Uses the project banner when no separate project image is uploaded.</div>
+                    <div class="form-hint">Recommended: 1200×600 JPG/PNG. Max 5MB.</div>
 				</div>
 				<div>
 					<div class="form-group">

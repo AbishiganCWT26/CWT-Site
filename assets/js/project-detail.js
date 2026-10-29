@@ -1,4 +1,4 @@
-/* Case-study motion, manual monitor controls, and an automatic preview rail. */
+/* Case-study motion, static previews, and a three-second monitor slideshow. */
 (function () {
     'use strict';
     function init() {
@@ -49,7 +49,7 @@
         let current = 0;
         let imageAnimation = null;
         const pad = number => String(number).padStart(2, '0');
-        function select(index) {
+        function select(index, manual = true) {
             current = (index + urls.length) % urls.length;
             const selected = current;
             imageAnimation?.cancel();
@@ -71,6 +71,7 @@
                 if (selected !== current || motion.matches || !image.animate) return;
                 imageAnimation = image.animate([{ opacity: .4 }, { opacity: 1 }], { duration: 180, easing: 'ease-out' });
             }).catch(() => {});
+            if (manual) scheduleSlides();
         }
         thumbs.forEach((thumb, index) => thumb.addEventListener('click', event => { event.preventDefault(); select(index); }));
         gallery.querySelector('[data-gallery-prev]').addEventListener('click', () => select(current - 1));
@@ -79,6 +80,7 @@
         if (dialog && typeof dialog.showModal === 'function') {
             openLink.addEventListener('click', event => {
                 event.preventDefault();
+                stopSlides();
                 dialog.showModal();
                 document.documentElement.classList.add('pd-viewer-open');
             });
@@ -93,76 +95,42 @@
             });
             if (urls.length < 2) dialog.querySelectorAll('[data-dialog-prev],[data-dialog-next]').forEach(button => button.hidden = true);
         }
-        // Keep small previews moving beside the monitor without changing its screen.
+        // Static previews remain manually scrollable beside the monitor.
         const rail = document.querySelector('[data-preview-scroll]');
         const computer = gallery.querySelector('.pd-computer');
         if (rail && computer) {
-            let frame = 0, previous = 0, position = 0, cycle = 0;
-            let visible = !('IntersectionObserver' in window), hovered = false, touching = false;
-            const canRun = () => urls.length > 1 && cycle > 0 && visible && !motion.matches &&
-                !document.hidden && !hovered && !touching && !(rail.contains(document.activeElement) && document.activeElement.matches(':focus-visible')) && !dialog?.open;
-            function stop() { cancelAnimationFrame(frame); frame = 0; previous = 0; }
-            function tick(time) {
-                frame = 0;
-                if (!canRun()) { previous = 0; return; }
-                const delta = previous ? Math.min(time - previous, 64) : 0;
-                previous = time;
-                position = (position + delta * .022) % cycle;
-                rail.scrollTop = position;
-                frame = requestAnimationFrame(tick);
-            }
-            function sync() {
-                stop();
-                position = rail.scrollTop;
-                if (canRun()) frame = requestAnimationFrame(tick);
-            }
-            function measure() {
-                stop();
+            function fitPreviewRail() {
                 const height = computer.getBoundingClientRect().height;
-                if (!height) return;
-                rail.parentElement.style.setProperty('--pd-preview-height', height + 'px');
-                rail.querySelectorAll('[data-preview-clone]').forEach(clone => clone.remove());
-                rail.scrollTop = 0; position = 0; cycle = 0;
-                if (urls.length > 1 && !motion.matches) {
-                    function addCopies() {
-                        thumbs.forEach(thumb => {
-                            const clone = thumb.cloneNode(true);
-                            clone.dataset.previewClone = '';
-                            clone.setAttribute('aria-hidden', 'true');
-                            clone.tabIndex = -1;
-                            clone.querySelectorAll('img').forEach(img => img.loading = 'eager');
-                            rail.appendChild(clone);
-                        });
-                    }
-                    addCopies();
-                    cycle = rail.querySelector('[data-preview-clone]').offsetTop - thumbs[0].offsetTop;
-                    let groups = 2;
-                    while (cycle > 0 && rail.scrollHeight < height + cycle + 20 && groups < 20) { addCopies(); groups++; }
-                }
-                sync();
+                if (height) rail.parentElement.style.setProperty('--pd-preview-height', height + 'px');
             }
-            rail.addEventListener('click', event => {
-                const clone = event.target.closest('[data-preview-clone]');
-                if (!clone) return;
-                event.preventDefault();
-                select(Number(clone.dataset.screenIndex));
-            });
-            rail.addEventListener('pointerenter', event => { if (event.pointerType !== 'touch') { hovered = true; sync(); } });
-            rail.addEventListener('pointerleave', () => { hovered = false; sync(); });
-            rail.addEventListener('focusin', sync);
-            rail.addEventListener('focusout', () => queueMicrotask(sync));
-            rail.addEventListener('pointerdown', () => { touching = true; sync(); }, { passive: true });
-            window.addEventListener('pointerup', () => { touching = false; sync(); }, { passive: true });
-            window.addEventListener('pointercancel', () => { touching = false; sync(); }, { passive: true });
-            rail.addEventListener('scroll', () => { if (!frame) position = rail.scrollTop; }, { passive: true });
-            document.addEventListener('visibilitychange', sync);
-            dialog?.addEventListener('close', sync);
-            motion.addEventListener('change', measure);
-            if ('ResizeObserver' in window) new ResizeObserver(measure).observe(computer);
-            else window.addEventListener('resize', measure, { passive: true });
-            if ('IntersectionObserver' in window) new IntersectionObserver(entries => { visible = entries[0].isIntersecting; sync(); }).observe(rail);
-            measure();
+            if ('ResizeObserver' in window) new ResizeObserver(fitPreviewRail).observe(computer);
+            else window.addEventListener('resize', fitPreviewRail, { passive: true });
+            fitPreviewRail();
         }
+
+        // Only the computer display advances automatically, every three seconds.
+        let slideTimer = 0;
+        let showcaseVisible = !('IntersectionObserver' in window);
+        function stopSlides() { clearTimeout(slideTimer); slideTimer = 0; }
+        function scheduleSlides() {
+            stopSlides();
+            const focused = document.activeElement?.matches(':focus-visible') &&
+                (gallery.contains(document.activeElement) || rail?.contains(document.activeElement));
+            if (urls.length < 2 || !showcaseVisible || motion.matches || document.hidden || dialog?.open || focused) return;
+            slideTimer = setTimeout(() => { select(current + 1, false); scheduleSlides(); }, 3000);
+        }
+        document.addEventListener('visibilitychange', scheduleSlides);
+        motion.addEventListener('change', scheduleSlides);
+        dialog?.addEventListener('close', scheduleSlides);
+        [gallery, rail].filter(Boolean).forEach(element => {
+            element.addEventListener('focusin', scheduleSlides);
+            element.addEventListener('focusout', () => queueMicrotask(scheduleSlides));
+        });
+        if ('IntersectionObserver' in window) new IntersectionObserver(entries => {
+            showcaseVisible = entries[0].isIntersecting;
+            scheduleSlides();
+        }, { threshold: .15 }).observe(gallery);
+        scheduleSlides();
         document.addEventListener('keydown', event => {
             const inGallery = event.target.closest?.('.pd-gallery,.pd-thumbnails');
             if (!dialog?.open && !inGallery) return;

@@ -1794,3 +1794,15 @@ body.prd-page a {
         margin-top: 20px;
     }
 }
+/* Product logos are independent of the uploaded project background. */
+.prd-item-has-logo .prd-item-title,.prd-item-has-logo .prd-item-desc { padding-right:66px; }
+.prd-item .prd-project-logo { position:absolute;top:8px;right:8px;z-index:2;display:grid;place-items:center;width:60px;height:42px;padding:5px;border-radius:0;background:transparent;box-shadow:none;pointer-events:none; }
+.prd-item .prd-project-logo img { display:block;width:100%;height:100%;object-fit:contain; }
+/* Clip both image layers at the card edge, without a second rounded inset. */
+.prd-page .prd-item::before,
+.prd-page .prd-item::after {
+    inset:-1px;
+    width:auto;
+    height:auto;
+    border-radius:0;
+}

@@ -101,3 +101,24 @@ img {
     pointer-events: none;
     -webkit-tap-highlight-color: transparent;
 }
+
+.project-image-preview { position:relative;width:min(100%,360px);overflow:hidden;border:1px solid #d7e2f4;border-radius:12px;background:#f3f7ff;margin-top:12px; }
+.project-image-preview[hidden],.project-image-logo[hidden] { display:none; }
+.project-image-preview #projImg { display:block;width:100%;max-width:none;max-height:220px;object-fit:cover;margin:0;border:0;border-radius:0; }
+.project-image-logo { position:absolute;top:10px;right:10px;width:72px;height:48px;display:grid;place-items:center;padding:6px;border-radius:0;background:transparent;box-shadow:none; }
+.project-image-logo img { width:100%;height:100%;object-fit:contain; }
+.project-logo-field { margin-top:18px; }
+.project-logo-picker { position:relative; }
+.project-logo-trigger { width:100%;display:flex;align-items:center;gap:12px;text-align:left;border:1px solid #d5dfef;border-radius:9px;background:#fff;padding:9px 12px;color:#192944;font:inherit;cursor:pointer; }
+.project-logo-trigger img { width:42px;height:30px;object-fit:contain;flex-shrink:0; }
+.project-logo-trigger img[hidden] { display:none; }
+.project-logo-trigger > span { flex:1;min-width:0;font-size:12px; }
+.project-logo-trigger::after { content:'\25BE';color:#6a7e9e; }
+.project-logo-options { position:absolute;top:calc(100% + 6px);left:0;right:0;z-index:30;max-height:300px;overflow-y:auto;padding:5px;border:1px solid #d5dfef;border-radius:10px;background:#fff;box-shadow:0 12px 30px #12346b24; }
+.project-logo-options[hidden] { display:none; }
+.project-logo-option { width:100%;display:flex;align-items:center;gap:12px;padding:9px;border:0;border-radius:6px;background:#fff;color:#192944;text-align:left;font:inherit;font-size:11px;cursor:pointer; }
+.project-logo-option > img { width:46px;height:32px;object-fit:contain;flex-shrink:0; }
+.project-logo-option[aria-selected="true"],.project-logo-option:hover,.project-logo-option:focus-visible { background:#eaf2ff; }
+.project-logo-trigger:focus-visible,.project-logo-option:focus-visible { outline:2px solid #245bdb;outline-offset:-2px; }
+.project-image-remove { margin-top:10px;color:#b4233a; }
+.project-image-remove[hidden] { display:none; }

@@ -12,7 +12,7 @@ if ($slug !== $project['slug']) {
 $details = $project['details'] ?? [];
 $content = $details['content'] ?? '';
 $hasContent = trim(strip_tags($content)) !== '' || preg_match('/<img\b/i', $content);
-$bannerImg = imgUrl(($details['banner_image'] ?? '') ?: ($project['image_path'] ?? ''));
+$bannerImg = projectBannerUrl($project, $details);
 $mockupUrls = getProjectMockupUrls($pdo, (int)$project['id']);
 $techList = array_filter(array_map('trim', explode(',', $details['technologies'] ?? '')));
 $liveUrl = $details['live_site_url'] ?? '';
@@ -26,10 +26,13 @@ if ($hasContent) {
     $wrapper = $doc->getElementById('pd-rich-content');
     if ($wrapper) {
         $headingIndex = 0;
-        foreach ($wrapper->getElementsByTagName('h2') as $heading) {
+        $xpath = new DOMXPath($doc);
+        foreach ($xpath->query('.//*[self::h1 or self::h2 or self::h3]', $wrapper) as $heading) {
+            $headingTitle = trim(preg_replace('/\s+/u', ' ', $heading->textContent));
+            if ($headingTitle === '') continue;
             $id = 'project-section-' . ++$headingIndex;
             $heading->setAttribute('id', $id);
-            $sectionLinks[] = ['id' => $id, 'title' => trim($heading->textContent)];
+            $sectionLinks[] = ['id' => $id, 'title' => $headingTitle, 'level' => (int)substr($heading->tagName, 1)];
         }
         $content = '';
         foreach ($wrapper->childNodes as $child) $content .= $doc->saveHTML($child);
@@ -37,12 +40,9 @@ if ($hasContent) {
     libxml_clear_errors();
     libxml_use_internal_errors($previous);
 }
-$stmt = $pdo->prepare('SELECT * FROM projects WHERE category_id = ? AND id != ? AND is_active = 1 ORDER BY sort_order ASC LIMIT 3');
+$stmt = $pdo->prepare('SELECT p.*, d.banner_image AS fallback_banner_image, logo.logo_path AS product_logo_path, logo.product_name AS product_logo_name FROM projects p LEFT JOIN project_details d ON d.project_id=p.id LEFT JOIN products logo ON logo.id=p.logo_product_id WHERE p.category_id = ? AND p.id != ? AND p.is_active = 1 ORDER BY p.sort_order ASC LIMIT 3');
 $stmt->execute([$project['category_id'], $project['id']]);
 $relatedProjects = $stmt->fetchAll();
-$nameParts = preg_split('/\s+/', trim($project['project_name']));
-$titleAccent = count($nameParts) > 1 ? array_pop($nameParts) : '';
-$titleMain = implode(' ', $nameParts);
 $pageTitle = $project['project_name'];
 ?>
 <!DOCTYPE html>
@@ -65,11 +65,12 @@ $pageTitle = $project['project_name'];
     <?php if ($bannerImg): ?><img class="pd-masthead-image" src="<?= e($bannerImg) ?>" alt="<?= e($project['project_name']) ?> project overview" fetchpriority="high"><?php endif; ?>
     <div class="pd-masthead-shade" aria-hidden="true"></div>
     <div class="pd-masthead-inner">
+        <?php if ($bannerImg && !empty($project['product_logo_path'])): ?><span class="pd-project-logo"><img src="<?= e(imgUrl($project['product_logo_path'])) ?>" alt="<?= e($project['product_logo_name']) ?>"></span><?php endif; ?>
         <a href="<?= SITE_URL ?>/products" class="pd-back"><span aria-hidden="true">&larr;</span> Back to portfolio</a>
         <div class="pd-hero-top">
             <div>
                 <span class="pd-eyebrow"><span aria-hidden="true"></span><?= e($project['category_name'] ?? 'Our work') ?></span>
-                <h1 class="pd-title"><?= e($titleMain) ?><?php if ($titleAccent): ?><span><?= e($titleAccent) ?></span><?php endif; ?></h1>
+                <h1 class="pd-title"><?= e($project['project_name']) ?></h1>
             </div>
             <div class="pd-hero-summary">
                 <?php if (!empty($project['short_description'])): ?><p class="pd-client-label">A SOLUTION FOR</p><p class="pd-client"><?= e($project['short_description']) ?></p><?php endif; ?>
@@ -94,18 +95,13 @@ $pageTitle = $project['project_name'];
 
     <?php if ($hasContent): ?>
     <section class="pd-story pd-reveal" id="project-story" aria-label="Project details">
-        <aside class="pd-sidebar"><nav class="pd-toc" aria-label="In this project"><span class="pd-eyebrow">IN THIS PROJECT</span><a href="#project-overview">Overview</a><?php foreach ($sectionLinks as $link): ?><a href="#<?= e($link['id']) ?>"><?= e($link['title']) ?></a><?php endforeach; ?><?php if ($mockupUrls): ?><a href="#project-showcase">The experience</a><?php endif; ?></nav><div class="pd-side-note"><span aria-hidden="true">&nearr;</span><p>Have a similar challenge?</p><a href="<?= SITE_URL ?>/contact">Let's build what's next &rarr;</a></div></aside>
+        <aside class="pd-sidebar"><nav class="pd-toc" aria-label="In this project"><span class="pd-eyebrow">IN THIS PROJECT</span><a href="#project-overview">Overview</a><?php foreach ($sectionLinks as $link): ?><a href="#<?= e($link['id']) ?>" data-heading-level="<?= $link['level'] ?>"><?= e($link['title']) ?></a><?php endforeach; ?><?php if ($mockupUrls): ?><a href="#project-showcase">The experience</a><?php endif; ?></nav></aside>
         <article class="content-section pd-reading"><?= $content ?></article>
     </section>
     <?php else: ?>
     <section class="pd-empty"><span class="pd-eyebrow">THE PROJECT</span><h2>More of the story, coming soon.</h2><p>Explore our portfolio to discover more of our work.</p><a class="pd-text-link" href="<?= SITE_URL ?>/products">Browse our solutions &rarr;</a></section>
     <?php endif; ?>
 
-    <?php if ($relatedProjects): ?>
-    <section class="pd-related pd-reveal" aria-labelledby="related-title"><div class="pd-section-heading"><div><span class="pd-eyebrow">KEEP EXPLORING</span><h2 id="related-title">More ideas. <span>More impact.</span></h2></div><a class="pd-text-link" href="<?= SITE_URL ?>/products">View all projects &nearr;</a></div><div class="pd-related-grid">
-        <?php foreach ($relatedProjects as $item): ?><a class="pd-related-card" href="<?= SITE_URL ?>/project-detail?slug=<?= rawurlencode($item['slug']) ?>"><?php if (!empty($item['image_path'])): ?><div class="pd-related-image"><img src="<?= e(imgUrl($item['image_path'])) ?>" alt="" loading="lazy"></div><?php endif; ?><div class="pd-related-body"><span class="pd-eyebrow"><?= e($project['category_name']) ?></span><h3><?= e($item['project_name']) ?></h3><p><?= e($item['short_description'] ?? '') ?></p><span class="pd-related-link">Explore project <span aria-hidden="true">&nearr;</span></span></div></a><?php endforeach; ?>
-    </div></section>
-    <?php endif; ?>
     <?php if ($mockupUrls): ?>
     <section class="pd-showcase pd-reveal" id="project-showcase" aria-labelledby="showcase-title">
         <div class="pd-section-heading"><div><span class="pd-eyebrow">THE EXPERIENCE</span><h2 id="showcase-title">See the solution <span>in action.</span></h2></div><p>Explore the screens behind the solution.<br>Select a preview to take a closer look.</p></div>
@@ -136,6 +132,12 @@ $pageTitle = $project['project_name'];
     </section>
     <?php endif; ?>
 
+
+    <?php if ($relatedProjects): ?>
+    <section class="pd-related pd-reveal" aria-labelledby="related-title"><div class="pd-section-heading"><div><span class="pd-eyebrow">KEEP EXPLORING</span><h2 id="related-title">More ideas. <span>More impact.</span></h2></div><a class="pd-text-link" href="<?= SITE_URL ?>/products">View all projects &nearr;</a></div><div class="pd-related-grid">
+        <?php foreach ($relatedProjects as $item): ?><a class="pd-related-card" href="<?= SITE_URL ?>/project-detail?slug=<?= rawurlencode($item['slug']) ?>"><?php if (projectImageUrl($item) !== ''): ?><div class="pd-related-image"><img src="<?= e(projectImageUrl($item)) ?>" alt="" loading="lazy"><?php if (!empty($item['product_logo_path'])): ?><span class="pd-related-logo"><img src="<?= e(imgUrl($item['product_logo_path'])) ?>" alt="<?= e($item['product_logo_name']) ?>" loading="lazy"></span><?php endif; ?></div><?php endif; ?><div class="pd-related-body"><span class="pd-eyebrow"><?= e($project['category_name']) ?></span><h3><?= e($item['project_name']) ?></h3><p><?= e($item['short_description'] ?? '') ?></p><span class="pd-related-link">Explore project <span aria-hidden="true">&nearr;</span></span></div></a><?php endforeach; ?>
+    </div></section>
+    <?php endif; ?>
 
 </div>
 <?php if ($mockupUrls): ?>

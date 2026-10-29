@@ -194,10 +194,13 @@ $pageTitle = 'Our Digital Solutions Portfolio — Creative Web Technologies';
 							<?php foreach ($solution['projects'] as $item): ?>
 							<?php
 								$isHidden    = ($isPaginated && $itemIndex >= 2) ? 'prd-item-hidden' : '';
-								$hasImg      = !empty($item['image_path']);
-								$bgStyle     = $hasImg ? 'style="--item-bg-image: url(\'' . e(imgUrl($item['image_path'])) . '\');"' : '';
+								$projectImageUrl = projectImageUrl($item);
+                                $hasImg = $projectImageUrl !== '';
+                                $projectLogoUrl = $hasImg && !empty($item['product_logo_path']) ? imgUrl($item['product_logo_path']) : '';
+								$bgStyle     = $hasImg ? 'style="--item-bg-image: url(\'' . e($projectImageUrl) . '\');"' : '';
 							?>
-							<article class="prd-item <?= $isHidden ?>" data-project-index="<?= $itemIndex ?>" <?= $bgStyle ?>>
+							<article class="prd-item <?= $isHidden ?> <?= $projectLogoUrl ? 'prd-item-has-logo' : '' ?>" data-project-index="<?= $itemIndex ?>" <?= $bgStyle ?>>
+                                <?php if ($projectLogoUrl): ?><span class="prd-project-logo"><img src="<?= e($projectLogoUrl) ?>" alt="<?= e($item['product_logo_name']) ?>" loading="lazy"></span><?php endif; ?>
 								<a href="project-detail.php?slug=<?= urlencode($item['slug']) ?>">
 								<h4 class="prd-item-title">
 									<?= e($item['project_name']) ?>

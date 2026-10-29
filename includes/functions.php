@@ -249,6 +249,17 @@ function imgUrl(string $path, string $placeholder = ''): string
 	return UPLOAD_URL . $path;
 }
 
+function projectImageUrl(array $project): string
+{
+    $image = trim((string)($project['image_path'] ?? ''));
+    $banner = trim((string)($project['fallback_banner_image'] ?? $project['details']['banner_image'] ?? ''));
+    return imgUrl($image !== '' ? $image : $banner);
+}
+function projectBannerUrl(array $project, array $details = []): string
+{
+    $custom = trim((string)($details['banner_image'] ?? ''));
+    return imgUrl($custom !== '' ? $custom : (string)($project['image_path'] ?? ''));
+}
 function e(string $str): string
 {
 	return htmlspecialchars($str, ENT_QUOTES | ENT_HTML5, 'UTF-8');
@@ -509,9 +520,9 @@ function getSolutionCategory(PDO $pdo, int $id): array
 
 function getProjectsByCategory(PDO $pdo, int $categoryId, bool $activeOnly = true): array
 {
-	$sql = "SELECT * FROM projects WHERE category_id = ?";
-	if ($activeOnly) $sql .= " AND is_active = 1";
-	$sql .= " ORDER BY sort_order ASC, id ASC";
+	$sql = "SELECT p.*, d.banner_image AS fallback_banner_image, logo.logo_path AS product_logo_path, logo.product_name AS product_logo_name FROM projects p LEFT JOIN project_details d ON d.project_id=p.id LEFT JOIN products logo ON logo.id = p.logo_product_id WHERE p.category_id = ?";
+	if ($activeOnly) $sql .= " AND p.is_active = 1";
+	$sql .= " ORDER BY p.sort_order ASC, p.id ASC";
 	$stmt = $pdo->prepare($sql);
 	$stmt->execute([$categoryId]);
 	return $stmt->fetchAll();
@@ -528,14 +539,14 @@ function getAllProjects(PDO $pdo, bool $activeOnly = true): array
 
 function getProjectById(PDO $pdo, int $id): array
 {
-	$stmt = $pdo->prepare("SELECT * FROM projects WHERE id = ?");
+	$stmt = $pdo->prepare("SELECT p.*, d.banner_image AS fallback_banner_image FROM projects p LEFT JOIN project_details d ON d.project_id=p.id WHERE p.id = ?");
 	$stmt->execute([$id]);
 	return $stmt->fetch() ?: [];
 }
 
 function getProjectBySlug(PDO $pdo, string $slug): array
 {
-    $select = 'SELECT p.*, c.name AS category_name, c.color AS category_color, c.icon AS category_icon FROM projects p LEFT JOIN solution_category c ON p.category_id = c.id';
+    $select = 'SELECT p.*, c.name AS category_name, c.color AS category_color, c.icon AS category_icon, logo.logo_path AS product_logo_path, logo.product_name AS product_logo_name FROM projects p LEFT JOIN solution_category c ON p.category_id = c.id LEFT JOIN products logo ON logo.id = p.logo_product_id';
     $stmt = $pdo->prepare($select . ' WHERE p.slug = ?');
     $stmt->execute([$slug]);
     $project = $stmt->fetch();
