@@ -1988,10 +1988,10 @@ html[data-theme="dark"] .marquee-logo {
 
 .column-world {
     position: absolute;
-    width: 135%;
+    width: 180%;
     max-width: none !important;
-    left: -25%;
-    top: 5%;
+    left: -30%;
+    top: -14%;
     opacity: .18;
     pointer-events: none;
     z-index: 0;
@@ -2582,7 +2582,7 @@ html[data-theme="dark"] .marquee-logo {
 
 @media(prefers-reduced-motion:no-preference) {
     .hero-typegraphic.is-type-visible .typegraphic-spark {
-        animation: typegraphic-turn 12s linear 1;
+        animation: typegraphic-turn 12s linear infinite;
     }
 }
 
