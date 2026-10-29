@@ -535,9 +535,33 @@ function getProjectById(PDO $pdo, int $id): array
 
 function getProjectBySlug(PDO $pdo, string $slug): array
 {
-	$stmt = $pdo->prepare("SELECT p.*, c.name AS category_name, c.color AS category_color, c.icon AS category_icon FROM projects p LEFT JOIN solution_category c ON p.category_id = c.id WHERE p.slug = ?");
-	$stmt->execute([$slug]);
-	return $stmt->fetch() ?: [];
+    $select = 'SELECT p.*, c.name AS category_name, c.color AS category_color, c.icon AS category_icon FROM projects p LEFT JOIN solution_category c ON p.category_id = c.id';
+    $stmt = $pdo->prepare($select . ' WHERE p.slug = ?');
+    $stmt->execute([$slug]);
+    $project = $stmt->fetch();
+    if ($project) return $project;
+    $stmt = $pdo->prepare($select . ' JOIN project_slug_history h ON h.project_id = p.id WHERE h.slug = ?');
+    $stmt->execute([$slug]);
+    return $stmt->fetch() ?: [];
+}
+
+function availableProjectSlug(PDO $pdo, string $name, int $projectId = 0): string
+{
+    $base = substr(projectSlug($name), 0, 240) ?: 'project';
+    $candidate = $base;
+    $suffix = 1;
+    $query = $pdo->prepare('SELECT id FROM projects WHERE slug = ? AND id <> ? UNION ALL SELECT project_id FROM project_slug_history WHERE slug = ? AND project_id <> ? LIMIT 1');
+    do {
+        $query->execute([$candidate, $projectId, $candidate, $projectId]);
+        if (!$query->fetchColumn()) return $candidate;
+        $candidate = $base . '-' . ++$suffix;
+    } while (true);
+}
+
+function rememberProjectSlug(PDO $pdo, int $projectId, string $slug): void
+{
+    if ($slug === '') return;
+    $pdo->prepare('INSERT IGNORE INTO project_slug_history (slug, project_id) VALUES (?, ?)')->execute([$slug, $projectId]);
 }
 
 function projectSlug(string $name): string

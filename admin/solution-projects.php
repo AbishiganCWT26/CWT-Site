@@ -32,24 +32,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 			if ($uploaded) $imagePath = $uploaded;
 		}
 
-		$slug = projectSlug($name);
-
 		if ($name === '' || $category_id <= 0) {
 			$msg = 'error_required';
 		} else {
-			$dupStmt = $pdo->prepare("SELECT id FROM projects WHERE slug = ? AND id != ?");
-			$dupStmt->execute([$slug, $id]);
-			if ($dupStmt->fetch()) {
-				$slug .= '-' . time();
-			}
+			$slug = availableProjectSlug($pdo, $name, $id);
 
 			if ($action === 'add') {
 				$pdo->prepare("INSERT INTO projects (category_id, project_name, short_description, image_path, slug, sort_order, is_active) VALUES (?,?,?,?,?,?,?)")
 					->execute([$category_id, $name, $desc, $imagePath, $slug, $sort_order, $is_active]);
 				$msg = 'added';
 			} else {
+                $pdo->beginTransaction();
+                try {
+                    $oldSlug = $pdo->prepare('SELECT slug FROM projects WHERE id = ? FOR UPDATE');
+                    $oldSlug->execute([$id]);
+                    rememberProjectSlug($pdo, $id, (string)$oldSlug->fetchColumn());
 				$pdo->prepare("UPDATE projects SET category_id=?, project_name=?, short_description=?, image_path=?, slug=?, sort_order=?, is_active=? WHERE id=?")
 					->execute([$category_id, $name, $desc, $imagePath, $slug, $sort_order, $is_active, $id]);
+                    $pdo->commit();
+                } catch (Throwable $error) {
+                    if ($pdo->inTransaction()) $pdo->rollBack();
+                    throw $error;
+                }
 				$msg = 'updated';
 			}
 		}
@@ -177,7 +181,7 @@ while ($row = $contentStmt->fetch()) {
 				<div class="form-group">
 					<label class="form-label">URL Slug (auto-generated)</label>
 					<input type="text" id="slugPreview" class="form-control" value="<?= e($editProj['slug'] ?? '') ?>" readonly placeholder="Allianz-AIR">
-					<div class="form-hint">Public link: /project.php?slug=<span id="slugInline"><?= e($editProj['slug'] ?? 'Allianz-AIR') ?></span></div>
+					<div class="form-hint">Public link: /project-detail?slug=<span id="slugInline"><?= e($editProj['slug'] ?? 'Allianz-AIR') ?></span></div>
 				</div>
 			</div>
 
@@ -261,7 +265,7 @@ while ($row = $contentStmt->fetch()) {
                             <div style="display:flex;gap:6px;flex-wrap:wrap;">
                                 <a href="project-edit.php?id=<?= $p['id'] ?>" class="btn btn-primary btn-xs">✎ Content</a>
                                 <a href="solution-projects.php?edit=<?= $p['id'] ?><?= $filterCat ? '&category='.$filterCat : '' ?>" class="btn btn-secondary btn-xs">Edit</a>
-                                <a href="<?= SITE_URL ?>/project.php?slug=<?= urlencode($p['slug']) ?>" target="_blank" class="btn btn-secondary btn-xs">View ↗</a>
+                                <a href="<?= SITE_URL ?>/project-detail?slug=<?= urlencode($p['slug']) ?>" target="_blank" class="btn btn-secondary btn-xs">View ↗</a>
                                 <form method="POST" style="margin:0;">
                                     <input type="hidden" name="action" value="delete">
                                     <input type="hidden" name="id" value="<?= $p['id'] ?>">
