@@ -39,7 +39,6 @@ $pageTitle = 'Our Crew — Creative Web Technologies';
 <link rel="stylesheet" href="<?= SITE_URL ?>/assets/css/modern.css?v=<?= filemtime(__DIR__ . '/assets/css/modern.css') ?>">
 <link rel="stylesheet" href="<?= SITE_URL ?>/assets/css/design.css?v=<?= filemtime(__DIR__ . '/assets/css/design.css') ?>">
 <?php require_once __DIR__ . '/includes/theme.php'; ?>
-<?php require_once __DIR__ . '/includes/loader.php'; ?>
 </head>
 
 <body class="cr-page cwt-public">
