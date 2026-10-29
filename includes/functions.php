@@ -5,7 +5,7 @@
  * CWT Corporate Website
  */
 
-define('SITE_URL',   'http://localhost/CWT Site');
+define('SITE_URL',   'http://localhost/CWT-Site');
 define('ADMIN_URL',  SITE_URL . '/admin');
 define('UPLOAD_DIR', __DIR__ . '/../uploads/');
 define('UPLOAD_URL', SITE_URL . '/uploads/');

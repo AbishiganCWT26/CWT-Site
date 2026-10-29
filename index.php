@@ -7,7 +7,7 @@ $about = getAboutUs($pdo);
 $projects = $about['projects_count'] ?? 50;
 $years = !empty($about['start_year']) ? calcYearsExperience((int)$about['start_year']) : 20;
 $home_showcase = getHomeShowcase($pdo);
-$services = $pdo->query("SELECT num, title, short_description FROM services WHERE is_active = 1 ORDER BY sort_order ASC, id ASC")->fetchAll(PDO::FETCH_ASSOC);
+$services = $pdo->query("SELECT num, title, COALESCE(NULLIF(TRIM(short_description), ''), description, '') AS short_description FROM services WHERE is_active = 1 ORDER BY sort_order ASC, id ASC")->fetchAll(PDO::FETCH_ASSOC);
 $service_icons = [
 	'<path d="m8 6-6 6 6 6m8-12 6 6-6 6m-3-15-2 18"/>',
 	'<path d="m12 3 2.5 6.5L21 12l-6.5 2.5L12 21l-2.5-6.5L3 12l6.5-2.5L12 3Z"/>',
