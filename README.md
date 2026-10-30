@@ -161,15 +161,6 @@ Ensure the web server has full read/write permissions to the `uploads/` tree and
 - `uploads/showcase/`
 - `uploads/tech/`
 
-### 6. Default Admin Account Provisioning
-Because no hardcoded credentials exist in source files, seed an initial administrator directly via SQL:
-```sql
--- Creates user 'admin' with password 'Admin@12345'
-INSERT INTO admin_users (username, password_hash, created_at)
-VALUES ('admin', '$2y$10$wT28Z.uG/pPqC1c1zXGHeeg9vFqK8uYdCqm14I6eN7.eG4yJbA6rC', NOW());
-```
-*(Alternatively, generate your own hash in PHP using `password_hash('your_password', PASSWORD_DEFAULT)`).*
-
 ### 7. Accessing the Application
 - **Public Website:** `http://localhost/CWT Site/` (or `http://localhost/CWT Site/index.php`)
 - **Admin Control Panel:** `http://localhost/CWT Site/admin/` (or `http://localhost/CWT Site/admin/login.php`)
