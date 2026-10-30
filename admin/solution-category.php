@@ -6,8 +6,6 @@ require_once __DIR__ . '/../includes/auth.php';
 if (!defined('ADMIN_URL')) define('ADMIN_URL', SITE_URL . '/admin');
 requireAuth();
 
-$msg = '';
-
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 	$action = $_POST['action'] ?? '';
 
@@ -22,34 +20,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 		$is_active   = isset($_POST['is_active']) ? 1 : 0;
 
 		if ($name === '') {
-			$msg = 'error_required';
+			setFlash('error', 'Category name is required.', 'Validation Error');
 		} else {
 			if ($action === 'add') {
 				$pdo->prepare("INSERT INTO solution_category (name, description, color, icon, area_slug, sort_order, is_active) VALUES (?,?,?,?,?,?,?)")
 					->execute([$name, $description, $color, $icon, $area_slug, $sort_order, $is_active]);
-				$msg = 'added';
+				setFlash('success', 'Category added successfully.', 'Added');
 			} else {
 				$pdo->prepare("UPDATE solution_category SET name=?, description=?, color=?, icon=?, area_slug=?, sort_order=?, is_active=? WHERE id=?")
 					->execute([$name, $description, $color, $icon, $area_slug, $sort_order, $is_active, $id]);
-				$msg = 'updated';
+				setFlash('success', 'Category updated successfully.', 'Updated');
 			}
 		}
 	} elseif ($action === 'delete') {
 		$id = (int)$_POST['id'];
-		$pdo->prepare("DELETE FROM solution_category WHERE id=?")->execute([$id]);
-		$msg = 'deleted';
+		deleteSolutionCategoryWithFiles($pdo, $id);
+		setFlash('success', 'Category and its associated projects were deleted successfully.', 'Deleted');
 	} elseif ($action === 'toggle') {
 		$id = (int)$_POST['id'];
 		$active = (int)$_POST['is_active'];
 		$pdo->prepare("UPDATE solution_category SET is_active=? WHERE id=?")->execute([$active, $id]);
-		$msg = 'updated';
+		setFlash('success', 'Category status updated.', 'Status Updated');
 	}
 
-	header('Location: ' . ADMIN_URL . '/solution-category.php?msg=' . $msg);
+	header('Location: ' . ADMIN_URL . '/solution-category.php');
 	exit;
 }
-
-if (isset($_GET['msg'])) $msg = $_GET['msg'];
 
 $editCat = null;
 if (isset($_GET['edit'])) {
@@ -79,12 +75,6 @@ include __DIR__ . '/layout_top.php';
 	<a href="solution-category.php" class="btn btn-secondary btn-sm">+ New Category</a>
 	<?php endif; ?>
 </div>
-
-<?php if ($msg === 'added' || $msg === 'updated' || $msg === 'deleted'): ?>
-<div class="alert alert-success" data-auto-dismiss="2600">Category <?= $msg ?> successfully.</div>
-<?php elseif ($msg === 'error_required'): ?>
-<div class="alert alert-danger" data-auto-dismiss="3000">Category name is required.</div>
-<?php endif; ?>
 
 <div class="admin-card" style="margin-bottom:20px;">
 	<div class="admin-card-header"><h2><?= $editCat ? 'Edit Category' : 'Add New Category' ?></h2></div>
@@ -201,7 +191,7 @@ include __DIR__ . '/layout_top.php';
 								<form method="POST" style="margin:0;">
 									<input type="hidden" name="action" value="delete">
 									<input type="hidden" name="id" value="<?= $cat['id'] ?>">
-									<button type="submit" class="btn btn-danger btn-xs" data-confirm="Delete '<?= e($cat['name']) ?>'? This will also delete all its projects.">Delete</button>
+									<button type="submit" class="btn btn-danger btn-xs" data-confirm="Delete '<?= e($cat['name']) ?>'? This will permanently delete all its projects and their images.">Delete</button>
 								</form>
 							</div>
 						</td>

@@ -543,12 +543,6 @@ body.abt-page ol {
     transform: scale(1.03);
 }
 
-.abt-history-more-btn-wrap {
-    display: flex;
-    justify-content: center;
-    margin: 8px 0 22px;
-}
-
 .abt-read-more {
     display: inline-flex;
     align-items: center;
@@ -1705,9 +1699,7 @@ body.dark .abt-history-media:hover {
     html[data-theme="dark"] .abt-about-text,
     body.dark .abt-about-text,
     [data-theme="dark"] .abt-about-text {
-        background: var(--card-bg);
-        border-color: var(--border);
-        box-shadow: 0 10px 32px -16px rgba(0, 0, 0, 0.6);
+        background: transparent;
     }
 
     html[data-theme="dark"] .abt-stat-card,
@@ -1952,4 +1944,93 @@ html[data-theme="dark"] .swal2-container.swal2-backdrop-show,
 body.dark .swal2-container.swal2-backdrop-show,
 [data-theme="dark"] .swal2-container.swal2-backdrop-show {
     background: rgba(0, 0, 0, 0.7) !important;
+}
+
+/* =========================================================
+   ABOUT HISTORY — Responsive alternating layout
+   Desktop (>950px): alternating 2-column grid
+     row 1: para 1 | image 1
+     row 2: image 2 | para 2
+     row 3: para 3 (full width — no third image in markup)
+   Tablet/Mobile (≤950px): vertical paragraph → image order
+   Missing / broken image → paragraph spans full width
+   ========================================================= */
+@media (min-width: 951px) {
+    .abt-history {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+        column-gap: 32px;
+        row-gap: 28px;
+        align-items: start;
+    }
+
+    .abt-history-more {
+        display: none;
+    }
+
+    .abt-history-more.show {
+        display: contents;
+        animation: none;
+    }
+
+    /* Reset stacking margins — spacing handled by grid gap */
+    .abt-history>.abt-history-para,
+    .abt-history>.abt-history-media,
+    .abt-history>.abt-history-more>.abt-history-para,
+    .abt-history>.abt-history-more>.abt-history-media {
+        margin: 0 !important;
+    }
+
+    /* Paragraphs horizontally fill their column */
+    .abt-history-para {
+        width: 100%;
+    }
+
+    /* Explicit column placement (rows flow automatically) */
+    .abt-history-para-1 {
+        grid-column: 1;
+    }
+
+    .abt-history-media-1 {
+        grid-column: 2;
+    }
+
+    .abt-history-media-2 {
+        grid-column: 1;
+    }
+
+    .abt-history-para-2 {
+        grid-column: 2;
+    }
+
+    .abt-history-para-3 {
+        grid-column: 1 / -1;
+    }
+
+    /* Missing / broken image → matching paragraph spans full width */
+    .abt-history.img-1-missing .abt-history-para-1,
+    .abt-history:not(:has(.abt-history-media-1)) .abt-history-para-1 {
+        grid-column: 1 / -1;
+    }
+
+    .abt-history.img-2-missing .abt-history-para-2,
+    .abt-history:not(:has(.abt-history-media-2)) .abt-history-para-2 {
+        grid-column: 1 / -1;
+    }
+}
+
+/* Tablet/Mobile (≤950px) — vertical paragraph → image order
+   preserved by the existing block flow; ensure no image causes
+   horizontal overflow and no empty media container is left. */
+@media (max-width: 950px) {
+    .abt-history .abt-history-media {
+        width: 100%;
+        max-width: 100%;
+        overflow: hidden;
+    }
+
+    .abt-history .abt-history-media img {
+        width: 100%;
+        height: auto;
+    }
 }

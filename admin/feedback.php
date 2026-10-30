@@ -6,59 +6,93 @@ require_once __DIR__ . '/../includes/auth.php';
 if (!defined('ADMIN_URL')) define('ADMIN_URL', SITE_URL . '/admin');
 requireAuth();
 
-$msg = '';
-
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 	$action = $_POST['action'] ?? '';
 
-	if ($action === 'add' || $action === 'edit') {
-		$id     = (int)($_POST['id'] ?? 0);
-		$name   = trim($_POST['client_name'] ?? '');
-		$text   = trim($_POST['feedback'] ?? '');
-		$date   = trim($_POST['feedback_date'] ?? '');
-		$active = isset($_POST['is_active']) ? 1 : 0;
+	try {
+		if ($action === 'add' || $action === 'edit') {
+			$id     = (int)($_POST['id'] ?? 0);
+			$name   = trim($_POST['client_name'] ?? '');
+			$text   = trim($_POST['feedback'] ?? '');
+			$date   = trim($_POST['feedback_date'] ?? '');
+			$active = isset($_POST['is_active']) ? 1 : 0;
 
-		$photoPath = '';
-		if ($action === 'edit') {
-			$existing = $pdo->prepare("SELECT photo_path FROM client_feedback WHERE id=?");
-			$existing->execute([$id]);
-			$photoPath = $existing->fetchColumn() ?: '';
-		}
+			$oldPhoto = '';
+			if ($action === 'edit' && $id > 0) {
+				$existing = $pdo->prepare("SELECT photo_path FROM client_feedback WHERE id=?");
+				$existing->execute([$id]);
+				$oldPhoto = $existing->fetchColumn() ?: '';
+			}
 
-		if (!empty($_FILES['photo']['name'])) {
-			$newPhoto = uploadFile($_FILES['photo'], 'feedback');
-			if ($newPhoto) $photoPath = $newPhoto;
-		}
+			$photoPath = $oldPhoto;
+			$newPhotoUploaded = false;
 
-		if ($name === '' || $text === '' || $date === '' || $photoPath === '') {
-			$msg = 'error_required';
-		} else {
+			if (!empty($_FILES['photo']['name'])) {
+				$newPhoto = uploadFile($_FILES['photo'], 'feedback');
+				if ($newPhoto) {
+					$photoPath = $newPhoto;
+					$newPhotoUploaded = true;
+				} else {
+					setFlash('error', 'Client photo could not be uploaded. Please ensure it is a valid image under 5MB.');
+					header('Location: ' . ADMIN_URL . '/feedback.php' . ($action === 'edit' ? '?edit=' . $id : ''));
+					exit;
+				}
+			}
+
+			if ($name === '' || $text === '' || $date === '' || $photoPath === '') {
+				if ($newPhotoUploaded && $photoPath !== '') {
+					deleteUploadedFile($pdo, $photoPath, 'feedback');
+				}
+				setFlash('warning', 'Client Name, Feedback Text, Feedback Date and Client Photo are required.');
+				header('Location: ' . ADMIN_URL . '/feedback.php' . ($action === 'edit' ? '?edit=' . $id : ''));
+				exit;
+			}
+
 			if ($action === 'add') {
-				$pdo->prepare("INSERT INTO client_feedback (client_name, feedback, feedback_date, photo_path, is_active) VALUES (?,?,?,?,?)")
-					->execute([$name, $text, $date, $photoPath, $active]);
-				$msg = 'added';
+				$stmt = $pdo->prepare("INSERT INTO client_feedback (client_name, feedback, feedback_date, photo_path, is_active) VALUES (?,?,?,?,?)");
+				$ok = $stmt->execute([$name, $text, $date, $photoPath, $active]);
+				if ($ok) {
+					setFlash('success', 'Testimonial added successfully.');
+				} else {
+					deleteUploadedFile($pdo, $photoPath, 'feedback');
+					setFlash('error', 'Failed to save testimonial to database.');
+				}
 			} else {
-				$pdo->prepare("UPDATE client_feedback SET client_name=?, feedback=?, feedback_date=?, photo_path=?, is_active=? WHERE id=?")
-					->execute([$name, $text, $date, $photoPath, $active, $id]);
-				$msg = 'updated';
+				$stmt = $pdo->prepare("UPDATE client_feedback SET client_name=?, feedback=?, feedback_date=?, photo_path=?, is_active=? WHERE id=?");
+				$ok = $stmt->execute([$name, $text, $date, $photoPath, $active, $id]);
+				if ($ok) {
+					if ($newPhotoUploaded && $oldPhoto !== '' && $oldPhoto !== $photoPath) {
+						deleteUploadedFile($pdo, $oldPhoto, 'feedback');
+					}
+					setFlash('success', 'Testimonial updated successfully.');
+				} else {
+					if ($newPhotoUploaded && $photoPath !== '') {
+						deleteUploadedFile($pdo, $photoPath, 'feedback');
+					}
+					setFlash('error', 'Failed to update testimonial.');
+				}
+			}
+		} elseif ($action === 'toggle') {
+			$id = (int)$_POST['id'];
+			$active = (int)$_POST['is_active'];
+			$pdo->prepare("UPDATE client_feedback SET is_active=? WHERE id=?")->execute([$active, $id]);
+			setFlash('success', $active ? 'Testimonial activated.' : 'Testimonial deactivated.');
+		} elseif ($action === 'delete') {
+			$id = (int)$_POST['id'];
+			if (deleteFeedbackRecordWithFiles($pdo, $id)) {
+				setFlash('success', 'Testimonial deleted successfully.');
+			} else {
+				setFlash('error', 'Could not delete testimonial.');
 			}
 		}
-	} elseif ($action === 'toggle') {
-		$id = (int)$_POST['id'];
-		$active = (int)$_POST['is_active'];
-		$pdo->prepare("UPDATE client_feedback SET is_active=? WHERE id=?")->execute([$active, $id]);
-		$msg = 'updated';
-	} elseif ($action === 'delete') {
-		$id = (int)$_POST['id'];
-		$pdo->prepare("DELETE FROM client_feedback WHERE id=?")->execute([$id]);
-		$msg = 'deleted';
+	} catch (Throwable $e) {
+		error_log('[feedback.php] ' . $e->getMessage());
+		setFlash('error', 'An error occurred while processing the request.');
 	}
 
-	header('Location: ' . ADMIN_URL . '/feedback.php?msg=' . $msg);
+	header('Location: ' . ADMIN_URL . '/feedback.php');
 	exit;
 }
-
-if (isset($_GET['msg'])) $msg = $_GET['msg'];
 
 $editFeedback = null;
 if (isset($_GET['edit'])) {
@@ -82,12 +116,6 @@ include __DIR__ . '/layout_top.php';
 	<a href="feedback.php" class="btn btn-secondary btn-sm">+ New Testimonial</a>
 	<?php endif; ?>
 </div>
-
-<?php if ($msg === 'added' || $msg === 'updated' || $msg === 'deleted'): ?>
-<div class="alert alert-success" data-auto-dismiss="2600">Testimonial <?= $msg ?> successfully.</div>
-<?php elseif ($msg === 'error_required'): ?>
-<div class="alert alert-danger" data-auto-dismiss="3000">Client Name, Feedback Text, Feedback Date and Client Photo are required.</div>
-<?php endif; ?>
 
 <div class="admin-card" style="margin-bottom:20px;">
 	<div class="admin-card-header"><h2><?= $editFeedback ? 'Edit Testimonial' : 'Add New Testimonial' ?></h2></div>
@@ -186,7 +214,7 @@ include __DIR__ . '/layout_top.php';
 								<form method="POST" action="feedback.php" style="margin:0;">
 									<input type="hidden" name="action" value="delete">
 									<input type="hidden" name="id" value="<?= $fb['id'] ?>">
-									<button type="submit" class="btn btn-danger btn-xs" data-confirm="Delete testimonial from <?= e($fb['client_name']) ?>?">Delete</button>
+									<button type="submit" class="btn btn-danger btn-xs" data-confirm="Delete testimonial from <?= e($fb['client_name']) ?>? This will permanently delete the client's photo.">Delete</button>
 								</form>
 							</div>
 						</td>

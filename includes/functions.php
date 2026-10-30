@@ -219,7 +219,17 @@ function uploadFile(array $file, string $subdir): string|false
 			return false;
 		}
 	}
-	if (!is_writable($dir)) {
+	$isWritable = is_writable($dir);
+	if (!$isWritable) {
+		$testFile = $dir . '.write_test_' . uniqid('', true);
+		$testHandle = @fopen($testFile, 'wb');
+		if ($testHandle !== false) {
+			fclose($testHandle);
+			@unlink($testFile);
+			$isWritable = true;
+		}
+	}
+	if (!$isWritable) {
 		error_log('[uploadFile] directory not writable: ' . $dir);
 		return false;
 	}
@@ -239,6 +249,360 @@ function uploadFile(array $file, string $subdir): string|false
 	}
 
 	return $subdir . '/' . $filename;
+}
+
+/* --------------------------------------------------------------------------
+ * Flash messages
+ * ------------------------------------------------------------------------ */
+
+function setFlash(string $type, string $message, string $title = ''): void
+{
+	if (session_status() === PHP_SESSION_NONE) {
+		@session_start();
+	}
+	$_SESSION['cwt_flash'] = [
+		'type'    => $type,
+		'message' => $message,
+		'title'   => $title !== '' ? $title : ucfirst($type),
+	];
+}
+
+function getFlash(): ?array
+{
+	if (session_status() === PHP_SESSION_NONE) {
+		@session_start();
+	}
+	if (!empty($_SESSION['cwt_flash'])) {
+		$flash = $_SESSION['cwt_flash'];
+		unset($_SESSION['cwt_flash']);
+		return $flash;
+	}
+	if (!empty($_SESSION['flash_success'])) {
+		$msg = $_SESSION['flash_success'];
+		unset($_SESSION['flash_success']);
+		return ['type' => 'success', 'message' => $msg, 'title' => 'Success'];
+	}
+	if (!empty($_SESSION['flash_error'])) {
+		$msg = $_SESSION['flash_error'];
+		unset($_SESSION['flash_error']);
+		return ['type' => 'error', 'message' => $msg, 'title' => 'Error'];
+	}
+	return null;
+}
+
+function hasFlash(): bool
+{
+	if (session_status() === PHP_SESSION_NONE) {
+		@session_start();
+	}
+	return !empty($_SESSION['cwt_flash']) || !empty($_SESSION['flash_success']) || !empty($_SESSION['flash_error']);
+}
+
+/* --------------------------------------------------------------------------
+ * Automatic Image Management & Deletion
+ * ------------------------------------------------------------------------ */
+
+/**
+ * Check whether a physical upload file is still referenced by any other record in the database.
+ */
+function isImageReferencedElsewhere(PDO $pdo, string $relativePath): bool
+{
+	$relativePath = trim(str_replace('\\', '/', $relativePath), '/');
+	if ($relativePath === '') return false;
+	$basename = basename($relativePath);
+
+	$checks = [
+		['history', 'image1_path'],
+		['history', 'image2_path'],
+		['clients', 'logo_path'],
+		['crew', 'profile_photo'],
+		['client_feedback', 'photo_path'],
+		['home_showcase', 'image_path'],
+		['industries', 'image_path'],
+		['products', 'logo_path'],
+		['projects', 'image_path'],
+		['project_details', 'banner_image'],
+		['project_mockups', 'image_path'],
+		['tech_stack', 'logo_path'],
+		['blog_details', 'featured_image'],
+	];
+
+	foreach ($checks as [$table, $column]) {
+		try {
+			$stmt = $pdo->prepare("SELECT COUNT(*) FROM `{$table}` WHERE `{$column}` = ? OR `{$column}` LIKE ?");
+			$stmt->execute([$relativePath, '%' . $basename]);
+			if ((int)$stmt->fetchColumn() > 0) {
+				return true;
+			}
+		} catch (Throwable $e) {
+			continue;
+		}
+	}
+
+	return false;
+}
+
+/**
+ * Safely delete an uploaded file from disk if no other record references it.
+ *
+ * Enforces:
+ * - Block directory traversal
+ * - Never delete outside UPLOAD_DIR
+ * - Skip default / external placeholder images
+ * - Skip deletion if referenced by any other DB record
+ */
+function deleteUploadedFile(?PDO $pdo, ?string $relativePath, ?string $expectedSubdir = null): bool
+{
+	if ($relativePath === null) return true;
+	$relativePath = trim(str_replace('\\', '/', $relativePath));
+	if ($relativePath === '') return true;
+
+	// Skip remote URLs or data URIs
+	if (str_starts_with($relativePath, 'http://') || str_starts_with($relativePath, 'https://') || str_starts_with($relativePath, 'data:')) {
+		return true;
+	}
+
+	// Security: prevent directory traversal or control characters
+	if (str_contains($relativePath, '..') || str_contains($relativePath, "\0")) {
+		error_log('[deleteUploadedFile] Directory traversal attempt detected: ' . $relativePath);
+		return false;
+	}
+
+	$relativePath = ltrim($relativePath, '/');
+
+	// If expectedSubdir is provided and relativePath doesn't include it, prepend
+	if ($expectedSubdir !== null && $expectedSubdir !== '') {
+		$cleanSub = trim($expectedSubdir, '/');
+		if (!str_starts_with(strtolower($relativePath), strtolower($cleanSub) . '/')) {
+			$relativePath = $cleanSub . '/' . $relativePath;
+		}
+	}
+
+	// Exclude default/shared assets
+	$baseName = strtolower(basename($relativePath));
+	if (str_starts_with($baseName, 'default') || str_starts_with($baseName, 'placeholder') || str_starts_with($baseName, 'sample')) {
+		return true;
+	}
+
+	// Check uploads base directory
+	$uploadsBase = realpath(UPLOAD_DIR);
+	if ($uploadsBase === false) {
+		error_log('[deleteUploadedFile] UPLOAD_DIR does not exist: ' . UPLOAD_DIR);
+		return false;
+	}
+	$uploadsBase = rtrim($uploadsBase, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
+
+	$fullTarget = UPLOAD_DIR . $relativePath;
+	$targetReal = realpath($fullTarget);
+
+	// If file does not exist on disk, consider it safely already removed
+	if ($targetReal === false || !is_file($targetReal)) {
+		return true;
+	}
+
+	// Security: ensure target resides strictly within UPLOAD_DIR
+	if (!str_starts_with($targetReal, $uploadsBase)) {
+		error_log('[deleteUploadedFile] File escapes UPLOAD_DIR: ' . $targetReal);
+		return false;
+	}
+
+	// Reference check: skip deletion if referenced elsewhere
+	if ($pdo !== null && isImageReferencedElsewhere($pdo, $relativePath)) {
+		error_log('[deleteUploadedFile] Preserving ' . $relativePath . ' - referenced by another record.');
+		return true;
+	}
+
+	$unlinked = @unlink($targetReal);
+	if (!$unlinked && is_file($targetReal)) {
+		error_log('[deleteUploadedFile] Failed to unlink file: ' . $targetReal);
+		return false;
+	}
+
+	return true;
+}
+
+/**
+ * Record Deletion Helpers with Automatic Image Clean-up
+ */
+
+function deleteClientRecordWithFiles(PDO $pdo, int $clientId): bool
+{
+	$stmt = $pdo->prepare("SELECT logo_path FROM clients WHERE id = ?");
+	$stmt->execute([$clientId]);
+	$logoPath = $stmt->fetchColumn() ?: '';
+
+	$delStmt = $pdo->prepare("DELETE FROM clients WHERE id = ?");
+	$ok = $delStmt->execute([$clientId]);
+	if ($ok && $logoPath !== '') {
+		deleteUploadedFile($pdo, $logoPath, 'clients');
+	}
+	return $ok;
+}
+
+function deleteCrewRecordWithFiles(PDO $pdo, int $crewId): bool
+{
+	$stmt = $pdo->prepare("SELECT profile_photo FROM crew WHERE id = ?");
+	$stmt->execute([$crewId]);
+	$photo = $stmt->fetchColumn() ?: '';
+
+	$delStmt = $pdo->prepare("DELETE FROM crew WHERE id = ?");
+	$ok = $delStmt->execute([$crewId]);
+	if ($ok && $photo !== '') {
+		deleteUploadedFile($pdo, $photo, 'Crew');
+	}
+	return $ok;
+}
+
+function deleteFeedbackRecordWithFiles(PDO $pdo, int $feedbackId): bool
+{
+	$stmt = $pdo->prepare("SELECT photo_path FROM client_feedback WHERE id = ?");
+	$stmt->execute([$feedbackId]);
+	$photo = $stmt->fetchColumn() ?: '';
+
+	$delStmt = $pdo->prepare("DELETE FROM client_feedback WHERE id = ?");
+	$ok = $delStmt->execute([$feedbackId]);
+	if ($ok && $photo !== '') {
+		deleteUploadedFile($pdo, $photo, 'feedback');
+	}
+	return $ok;
+}
+
+function deleteIndustryRecordWithFiles(PDO $pdo, int $industryId): bool
+{
+	$stmt = $pdo->prepare("SELECT image_path FROM industries WHERE id = ?");
+	$stmt->execute([$industryId]);
+	$img = $stmt->fetchColumn() ?: '';
+
+	$delStmt = $pdo->prepare("DELETE FROM industries WHERE id = ?");
+	$ok = $delStmt->execute([$industryId]);
+	if ($ok && $img !== '') {
+		deleteUploadedFile($pdo, $img, 'industries');
+	}
+	return $ok;
+}
+
+function deleteInsightRecordWithFiles(PDO $pdo, int $blogId): bool
+{
+	$stmt = $pdo->prepare("SELECT featured_image, content FROM blog_details WHERE id = ?");
+	$stmt->execute([$blogId]);
+	$row = $stmt->fetch();
+	if (!$row) return false;
+
+	$featured = $row['featured_image'] ?? '';
+	$content  = $row['content'] ?? '';
+
+	$delStmt = $pdo->prepare("DELETE FROM blog_details WHERE id = ?");
+	$ok = $delStmt->execute([$blogId]);
+	if ($ok) {
+		if ($featured !== '') {
+			deleteUploadedFile($pdo, $featured, 'insights');
+		}
+		// Clean up any inline insight images if present
+		if (preg_match_all('~insights/[a-zA-Z0-9._-]+~', $content, $matches)) {
+			foreach (array_unique($matches[0]) as $inlineImg) {
+				deleteUploadedFile($pdo, $inlineImg, 'insights');
+			}
+		}
+	}
+	return $ok;
+}
+
+function deleteProductRecordWithFiles(PDO $pdo, int $productId): bool
+{
+	$stmt = $pdo->prepare("SELECT logo_path FROM products WHERE id = ?");
+	$stmt->execute([$productId]);
+	$logo = $stmt->fetchColumn() ?: '';
+
+	$delStmt = $pdo->prepare("DELETE FROM products WHERE id = ?");
+	$ok = $delStmt->execute([$productId]);
+	if ($ok && $logo !== '') {
+		deleteUploadedFile($pdo, $logo, 'products');
+	}
+	return $ok;
+}
+
+function deleteShowcaseRecordWithFiles(PDO $pdo, int $showcaseId): bool
+{
+	$stmt = $pdo->prepare("SELECT image_path FROM home_showcase WHERE id = ?");
+	$stmt->execute([$showcaseId]);
+	$img = $stmt->fetchColumn() ?: '';
+
+	$delStmt = $pdo->prepare("DELETE FROM home_showcase WHERE id = ?");
+	$ok = $delStmt->execute([$showcaseId]);
+	if ($ok && $img !== '') {
+		deleteUploadedFile($pdo, $img, 'showcase');
+	}
+	return $ok;
+}
+
+function deleteTechStackRecordWithFiles(PDO $pdo, int $techId): bool
+{
+	$stmt = $pdo->prepare("SELECT logo_path FROM tech_stack WHERE id = ?");
+	$stmt->execute([$techId]);
+	$logo = $stmt->fetchColumn() ?: '';
+
+	$delStmt = $pdo->prepare("DELETE FROM tech_stack WHERE id = ?");
+	$ok = $delStmt->execute([$techId]);
+	if ($ok && $logo !== '') {
+		deleteUploadedFile($pdo, $logo, 'tech');
+	}
+	return $ok;
+}
+
+function deleteProjectRecordWithFiles(PDO $pdo, int $projectId): bool
+{
+	// 1. Gather all associated files before deleting database rows
+	$stmt = $pdo->prepare("SELECT image_path FROM projects WHERE id = ?");
+	$stmt->execute([$projectId]);
+	$projectImg = $stmt->fetchColumn() ?: '';
+
+	$details = getProjectDetails($pdo, $projectId);
+	$bannerImg = $details['banner_image'] ?? '';
+	$content   = $details['content'] ?? '';
+
+	$mockups = getProjectMockups($pdo, $projectId);
+
+	// 2. Delete database row (foreign keys cascade to details & mockups)
+	$delStmt = $pdo->prepare("DELETE FROM projects WHERE id = ?");
+	$ok = $delStmt->execute([$projectId]);
+
+	// 3. Delete physical files
+	if ($ok) {
+		if ($projectImg !== '') {
+			deleteUploadedFile($pdo, $projectImg, 'projects');
+		}
+		if ($bannerImg !== '') {
+			deleteUploadedFile($pdo, $bannerImg, 'projects');
+		}
+		foreach ($mockups as $m) {
+			if (!empty($m['image_path'])) {
+				deleteUploadedFile($pdo, $m['image_path'], 'mockup');
+			}
+		}
+		// Extract inline content images (e.g. projects/inline-xxx.jpg)
+		if (preg_match_all('~projects/inline-[a-zA-Z0-9._-]+~', $content, $matches)) {
+			foreach (array_unique($matches[0]) as $inlineImg) {
+				deleteUploadedFile($pdo, $inlineImg, 'projects');
+			}
+		}
+	}
+
+	return $ok;
+}
+
+function deleteSolutionCategoryWithFiles(PDO $pdo, int $categoryId): bool
+{
+	// Find all projects under this category and delete them with their files
+	$stmt = $pdo->prepare("SELECT id FROM projects WHERE category_id = ?");
+	$stmt->execute([$categoryId]);
+	$projectIds = $stmt->fetchAll(PDO::FETCH_COLUMN);
+
+	foreach ($projectIds as $pid) {
+		deleteProjectRecordWithFiles($pdo, (int)$pid);
+	}
+
+	$delStmt = $pdo->prepare("DELETE FROM solution_category WHERE id = ?");
+	return $delStmt->execute([$categoryId]);
 }
 
 function imgUrl(string $path, string $placeholder = ''): string
@@ -607,13 +971,12 @@ function deleteProjectMockup(PDO $pdo, int $mockupId, int $projectId): bool
 	$row = $stmt->fetch();
 	if (!$row) return false;
 
-	$fullPath = UPLOAD_DIR . $row['image_path'];
-	if (is_file($fullPath)) {
-		@unlink($fullPath);
+	$delStmt = $pdo->prepare("DELETE FROM project_mockups WHERE id = ? AND project_id = ?");
+	$ok = $delStmt->execute([$mockupId, $projectId]);
+	if ($ok && !empty($row['image_path'])) {
+		deleteUploadedFile($pdo, $row['image_path'], 'mockup');
 	}
-
-	$stmt = $pdo->prepare("DELETE FROM project_mockups WHERE id = ? AND project_id = ?");
-	return $stmt->execute([$mockupId, $projectId]);
+	return $ok;
 }
 
 function getProjectMockupUrls(PDO $pdo, int $projectId): array

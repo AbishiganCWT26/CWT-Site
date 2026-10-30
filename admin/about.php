@@ -6,7 +6,6 @@ require_once __DIR__ . '/../includes/auth.php';
 if (!defined('ADMIN_URL')) define('ADMIN_URL', SITE_URL . '/admin');
 requireAuth();
 
-$msg = '';
 $about = getAboutUs($pdo);
 $hist  = getHistory($pdo);
 $vm    = getVisionMission($pdo);
@@ -14,43 +13,93 @@ $vm    = getVisionMission($pdo);
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 	$section = $_POST['section'] ?? '';
 
-	if ($section === 'stats') {
-		$sy = (int)($_POST['start_year'] ?? 2000);
-		$rp = (int)($_POST['retention_pct'] ?? 95);
-		$ec = (int)($_POST['employed_count'] ?? 200);
-		$pc = (int)($_POST['projects_count'] ?? 55);
-		if (!empty($about)) {
-			$pdo->prepare("UPDATE aboutus SET start_year=?, retention_pct=?, employed_count=?, projects_count=? WHERE id=?")->execute([$sy, $rp, $ec, $pc, $about['id']]);
-		} else {
-			$pdo->prepare("INSERT INTO aboutus (start_year,retention_pct,employed_count,projects_count) VALUES(?,?,?,?)")->execute([$sy, $rp, $ec, $pc]);
+	try {
+		if ($section === 'stats') {
+			$sy = (int)($_POST['start_year'] ?? 2000);
+			$rp = (int)($_POST['retention_pct'] ?? 95);
+			$ec = (int)($_POST['employed_count'] ?? 200);
+			$pc = (int)($_POST['projects_count'] ?? 55);
+			if (!empty($about)) {
+				$pdo->prepare("UPDATE aboutus SET start_year=?, retention_pct=?, employed_count=?, projects_count=? WHERE id=?")->execute([$sy, $rp, $ec, $pc, $about['id']]);
+			} else {
+				$pdo->prepare("INSERT INTO aboutus (start_year,retention_pct,employed_count,projects_count) VALUES(?,?,?,?)")->execute([$sy, $rp, $ec, $pc]);
+			}
+			setFlash('success', 'Company statistics updated successfully.');
+			header('Location: ' . ADMIN_URL . '/about.php');
+			exit;
+		} elseif ($section === 'history') {
+			$p1 = trim($_POST['para1'] ?? '');
+			$p2 = trim($_POST['para2'] ?? '');
+			$p3 = trim($_POST['para3'] ?? '');
+			$oldImg1 = $hist['image1_path'] ?? '';
+			$oldImg2 = $hist['image2_path'] ?? '';
+			$img1 = $oldImg1;
+			$img2 = $oldImg2;
+			$newImg1Uploaded = false;
+			$newImg2Uploaded = false;
+
+			if (!empty($_FILES['image1']['name'])) {
+				$n1 = uploadFile($_FILES['image1'], 'about');
+				if ($n1) {
+					$img1 = $n1;
+					$newImg1Uploaded = true;
+				} else {
+					setFlash('error', 'Image 1 could not be uploaded. Please check file format and size (under 5MB).');
+					header('Location: ' . ADMIN_URL . '/about.php');
+					exit;
+				}
+			}
+
+			if (!empty($_FILES['image2']['name'])) {
+				$n2 = uploadFile($_FILES['image2'], 'about');
+				if ($n2) {
+					$img2 = $n2;
+					$newImg2Uploaded = true;
+				} else {
+					// Clean up the first newly uploaded image if the second failed
+					if ($newImg1Uploaded && $img1) {
+						deleteUploadedFile($pdo, $img1, 'about');
+					}
+					setFlash('error', 'Image 2 could not be uploaded. Please check file format and size (under 5MB).');
+					header('Location: ' . ADMIN_URL . '/about.php');
+					exit;
+				}
+			}
+
+			if (!empty($hist)) {
+				$pdo->prepare("UPDATE history SET para1=?, image1_path=?, para2=?, image2_path=?, para3=? WHERE id=?")->execute([$p1, $img1, $p2, $img2, $p3, $hist['id']]);
+			} else {
+				$pdo->prepare("INSERT INTO history (para1,image1_path,para2,image2_path,para3) VALUES(?,?,?,?,?)")->execute([$p1, $img1, $p2, $img2, $p3]);
+			}
+
+			// Clean up previous physical images only after successful DB update
+			if ($newImg1Uploaded && $oldImg1 !== '' && $oldImg1 !== $img1) {
+				deleteUploadedFile($pdo, $oldImg1, 'about');
+			}
+			if ($newImg2Uploaded && $oldImg2 !== '' && $oldImg2 !== $img2) {
+				deleteUploadedFile($pdo, $oldImg2, 'about');
+			}
+
+			setFlash('success', 'History timeline updated successfully.');
+			header('Location: ' . ADMIN_URL . '/about.php');
+			exit;
+		} elseif ($section === 'vision_mission') {
+			$vp = trim($_POST['vision_para'] ?? '');
+			$mp = trim($_POST['mission_para'] ?? '');
+			if (!empty($vm)) {
+				$pdo->prepare("UPDATE vision_mission SET vision_para=?, mission_para=? WHERE id=?")->execute([$vp, $mp, $vm['id']]);
+			} else {
+				$pdo->prepare("INSERT INTO vision_mission (vision_para,mission_para) VALUES(?,?)")->execute([$vp, $mp]);
+			}
+			setFlash('success', 'Vision & Mission statements updated successfully.');
+			header('Location: ' . ADMIN_URL . '/about.php');
+			exit;
 		}
-		$about = getAboutUs($pdo);
-		$msg = 'stats_updated';
-	} elseif ($section === 'history') {
-		$p1 = trim($_POST['para1'] ?? '');
-		$p2 = trim($_POST['para2'] ?? '');
-		$p3 = trim($_POST['para3'] ?? '');
-		$img1 = $hist['image1_path'] ?? '';
-		if (!empty($_FILES['image1']['name'])) { $n = uploadFile($_FILES['image1'], 'about'); if ($n) $img1 = $n; }
-		$img2 = $hist['image2_path'] ?? '';
-		if (!empty($_FILES['image2']['name'])) { $n = uploadFile($_FILES['image2'], 'about'); if ($n) $img2 = $n; }
-		if (!empty($hist)) {
-			$pdo->prepare("UPDATE history SET para1=?, image1_path=?, para2=?, image2_path=?, para3=? WHERE id=?")->execute([$p1, $img1, $p2, $img2, $p3, $hist['id']]);
-		} else {
-			$pdo->prepare("INSERT INTO history (para1,image1_path,para2,image2_path,para3) VALUES(?,?,?,?,?)")->execute([$p1, $img1, $p2, $img2, $p3]);
-		}
-		$hist = getHistory($pdo);
-		$msg = 'history_updated';
-	} elseif ($section === 'vision_mission') {
-		$vp = trim($_POST['vision_para'] ?? '');
-		$mp = trim($_POST['mission_para'] ?? '');
-		if (!empty($vm)) {
-			$pdo->prepare("UPDATE vision_mission SET vision_para=?, mission_para=? WHERE id=?")->execute([$vp, $mp, $vm['id']]);
-		} else {
-			$pdo->prepare("INSERT INTO vision_mission (vision_para,mission_para) VALUES(?,?)")->execute([$vp, $mp]);
-		}
-		$vm = getVisionMission($pdo);
-		$msg = 'vm_updated';
+	} catch (Throwable $e) {
+		error_log('[about.php] ' . $e->getMessage());
+		setFlash('error', 'Could not save changes. Database or file error occurred.');
+		header('Location: ' . ADMIN_URL . '/about.php');
+		exit;
 	}
 }
 
@@ -64,10 +113,6 @@ include __DIR__ . '/layout_top.php';
 		<p>Manage stats, history timeline, and vision/mission statements.</p>
 	</div>
 </div>
-
-<?php if ($msg): ?>
-<div class="alert alert-success" data-auto-dismiss="2600">Section updated successfully.</div>
-<?php endif; ?>
 
 <div class="admin-card">
 	<div class="admin-card-header"><h2>Company Statistics</h2></div>

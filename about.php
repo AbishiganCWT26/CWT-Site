@@ -188,12 +188,12 @@ $pageTitle = 'About Us — Creative Web Technologies';
 
 		<div class="abt-history">
 			<?php if (!empty($hist['para1'])): ?>
-			<p class="abt-history-para reveal"><?= nl2br(e($hist['para1'])) ?></p>
+			<p class="abt-history-para abt-history-para-1 reveal"><?= nl2br(e($hist['para1'])) ?></p>
 			<?php endif; ?>
 
 			<?php $hist1 = imgUrl($hist['image1_path'] ?? ''); ?>
 			<?php if ($hist1): ?>
-			<div class="abt-history-media reveal">
+			<div class="abt-history-media abt-history-media-1 reveal">
 				<img src="<?= e($hist1) ?>" alt="CWT History" class="abt-history-image" loading="lazy">
 			</div>
 			<?php endif; ?>
@@ -202,18 +202,18 @@ $pageTitle = 'About Us — Creative Web Technologies';
 			<?php if ($hasMore): ?>
 			<div class="abt-history-more" id="historyMore">
 				<?php if (!empty($hist['para2'])): ?>
-				<p class="abt-history-para"><?= nl2br(e($hist['para2'])) ?></p>
+				<p class="abt-history-para abt-history-para-2"><?= nl2br(e($hist['para2'])) ?></p>
 				<?php endif; ?>
 
 				<?php $hist2 = imgUrl($hist['image2_path'] ?? ''); ?>
 				<?php if ($hist2): ?>
-				<div class="abt-history-media">
+				<div class="abt-history-media abt-history-media-2">
 					<img src="<?= e($hist2) ?>" alt="CWT History" class="abt-history-image" loading="lazy">
 				</div>
 				<?php endif; ?>
 
 				<?php if (!empty($hist['para3'])): ?>
-				<p class="abt-history-para"><?= nl2br(e($hist['para3'])) ?></p>
+				<p class="abt-history-para abt-history-para-3"><?= nl2br(e($hist['para3'])) ?></p>
 				<?php endif; ?>
 			</div>
 

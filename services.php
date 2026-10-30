@@ -95,7 +95,7 @@ $pageTitle = 'Our Services — Creative Web Technologies';
 			<p class="svc-hero-text">Expert tech services, built to scale your business</p>
 
 			<div class="svc-hero-stats">
-				<div class="svc-hero-stat"><strong>15+</strong><span>Service Lines</span></div>
+				<div class="svc-hero-stat"><strong>50+</strong><span>Solutions</span></div>
 				<div class="svc-hero-divider"></div>
 				<div class="svc-hero-stat"><strong>8</strong><span>Verticals</span></div>
 				<div class="svc-hero-divider"></div>
@@ -334,7 +334,6 @@ $pageTitle = 'Our Services — Creative Web Technologies';
 		<div class="marquee-track">
 			<?php foreach (array_merge($clients, $clients, $clients) as $client): $logoUrl = imgUrl($client['logo_path']); ?>
 			<div class="marquee-item">
-				<div class="marquee-tooltip"><?= e($client['company_name']) ?></div>
 				<div class="marquee-logo">
 					<?php if ($logoUrl): ?>
 						<img src="<?= e($logoUrl) ?>" alt="<?= e($client['company_name']) ?>" loading="lazy">

@@ -262,7 +262,7 @@ html[data-theme="dark"] .cwt-public ::selection {
 }
 
 /* Secondary panels and long-form content use the same dark surfaces. */
-html[data-theme="dark"] .cwt-public :is(.abt-stat-card, .abt-vm-card, .abt-about-text, .industry-card, .tech-logo-item, .pp-toc-inner, .pp-block, .pp-sub-block, .pp-def-item, .pp-cookie-card, .pp-callout, .pp-contact-card, .ind-share, .ind-share-btn, .ct-info-item, .cs-empty, .ins-empty, .prd-cat-empty) {
+html[data-theme="dark"] .cwt-public :is(.abt-stat-card, .abt-vm-card, .industry-card, .tech-logo-item, .pp-toc-inner, .pp-block, .pp-sub-block, .pp-def-item, .pp-cookie-card, .pp-callout, .pp-contact-card, .ind-share, .ind-share-btn, .ct-info-item, .cs-empty, .ins-empty, .prd-cat-empty) {
     background: #122039;
     border-color: #2a3d5c;
 }
@@ -349,7 +349,7 @@ body.cwt-public {
 }
 
 body.cwt-public :is(.cwt-footer-container,
-    .home-container, .abt-container, .svc-container, .svc-wrap, .ct-container,
+    .home-container, .abt-container, .svc-container, .svc-wrap, .marquee-wrap, .ct-container,
     .prd-container, .ins-container, .cr-container, .cs-container, .pp-container,
     .ind-container, .project-wrap),
 body.cwt-public #what-we-offer>.container,

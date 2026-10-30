@@ -6,7 +6,6 @@ require_once __DIR__ . '/../includes/auth.php';
 if (!defined('ADMIN_URL')) define('ADMIN_URL', SITE_URL . '/admin');
 requireAuth();
 
-$msg = '';
 $footer = getFooter($pdo);
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -20,8 +19,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 		$sql = "INSERT INTO footer (para,linkedin_url,facebook_url,youtube_url,instagram_url,email,phone,address) VALUES (:para,:linkedin_url,:facebook_url,:youtube_url,:instagram_url,:email,:phone,:address)";
 	}
 	$pdo->prepare($sql)->execute($data);
-	$msg = 'success';
-	$footer = getFooter($pdo);
+	setFlash('success', 'Footer settings updated successfully.');
+	header('Location: ' . ADMIN_URL . '/footer.php');
+	exit;
 }
 
 $fp = array_map('htmlspecialchars', array_map('strval', $footer));
@@ -36,17 +36,13 @@ include __DIR__ . '/layout_top.php';
 	</div>
 </div>
 
-<?php if ($msg === 'success'): ?>
-<div class="alert alert-success" data-auto-dismiss="2600">Footer settings updated successfully.</div>
-<?php endif; ?>
-
 <div class="admin-card">
 	<div class="admin-card-header"><h2>Edit Footer</h2></div>
 	<div class="admin-card-body">
 		<form method="POST" action="">
 			<div class="form-group">
 				<label class="form-label">Footer Paragraph <span class="req">*</span></label>
-				<textarea name="para" class="form-control" rows="4" placeholder="Company description..."><?= $fp['para'] ?? '' ?></textarea>
+				<textarea name="para" class="form-control" rows="4" placeholder="Company description..." required><?= $fp['para'] ?? '' ?></textarea>
 			</div>
 			<div class="form-row">
 				<div class="form-group"><label class="form-label">LinkedIn URL</label><input type="url" name="linkedin_url" class="form-control" value="<?= $fp['linkedin_url'] ?? '' ?>"></div>

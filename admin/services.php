@@ -6,9 +6,6 @@ require_once __DIR__ . '/../includes/auth.php';
 if (!defined('ADMIN_URL')) define('ADMIN_URL', SITE_URL . '/admin');
 requireAuth();
 
-$msg = '';
-$err = '';
-
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 	verifyCsrf();
 	$action = $_POST['action'] ?? '';
@@ -27,7 +24,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 		$teamRaw = trim((string)($_POST['team'] ?? ''));
 
 		if ($title === '') {
-			$err = 'Service title is required.';
+			setFlash('error', 'Service title is required.', 'Validation Error');
 		} else {
 			if ($id > 0) {
 				$pdo->prepare("UPDATE services SET num=?, title=?, description=?, short_description=?, consultant_name=?, consultant_role=?, sort_order=?, is_active=? WHERE id=?")
@@ -47,14 +44,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 			foreach ($team as $i => $name) {
 				$pdo->prepare("INSERT INTO service_team (service_id, name, sort_order) VALUES (?, ?, ?)")->execute([$id, $name, $i + 1]);
 			}
-			$msg = 'service_saved';
+			setFlash('success', 'Service saved successfully.', 'Saved');
 		}
+		header('Location: ' . ADMIN_URL . '/services.php');
+		exit;
 	}
 
 	if ($action === 'delete_service') {
 		$id = (int)($_POST['id'] ?? 0);
 		$pdo->prepare("DELETE FROM services WHERE id = ?")->execute([$id]);
-		$msg = 'service_deleted';
+		setFlash('success', 'Service deleted successfully.', 'Deleted');
+		header('Location: ' . ADMIN_URL . '/services.php');
+		exit;
 	}
 
 	if ($action === 'save_capability') {
@@ -70,7 +71,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 		$slug = $slugRaw !== '' ? slugify($slugRaw) : slugify($label);
 
 		if ($label === '' || $slug === '') {
-			$err = 'Capability label and slug are required.';
+			setFlash('error', 'Capability label and slug are required.', 'Validation Error');
 		} else {
 			try {
 				if ($id > 0) {
@@ -96,17 +97,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 						$pos++;
 					}
 				}
-				$msg = 'capability_saved';
+				setFlash('success', 'Capability section saved successfully.', 'Saved');
 			} catch (PDOException $ex) {
-				$err = 'Could not save capability: ' . $ex->getMessage();
+				setFlash('error', 'Could not save capability: ' . $ex->getMessage(), 'Database Error');
 			}
 		}
+		header('Location: ' . ADMIN_URL . '/services.php');
+		exit;
 	}
 
 	if ($action === 'delete_capability') {
 		$id = (int)($_POST['id'] ?? 0);
 		$pdo->prepare("DELETE FROM capability_sections WHERE id = ?")->execute([$id]);
-		$msg = 'capability_deleted';
+		setFlash('success', 'Capability section deleted successfully.', 'Deleted');
+		header('Location: ' . ADMIN_URL . '/services.php');
+		exit;
 	}
 }
 
@@ -116,19 +121,6 @@ $capabilities = getCapabilitySections($pdo, false);
 $iconOptions = [
 	'grid','shuffle','box','layers','filter','chart','monitor','cpu','trending','star','branch','robot','compass','code','refresh','sliders','gear','database','dollar','activity','file','target','smartphone','link','cloud','terminal','shield','globe','wrench','users','harddrive','lock','eye','briefcase','clipboard','alert','check','check-circle','userplus','cart','award','message','workflow','tech-evolution','project-validation','organizational-excellence','financial-planning'
 ];
-
-$flash = null;
-if ($err !== '') {
-	$flash = ['type' => 'error', 'text' => $err];
-} elseif ($msg === 'service_saved') {
-	$flash = ['type' => 'success', 'text' => 'Service saved successfully.'];
-} elseif ($msg === 'service_deleted') {
-	$flash = ['type' => 'success', 'text' => 'Service deleted.'];
-} elseif ($msg === 'capability_saved') {
-	$flash = ['type' => 'success', 'text' => 'Capability section saved.'];
-} elseif ($msg === 'capability_deleted') {
-	$flash = ['type' => 'success', 'text' => 'Capability section deleted.'];
-}
 
 $pageTitle = 'Services & Capabilities';
 include __DIR__ . '/layout_top.php';
@@ -148,26 +140,23 @@ include __DIR__ . '/layout_top.php';
 	<symbol id="svc-i-tag" viewBox="0 0 24 24"><path d="M20.6 13.4 13.4 20.6a2 2 0 0 1-2.8 0L2 12V2h10l8.6 8.6a2 2 0 0 1 0 2.8z"/><circle cx="7" cy="7" r="1.2"/></symbol>
 </svg>
 
-<div class="svc-page">
-	<div class="svc-head">
-		<span class="svc-head-icon">
-			<svg class="svc-ico svc-ico-lg" viewBox="0 0 24 24" aria-hidden="true"><use href="#svc-i-layers"></use></svg>
-		</span>
-		<div class="svc-head-text">
+<div class="svc-shell">
+	<header class="svc-hero">
+		<div class="svc-hero-text">
+			<span class="svc-pill">
+				<svg class="svc-ico" viewBox="0 0 24 24" aria-hidden="true"><use href="#svc-i-layers"></use></svg>
+				<span>Services Engine</span>
+			</span>
 			<h1>Services &amp; Capabilities</h1>
-			<p>Manage the "All Services &amp; Verticals" and "What We Offer" sections.</p>
+			<p>Configure what you deliver and how your capability matrix is presented on the public Services page.</p>
 		</div>
-		<div class="svc-head-stats">
-			<span class="svc-chip"><b><?= count($services) ?></b> Services</span>
-			<span class="svc-chip"><b><?= count($capabilities) ?></b> Sections</span>
-		</div>
-	</div>
+	</header>
 
 	<section class="svc-card">
 		<div class="svc-card-head">
 			<h2>
 				<svg class="svc-ico" viewBox="0 0 24 24" aria-hidden="true"><use href="#svc-i-grid"></use></svg>
-				<span>All Services &amp; Verticals</span>
+				<span>Services</span>
 				<em class="svc-count"><?= count($services) ?></em>
 			</h2>
 			<button type="button" class="svc-btn svc-btn-primary" id="addServiceBtn">
@@ -179,20 +168,23 @@ include __DIR__ . '/layout_top.php';
 			<?php if (empty($services)): ?>
 			<div class="svc-empty">
 				<svg class="svc-ico svc-ico-xl" viewBox="0 0 24 24" aria-hidden="true"><use href="#svc-i-inbox"></use></svg>
-				<p>No services yet. Click "Add Service" to create one.</p>
+				<p>No services added yet. Click "Add Service" to create your first one.</p>
 			</div>
 			<?php else: ?>
 			<div class="svc-grid">
-				<?php foreach ($services as $k => $s):
-					$tileDesc = trim((string)($s['short_description'] ?? ''));
-					if ($tileDesc === '') $tileDesc = (string)($s['description'] ?? '');
-				?>
-				<article class="svc-tile" style="--i:<?= (int)$k ?>">
+				<?php foreach ($services as $i => $s): ?>
+				<article class="svc-tile" style="--i:<?= (int)$i ?>">
 					<div class="svc-tile-main">
-						<span class="svc-num"><?= e($s['num']) ?></span>
+						<span class="svc-num"><?= e(!empty($s['num']) ? $s['num'] : sprintf('%02d', $i + 1)) ?></span>
 						<div class="svc-info">
 							<h3 title="<?= e($s['title']) ?>"><?= e($s['title']) ?></h3>
-							<p><?= e(mb_substr($tileDesc, 0, 100)) ?><?= mb_strlen($tileDesc) > 100 ? '…' : '' ?></p>
+							<?php if (!empty($s['consultant_name'])): ?>
+							<p class="svc-lead">
+								<strong><?= e($s['consultant_name']) ?></strong>
+								<?= !empty($s['consultant_role']) ? '· ' . e($s['consultant_role']) : '' ?>
+							</p>
+							<?php endif; ?>
+							<p><?= count($s['team']) ?> team member<?= count($s['team']) === 1 ? '' : 's' ?> · <?= count($s['lead']) ?> lead<?= count($s['lead']) === 1 ? '' : 's' ?></p>
 						</div>
 					</div>
 					<div class="svc-tile-foot">
@@ -273,73 +265,65 @@ include __DIR__ . '/layout_top.php';
 	</section>
 </div>
 
-<div class="svc-modal" id="serviceModal" aria-hidden="true">
+<div class="svc-modal" id="serviceModal" aria-hidden="true" role="dialog" aria-labelledby="serviceModalTitle">
 	<div class="svc-modal-backdrop" data-close="serviceModal"></div>
-	<div class="svc-dialog" role="dialog" aria-modal="true" aria-labelledby="serviceModalTitle">
-		<div class="svc-dialog-head">
-			<span class="svc-dialog-icon">
-				<svg class="svc-ico" viewBox="0 0 24 24" aria-hidden="true"><use href="#svc-i-grid"></use></svg>
-			</span>
-			<h3 id="serviceModalTitle">Add Service</h3>
-			<button type="button" class="svc-close" data-close="serviceModal" aria-label="Close">
-				<svg class="svc-ico" viewBox="0 0 24 24" aria-hidden="true"><use href="#svc-i-close"></use></svg>
-			</button>
-		</div>
-		<form method="POST" action="" id="serviceForm" class="svc-form">
+	<div class="svc-modal-dialog">
+		<form method="POST" action="" id="serviceForm">
+			<input type="hidden" name="csrf_token" value="<?= e(csrfToken()) ?>">
+			<input type="hidden" name="action" value="save_service">
+			<input type="hidden" name="id" value="">
+			<div class="svc-dialog-head">
+				<h3 id="serviceModalTitle">Add Service</h3>
+				<button type="button" class="svc-icon-btn" data-close="serviceModal" aria-label="Close dialog">
+					<svg class="svc-ico" viewBox="0 0 24 24" aria-hidden="true"><use href="#svc-i-close"></use></svg>
+				</button>
+			</div>
 			<div class="svc-dialog-body">
-				<input type="hidden" name="csrf_token" value="<?= e(csrfToken()) ?>">
-				<input type="hidden" name="action" value="save_service">
-				<input type="hidden" name="id" value="">
-				<div class="svc-row svc-row-3">
+				<div class="svc-form-row svc-form-row-2">
 					<div class="svc-field">
-						<label class="svc-label">Number <span class="svc-req">*</span></label>
-						<input type="text" name="num" class="svc-input" required maxlength="10">
+						<label class="svc-label">Number badge</label>
+						<input type="text" name="num" class="svc-input" placeholder="01" maxlength="10">
+						<span class="svc-hint">Leave blank to auto-number.</span>
 					</div>
 					<div class="svc-field">
 						<label class="svc-label">Sort Order</label>
 						<input type="number" name="sort_order" class="svc-input" value="0">
 					</div>
-					<div class="svc-field">
-						<label class="svc-label">Active</label>
-						<label class="svc-switch">
-							<input type="checkbox" name="is_active" checked>
-							<span class="svc-switch-track"></span>
-							<span class="svc-switch-text">Show on site</span>
-						</label>
-					</div>
 				</div>
 				<div class="svc-field">
 					<label class="svc-label">Title <span class="svc-req">*</span></label>
-					<input type="text" name="title" class="svc-input" required maxlength="500">
-				</div>
-				<div class="svc-field">
-					<label class="svc-label">Description</label>
-					<textarea name="description" class="svc-input" rows="3"></textarea>
+					<input type="text" name="title" class="svc-input" required maxlength="255">
 				</div>
 				<div class="svc-field">
 					<label class="svc-label">Short Description</label>
-					<input type="text" name="short_description" class="svc-input" maxlength="255" placeholder="Shown on cards / tiles">
+					<input type="text" name="short_description" class="svc-input" placeholder="Used in summaries and meta">
 				</div>
-				<div class="svc-row svc-row-2">
+				<div class="svc-field">
+					<label class="svc-label">Full Description</label>
+					<textarea name="description" class="svc-input" rows="4"></textarea>
+				</div>
+				<div class="svc-form-row svc-form-row-2">
 					<div class="svc-field">
 						<label class="svc-label">Consultant Name</label>
-						<input type="text" name="consultant_name" class="svc-input" maxlength="255">
+						<input type="text" name="consultant_name" class="svc-input" placeholder="Jane Doe" maxlength="255">
 					</div>
 					<div class="svc-field">
 						<label class="svc-label">Consultant Role</label>
-						<input type="text" name="consultant_role" class="svc-input" maxlength="255">
+						<input type="text" name="consultant_role" class="svc-input" placeholder="Practice Lead" maxlength="255">
 					</div>
 				</div>
-				<div class="svc-row svc-row-2">
-					<div class="svc-field">
-						<label class="svc-label">Lead (comma-separated)</label>
-						<input type="text" name="lead" class="svc-input">
-					</div>
-					<div class="svc-field">
-						<label class="svc-label">Team (comma-separated)</label>
-						<input type="text" name="team" class="svc-input">
-					</div>
+				<div class="svc-field">
+					<label class="svc-label">Lead Names (comma-separated)</label>
+					<input type="text" name="lead" class="svc-input" placeholder="Alice Smith, Bob Jones">
 				</div>
+				<div class="svc-field">
+					<label class="svc-label">Team Members (comma-separated)</label>
+					<input type="text" name="team" class="svc-input" placeholder="Carol White, Dan Brown, Eve Black">
+				</div>
+				<label class="svc-toggle">
+					<input type="checkbox" name="is_active" value="1" checked>
+					<span>Active (visible on website)</span>
+				</label>
 			</div>
 			<div class="svc-dialog-foot">
 				<button type="button" class="svc-btn svc-btn-ghost" data-close="serviceModal">Cancel</button>
@@ -352,46 +336,44 @@ include __DIR__ . '/layout_top.php';
 	</div>
 </div>
 
-<div class="svc-modal" id="capabilityModal" aria-hidden="true">
+<div class="svc-modal" id="capabilityModal" aria-hidden="true" role="dialog" aria-labelledby="capabilityModalTitle">
 	<div class="svc-modal-backdrop" data-close="capabilityModal"></div>
-	<div class="svc-dialog svc-dialog-lg" role="dialog" aria-modal="true" aria-labelledby="capabilityModalTitle">
-		<div class="svc-dialog-head">
-			<span class="svc-dialog-icon">
-				<svg class="svc-ico" viewBox="0 0 24 24" aria-hidden="true"><use href="#svc-i-spark"></use></svg>
-			</span>
-			<h3 id="capabilityModalTitle">Add Capability Section</h3>
-			<button type="button" class="svc-close" data-close="capabilityModal" aria-label="Close">
-				<svg class="svc-ico" viewBox="0 0 24 24" aria-hidden="true"><use href="#svc-i-close"></use></svg>
-			</button>
-		</div>
-		<form method="POST" action="" id="capabilityForm" class="svc-form">
+	<div class="svc-modal-dialog svc-modal-lg">
+		<form method="POST" action="" id="capabilityForm">
+			<input type="hidden" name="csrf_token" value="<?= e(csrfToken()) ?>">
+			<input type="hidden" name="action" value="save_capability">
+			<input type="hidden" name="id" value="">
+			<div class="svc-dialog-head">
+				<h3 id="capabilityModalTitle">Add Capability Section</h3>
+				<button type="button" class="svc-icon-btn" data-close="capabilityModal" aria-label="Close dialog">
+					<svg class="svc-ico" viewBox="0 0 24 24" aria-hidden="true"><use href="#svc-i-close"></use></svg>
+				</button>
+			</div>
 			<div class="svc-dialog-body">
-				<input type="hidden" name="csrf_token" value="<?= e(csrfToken()) ?>">
-				<input type="hidden" name="action" value="save_capability">
-				<input type="hidden" name="id" value="">
-				<div class="svc-row svc-row-4">
-					<div class="svc-field">
-						<label class="svc-label">Label <span class="svc-req">*</span></label>
-						<input type="text" name="label" class="svc-input" required maxlength="255">
+				<div class="svc-form-row svc-form-row-3">
+					<div class="svc-field svc-span-2">
+						<label class="svc-label">Section Label <span class="svc-req">*</span></label>
+						<input type="text" name="label" class="svc-input" required maxlength="255" placeholder="e.g. Technology Evolution">
 					</div>
 					<div class="svc-field">
 						<label class="svc-label">Slug</label>
-						<input type="text" name="slug" class="svc-input" maxlength="100" placeholder="auto-generated from label">
+						<input type="text" name="slug" class="svc-input" placeholder="auto-generated">
+						<span class="svc-hint">Used in URLs and filters.</span>
 					</div>
+				</div>
+				<div class="svc-form-row svc-form-row-2">
 					<div class="svc-field">
 						<label class="svc-label">Sort Order</label>
 						<input type="number" name="sort_order" class="svc-input" value="0">
 					</div>
-					<div class="svc-field">
-						<label class="svc-label">Active</label>
-						<label class="svc-switch">
-							<input type="checkbox" name="is_active" checked>
-							<span class="svc-switch-track"></span>
-							<span class="svc-switch-text">Show on site</span>
+					<div class="svc-field svc-flex-end">
+						<label class="svc-toggle">
+							<input type="checkbox" name="is_active" value="1" checked>
+							<span>Active</span>
 						</label>
 					</div>
 				</div>
-				<div class="svc-row svc-row-4">
+				<div class="svc-form-row svc-form-row-4">
 					<div class="svc-field">
 						<label class="svc-label">Icon</label>
 						<select name="icon" class="svc-input">
@@ -469,8 +451,6 @@ include __DIR__ . '/layout_top.php';
 	</div>
 </template>
 
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>window.CAP_ICONS = <?= json_encode($iconOptions) ?>;</script>
-<script>window.SVC_FLASH = <?= json_encode($flash, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>;</script>
 <script src="<?= SITE_URL ?>/assets/js/admin-services.js?v=<?= filemtime(__DIR__ . '/../assets/js/admin-services.js') ?>"></script>
 <?php include __DIR__ . '/layout_bottom.php'; ?>

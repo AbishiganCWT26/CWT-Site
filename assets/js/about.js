@@ -127,6 +127,39 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
+    /* ---------------------------------------------------------
+       History images — missing / broken detection
+       Adds `img-1-missing` / `img-2-missing` on `.abt-history`
+       so the desktop grid expands the matching paragraph to
+       full width, and hides empty/broken media containers.
+       --------------------------------------------------------- */
+    const historySection = document.querySelector('.abt-history');
+    if (historySection) {
+        const markMissing = function (index) {
+            historySection.classList.add('img-' + index + '-missing');
+        };
+
+        if (!historySection.querySelector('.abt-history-media-1')) markMissing(1);
+        if (!historySection.querySelector('.abt-history-media-2')) markMissing(2);
+
+        historySection.querySelectorAll('.abt-history-media img').forEach(function (img) {
+            const handleBrokenImage = function () {
+                const media = img.closest('.abt-history-media');
+                if (!media) return;
+                if (media.classList.contains('abt-history-media-1')) markMissing(1);
+                if (media.classList.contains('abt-history-media-2')) markMissing(2);
+                media.style.display = 'none';
+            };
+
+            img.addEventListener('error', handleBrokenImage);
+
+            // Covers the case where the image already failed before this listener attached
+            if (img.complete && img.naturalWidth === 0) {
+                handleBrokenImage();
+            }
+        });
+    }
+
     /* =========================================================
        HERO NEXUS FIELD
        Interactive starfield with cursor attraction, twinkle,

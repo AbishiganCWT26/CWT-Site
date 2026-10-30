@@ -6,10 +6,6 @@ require_once __DIR__ . '/../includes/auth.php';
 if (!defined('ADMIN_URL')) define('ADMIN_URL', SITE_URL . '/admin');
 requireAuth();
 
-
-$message = '';
-$error = '';
-
 /**
  * Compute the next available sort_order within a given section.
  * Scoped per section so orders stay tidy inside "Our Customers" / "Our Products".
@@ -26,61 +22,35 @@ function getNextShowcaseSortOrder(PDO $pdo, string $sectionName, int $excludeId 
     return (int)$stmt->fetchColumn();
 }
 
-/**
- * Hard-delete an image file from the uploads folder.
- * Uses realpath() to block path-traversal attempts.
- */
-function deleteShowcaseImage(string $imagePath): void
-{
-    if ($imagePath === '') return;
-
-    $uploadsBase = realpath(__DIR__ . '/../uploads/');
-    if ($uploadsBase === false) return;
-    $uploadsBase = rtrim($uploadsBase, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
-
-    $fullPath = realpath($uploadsBase . $imagePath);
-    if ($fullPath === false) {
-        // File already missing — nothing to delete.
-        return;
-    }
-    if (!str_starts_with($fullPath, $uploadsBase)) {
-        // Path escapes uploads directory — refuse.
-        return;
-    }
-    if (is_file($fullPath)) {
-        @unlink($fullPath);
-    }
-}
-
-// Handle Delete — hard delete DB row + image file
-if (isset($_GET['delete'])) {
-    $id = (int)$_GET['delete'];
-    $stmt = $pdo->prepare("SELECT image_path FROM home_showcase WHERE id = ?");
-    $stmt->execute([$id]);
-    $item = $stmt->fetch();
-
-    if ($item && !empty($item['image_path'])) {
-        deleteShowcaseImage($item['image_path']);
-    }
-
-    $stmt = $pdo->prepare("DELETE FROM home_showcase WHERE id = ?");
-    $stmt->execute([$id]);
-    $message = 'Item deleted successfully.';
-}
-
-// Handle Add/Edit
+// Handle POST actions (Add, Edit, Delete, Toggle)
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $action = $_POST['action'] ?? 'save';
+
+    if ($action === 'delete') {
+        $id = (int)($_POST['id'] ?? 0);
+        if ($id > 0) {
+            if (deleteShowcaseRecordWithFiles($pdo, $id)) {
+                setFlash('success', 'Showcase item deleted successfully.');
+            } else {
+                setFlash('error', 'Could not delete showcase item.');
+            }
+        }
+        header('Location: ' . ADMIN_URL . '/home-showcase.php');
+        exit;
+    }
+
     $id = isset($_POST['id']) ? (int)$_POST['id'] : 0;
-    $section_name = trim($_POST['section_name']);
+    $section_name = trim($_POST['section_name'] ?? '');
     $project_slug = trim($_POST['project_slug'] ?? '');
     $is_active = isset($_POST['is_active']) ? 1 : 0;
-    $image_path = $_POST['existing_image'] ?? '';
+    $existing_image = $_POST['existing_image'] ?? '';
+    $image_path = $existing_image;
+    $newImageUploaded = false;
 
     // Sort order: auto-assign when blank, otherwise use admin-supplied value.
     $sort_order_raw = $_POST['sort_order'] ?? '';
     if ($sort_order_raw === '' || !is_numeric($sort_order_raw)) {
         if ($id > 0) {
-            // Editing — keep existing value rather than reshuffling.
             $stmt = $pdo->prepare("SELECT sort_order FROM home_showcase WHERE id = ?");
             $stmt->execute([$id]);
             $sort_order = (int)$stmt->fetchColumn();
@@ -92,46 +62,58 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     // Handle file upload
-    if (isset($_FILES['image']) && $_FILES['image']['error'] === UPLOAD_ERR_OK) {
-        $uploadDir = __DIR__ . '/../uploads/showcase/';
-        if (!is_dir($uploadDir)) mkdir($uploadDir, 0755, true);
-
-        $fileInfo = pathinfo($_FILES['image']['name']);
-        $ext = strtolower($fileInfo['extension']);
-        $allowed = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
-
-        if (in_array($ext, $allowed)) {
-            $newName = 'showcase_' . uniqid() . '.' . $ext;
-            $dest = $uploadDir . $newName;
-            if (move_uploaded_file($_FILES['image']['tmp_name'], $dest)) {
-                // Hard-delete the previous image only after successful replacement.
-                if (!empty($image_path)) {
-                    deleteShowcaseImage($image_path);
-                }
-                $image_path = 'showcase/' . $newName;
-            } else {
-                $error = 'Failed to upload image.';
-            }
+    if (isset($_FILES['image']) && $_FILES['image']['error'] === UPLOAD_ERR_OK && !empty($_FILES['image']['name'])) {
+        $uploaded = uploadFile($_FILES['image'], 'showcase');
+        if ($uploaded !== false) {
+            $image_path = $uploaded;
+            $newImageUploaded = true;
         } else {
-            $error = 'Invalid image format.';
+            setFlash('error', 'Failed to upload image. Please ensure it is a valid image under 5MB.');
+            header('Location: ' . ADMIN_URL . '/home-showcase.php' . ($id > 0 ? '?edit=' . $id : ''));
+            exit;
         }
     }
 
     if (empty($image_path) && $id === 0) {
-        $error = 'Image is required.';
+        setFlash('warning', 'An image is required for new showcase items.');
+        header('Location: ' . ADMIN_URL . '/home-showcase.php');
+        exit;
     }
 
-    if (empty($error)) {
+    try {
         if ($id > 0) {
             $stmt = $pdo->prepare("UPDATE home_showcase SET section_name = ?, project_slug = ?, sort_order = ?, is_active = ?, image_path = ? WHERE id = ?");
-            $stmt->execute([$section_name, $project_slug, $sort_order, $is_active, $image_path, $id]);
-            $message = 'Item updated successfully.';
+            $ok = $stmt->execute([$section_name, $project_slug, $sort_order, $is_active, $image_path, $id]);
+            if ($ok) {
+                if ($newImageUploaded && !empty($existing_image) && $existing_image !== $image_path) {
+                    deleteUploadedFile($pdo, $existing_image, 'showcase');
+                }
+                setFlash('success', 'Showcase item updated successfully.');
+            } else {
+                if ($newImageUploaded && !empty($image_path)) {
+                    deleteUploadedFile($pdo, $image_path, 'showcase');
+                }
+                setFlash('error', 'Database error updating showcase item.');
+            }
         } else {
             $stmt = $pdo->prepare("INSERT INTO home_showcase (section_name, project_slug, sort_order, is_active, image_path) VALUES (?, ?, ?, ?, ?)");
-            $stmt->execute([$section_name, $project_slug, $sort_order, $is_active, $image_path]);
-            $message = 'Item added successfully.';
+            $ok = $stmt->execute([$section_name, $project_slug, $sort_order, $is_active, $image_path]);
+            if ($ok) {
+                setFlash('success', 'Showcase item added successfully.');
+            } else {
+                if ($newImageUploaded && !empty($image_path)) {
+                    deleteUploadedFile($pdo, $image_path, 'showcase');
+                }
+                setFlash('error', 'Database error saving showcase item.');
+            }
         }
+    } catch (Throwable $e) {
+        error_log('[home-showcase.php] ' . $e->getMessage());
+        setFlash('error', 'An error occurred while saving the item.');
     }
+
+    header('Location: ' . ADMIN_URL . '/home-showcase.php');
+    exit;
 }
 
 // Fetch edit item
@@ -171,17 +153,11 @@ require_once __DIR__ . '/layout_top.php';
     <p>Manage the customer and product cards displayed on the homepage.</p>
 </div>
 
-<?php if ($message): ?>
-    <div class="alert alert-success"><?= e($message) ?></div>
-<?php endif; ?>
-<?php if ($error): ?>
-    <div class="alert alert-danger"><?= e($error) ?></div>
-<?php endif; ?>
-
 <div class="admin-content-layout">
     <div class="admin-form-section">
         <h2><?= $editItem ? 'Edit Item' : 'Add New Item' ?></h2>
-        <form method="POST" enctype="multipart/form-data">
+        <form method="POST" action="home-showcase.php" enctype="multipart/form-data">
+            <input type="hidden" name="action" value="save">
             <?php if ($editItem): ?>
                 <input type="hidden" name="id" value="<?= $editItem['id'] ?>">
                 <input type="hidden" name="existing_image" value="<?= e($editItem['image_path']) ?>">
@@ -282,8 +258,14 @@ require_once __DIR__ . '/layout_top.php';
                                     </span>
                                 </td>
                                 <td>
-                                    <a href="?edit=<?= $item['id'] ?>" class="btn-sm btn-secondary">Edit</a>
-                                    <a href="?delete=<?= $item['id'] ?>" class="btn-sm btn-danger" onclick="return confirm('Are you sure you want to delete this item?');">Delete</a>
+                                    <div style="display:flex;gap:6px;align-items:center;">
+                                        <a href="?edit=<?= $item['id'] ?>" class="btn-sm btn-secondary">Edit</a>
+                                        <form method="POST" action="home-showcase.php" style="margin:0;display:inline-block;">
+                                            <input type="hidden" name="action" value="delete">
+                                            <input type="hidden" name="id" value="<?= $item['id'] ?>">
+                                            <button type="submit" class="btn-sm btn-danger" data-confirm="Delete showcase item? This will permanently delete its image.">Delete</button>
+                                        </form>
+                                    </div>
                                 </td>
                             </tr>
                         <?php endforeach; ?>

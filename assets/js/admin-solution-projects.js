@@ -4,15 +4,23 @@ document.addEventListener('DOMContentLoaded', function () {
     var removeImageFlag = document.getElementById('removeProjectImageFlag');
     var removeImageButton = document.getElementById('removeProjectImageBtn');
     if (removeImageButton && projectImage) {
-        removeImageButton.addEventListener('click', function () {
-            var input = document.querySelector('input[name="image"]');
-            if (input) input.value = '';
-            var fallback = projectImage.dataset.defaultSrc || '';
-            projectImage.src = fallback;
-            projectImage.dataset.custom = '0';
-            projectImage.style.display = fallback ? 'block' : 'none';
-            removeImageFlag.value = '1';
-            updateLogoPreview();
+        removeImageButton.addEventListener('click', function (e) {
+            e.preventDefault();
+            var doRemove = function () {
+                var input = document.querySelector('input[name="image"]');
+                if (input) input.value = '';
+                var fallback = projectImage.dataset.defaultSrc || '';
+                projectImage.src = fallback;
+                projectImage.dataset.custom = '0';
+                projectImage.style.display = fallback ? 'block' : 'none';
+                removeImageFlag.value = '1';
+                updateLogoPreview();
+            };
+            if (typeof window.confirmImageRemoval === 'function') {
+                window.confirmImageRemoval(doRemove);
+            } else {
+                doRemove();
+            }
         });
     }
     function updateLogoPreview() {
@@ -80,7 +88,6 @@ document.addEventListener('DOMContentLoaded', function () {
         document.querySelector('label[for="projectLogoSelect"]').addEventListener('click', function (event) { event.preventDefault(); trigger.focus(); });
         syncPicker();
     }
-
 
     document.querySelectorAll('input[type="file"][data-preview]').forEach(function (fileInput) {
         fileInput.addEventListener('change', function () {

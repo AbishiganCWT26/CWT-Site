@@ -6,25 +6,29 @@ require_once __DIR__ . '/../includes/auth.php';
 if (!defined('ADMIN_URL')) define('ADMIN_URL', SITE_URL . '/admin');
 requireAuth();
 
-$msg = '';
-
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 	$action = $_POST['action'] ?? '';
-	if ($action === 'toggle') {
-		$id = (int)$_POST['id'];
-		$active = (int)$_POST['is_published'];
-		$pdo->prepare("UPDATE blog_details SET is_published=? WHERE id=?")->execute([$active, $id]);
-		$msg = 'updated';
-	} elseif ($action === 'delete') {
-		$id = (int)$_POST['id'];
-		$pdo->prepare("DELETE FROM blog_details WHERE id=?")->execute([$id]);
-		$msg = 'deleted';
+	try {
+		if ($action === 'toggle') {
+			$id = (int)$_POST['id'];
+			$active = (int)$_POST['is_published'];
+			$pdo->prepare("UPDATE blog_details SET is_published=? WHERE id=?")->execute([$active, $id]);
+			setFlash('success', $active ? 'Post published successfully.' : 'Post set to draft.');
+		} elseif ($action === 'delete') {
+			$id = (int)$_POST['id'];
+			if (deleteInsightRecordWithFiles($pdo, $id)) {
+				setFlash('success', 'Post deleted successfully.');
+			} else {
+				setFlash('error', 'Could not delete post.');
+			}
+		}
+	} catch (Throwable $e) {
+		error_log('[insights.php] ' . $e->getMessage());
+		setFlash('error', 'An error occurred while processing the post.');
 	}
-	header('Location: ' . ADMIN_URL . '/insights.php?msg=' . $msg);
+	header('Location: ' . ADMIN_URL . '/insights.php');
 	exit;
 }
-
-if (isset($_GET['msg'])) $msg = $_GET['msg'];
 
 $blogs = $pdo->query("SELECT * FROM blog_details ORDER BY publish_date DESC, id DESC")->fetchAll();
 $pageTitle = 'Insights & Blog';
@@ -38,10 +42,6 @@ include __DIR__ . '/layout_top.php';
 	</div>
 	<a href="insight-edit.php" class="btn btn-primary">➕ Write New Post</a>
 </div>
-
-<?php if ($msg === 'updated' || $msg === 'deleted'): ?>
-<div class="alert alert-success" data-auto-dismiss="2600">Post <?= $msg ?> successfully.</div>
-<?php endif; ?>
 
 <div class="admin-card">
 	<div class="admin-card-header"><h2>All Posts (<?= count($blogs) ?>)</h2></div>
@@ -87,7 +87,7 @@ include __DIR__ . '/layout_top.php';
 								<form method="POST" action="insights.php" style="margin:0;">
 									<input type="hidden" name="action" value="delete">
 									<input type="hidden" name="id" value="<?= $blog['id'] ?>">
-									<button type="submit" class="btn btn-danger btn-xs" data-confirm="Delete post '<?= e($blog['topic']) ?>'?">Delete</button>
+									<button type="submit" class="btn btn-danger btn-xs" data-confirm="Delete post '<?= e($blog['topic']) ?>'? This will permanently delete its featured image.">Delete</button>
 								</form>
 							</div>
 						</td>

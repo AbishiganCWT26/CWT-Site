@@ -6,8 +6,6 @@ require_once __DIR__ . '/../includes/auth.php';
 if (!defined('ADMIN_URL')) define('ADMIN_URL', SITE_URL . '/admin');
 requireAuth();
 
-$msg = '';
-
 $categories = [
 	'software_engineering' => 'Software Engineering',
 	'ai_engineering'       => 'AI Engineering',
@@ -25,6 +23,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 		$category = $_POST['category'] ?? '';
 
 		$logoPath = '';
+		$oldLogoToDelete = null;
 		if ($action === 'edit') {
 			$existing = $pdo->prepare("SELECT logo_path FROM tech_stack WHERE id=?");
 			$existing->execute([$id]);
@@ -33,33 +32,39 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 		if (!empty($_FILES['logo']['name'])) {
 			$newLogo = uploadFile($_FILES['logo'], 'tech');
-			if ($newLogo) $logoPath = $newLogo;
+			if ($newLogo) {
+				if ($action === 'edit' && !empty($logoPath)) {
+					$oldLogoToDelete = $logoPath;
+				}
+				$logoPath = $newLogo;
+			}
 		}
 
 		if ($name === '' || !array_key_exists($category, $categories) || $logoPath === '') {
-			$msg = 'error_required';
+			setFlash('error', 'Name, Category and Technology Logo are required.', 'Validation Error');
 		} else {
 			if ($action === 'add') {
 				$pdo->prepare("INSERT INTO tech_stack (name, category, logo_path) VALUES (?,?,?)")
 					->execute([$name, $category, $logoPath]);
-				$msg = 'added';
+				setFlash('success', 'Technology added successfully.', 'Added');
 			} else {
 				$pdo->prepare("UPDATE tech_stack SET name=?, category=?, logo_path=? WHERE id=?")
 					->execute([$name, $category, $logoPath, $id]);
-				$msg = 'updated';
+				if ($oldLogoToDelete && $oldLogoToDelete !== $logoPath) {
+					deleteUploadedFile($pdo, $oldLogoToDelete, 'tech');
+				}
+				setFlash('success', 'Technology updated successfully.', 'Updated');
 			}
 		}
 	} elseif ($action === 'delete') {
 		$id = (int)$_POST['id'];
-		$pdo->prepare("DELETE FROM tech_stack WHERE id=?")->execute([$id]);
-		$msg = 'deleted';
+		deleteTechStackRecordWithFiles($pdo, $id);
+		setFlash('success', 'Technology and its logo were deleted successfully.', 'Deleted');
 	}
 
-	header('Location: ' . ADMIN_URL . '/tech-stack.php?msg=' . $msg);
+	header('Location: ' . ADMIN_URL . '/tech-stack.php');
 	exit;
 }
-
-if (isset($_GET['msg'])) $msg = $_GET['msg'];
 
 $editTech = null;
 if (isset($_GET['edit'])) {
@@ -83,12 +88,6 @@ include __DIR__ . '/layout_top.php';
 	<a href="tech-stack.php" class="btn btn-secondary btn-sm">+ Add Tech</a>
 	<?php endif; ?>
 </div>
-
-<?php if ($msg === 'added' || $msg === 'updated' || $msg === 'deleted'): ?>
-<div class="alert alert-success" data-auto-dismiss="2600">Technology <?= $msg ?> successfully.</div>
-<?php elseif ($msg === 'error_required'): ?>
-<div class="alert alert-danger" data-auto-dismiss="3000">Name, Category and Technology Logo are required.</div>
-<?php endif; ?>
 
 <div class="admin-card" style="margin-bottom:20px;">
 	<div class="admin-card-header"><h2><?= $editTech ? 'Edit Technology' : 'Add New Technology' ?></h2></div>
@@ -155,7 +154,7 @@ include __DIR__ . '/layout_top.php';
 								<form method="POST" action="tech-stack.php" style="margin:0;">
 									<input type="hidden" name="action" value="delete">
 									<input type="hidden" name="id" value="<?= $tech['id'] ?>">
-									<button type="submit" class="btn btn-danger btn-xs" data-confirm="Delete '<?= e($tech['name']) ?>'?">Delete</button>
+									<button type="submit" class="btn btn-danger btn-xs" data-confirm="Delete '<?= e($tech['name']) ?>'? This will permanently delete this technology and its logo.">Delete</button>
 								</form>
 							</div>
 						</td>

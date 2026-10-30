@@ -1,0 +1,472 @@
+/**
+ * admin-sweetalert.css
+ * Universal, responsive, centered SweetAlert2 styling for CWT Admin.
+ * Supports screen sizes from ultra-small mobile (<=379px) up to ultrawide (5000px+).
+ */
+
+/* ─── SweetAlert2 Backdrop Container ─────────────────────────────── */
+.swal2-container,
+div:where(.swal2-container) {
+    z-index: 999999 !important;
+}
+
+.swal2-container.swal2-backdrop-show,
+body.swal2-shown .swal2-container {
+    background-color: rgba(15, 23, 42, 0.6) !important;
+    backdrop-filter: blur(4px) !important;
+    -webkit-backdrop-filter: blur(4px) !important;
+}
+
+/* Ensure the backdrop and blur DISAPPEAR IMMEDIATELY on close */
+.swal2-container.swal2-backdrop-hide,
+.swal2-container[style*="display: none"],
+body:not(.swal2-shown) .swal2-container,
+body:not(.swal2-shown) div:where(.swal2-container) {
+    display: none !important;
+    background-color: transparent !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+}
+
+/* ─── Base Popup Modal ───────────────────────────────────────────── */
+div:where(.swal2-popup.cwt-swal),
+div:where(.swal2-popup) {
+    position: relative !important;
+    box-sizing: border-box !important;
+    margin: auto !important;
+    padding: 30px 26px 26px 26px !important;
+    border: 1px solid rgba(226, 232, 240, 0.95) !important;
+    border-radius: 20px !important;
+    background: #ffffff !important;
+    color: #1e293b !important;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+    font-size: 15px !important;
+    text-align: center !important;
+    box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.25), 0 0 0 1px rgba(0, 0, 0, 0.04) !important;
+    width: auto !important;
+    min-width: min(340px, 92vw) !important;
+    max-width: min(480px, 92vw) !important;
+    max-height: 90vh !important;
+    overflow: hidden !important; /* Clips the bottom timer bar to rounded corners */
+    animation: cwtSwalPopIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
+}
+
+@keyframes cwtSwalPopIn {
+    0% {
+        opacity: 0;
+        transform: scale(0.94) translateY(8px);
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+/* ─── SweetAlert2 Icons ──────────────────────────────────────────── */
+div:where(.swal2-icon) {
+    margin: 2px auto 16px auto !important;
+    border-width: 3px !important;
+    box-sizing: content-box !important;
+    width: 68px !important;
+    height: 68px !important;
+    transition: transform 0.25s ease !important;
+}
+
+div:where(.swal2-icon.swal2-success) {
+    border-color: #10b981 !important;
+    color: #10b981 !important;
+}
+div:where(.swal2-icon.swal2-success) [class^='swal2-success-line'] {
+    background-color: #10b981 !important;
+}
+div:where(.swal2-icon.swal2-success) .swal2-success-ring {
+    border-color: rgba(16, 185, 129, 0.3) !important;
+}
+
+div:where(.swal2-icon.swal2-error) {
+    border-color: #ef4444 !important;
+    color: #ef4444 !important;
+}
+div:where(.swal2-icon.swal2-error) [class^='swal2-x-mark-line'] {
+    background-color: #ef4444 !important;
+}
+
+div:where(.swal2-icon.swal2-warning) {
+    border-color: #f59e0b !important;
+    color: #f59e0b !important;
+}
+
+div:where(.swal2-icon.swal2-info) {
+    border-color: #001be4 !important;
+    color: #001be4 !important;
+}
+
+div:where(.swal2-icon.swal2-question) {
+    border-color: #6366f1 !important;
+    color: #6366f1 !important;
+}
+
+/* ─── Close Button (X) ───────────────────────────────────────────── */
+div:where(.swal2-close) {
+    position: absolute !important;
+    top: 14px !important;
+    right: 14px !important;
+    width: 32px !important;
+    height: 32px !important;
+    border-radius: 50% !important;
+    border: none !important;
+    background: transparent !important;
+    color: #94a3b8 !important;
+    font-size: 24px !important;
+    line-height: 1 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    cursor: pointer !important;
+    transition: all 0.15s ease !important;
+    padding: 0 !important;
+    margin: 0 !important;
+}
+
+div:where(.swal2-close):hover {
+    background: #f1f5f9 !important;
+    color: #0f172a !important;
+}
+
+/* ─── Title & Content ────────────────────────────────────────────── */
+div:where(.swal2-title) {
+    padding: 0 8px !important;
+    color: #0f172a !important;
+    font-size: 1.25rem !important;
+    font-weight: 700 !important;
+    line-height: 1.35 !important;
+    margin-bottom: 8px !important;
+}
+
+div:where(.swal2-html-container) {
+    margin: 0 !important;
+    padding: 4px 10px 10px 10px !important;
+    color: #475569 !important;
+    font-size: 0.95rem !important;
+    line-height: 1.55 !important;
+    word-break: break-word !important;
+}
+
+/* ─── Action Buttons ─────────────────────────────────────────────── */
+div:where(.swal2-actions) {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 12px !important;
+    margin-top: 22px !important;
+    margin-bottom: 2px !important;
+    width: 100% !important;
+}
+
+/* Hide ANY Deny button — never show unwanted third button */
+div:where(.swal2-actions) button:where(.swal2-deny),
+button.swal2-deny {
+    display: none !important;
+    visibility: hidden !important;
+    width: 0 !important;
+    height: 0 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+}
+
+/* Ensure hidden buttons in SweetAlert STAY hidden */
+.swal2-container [style*="display: none"],
+.swal2-container .swal2-hide,
+div:where(.swal2-actions) button[style*="display: none"],
+div:where(.swal2-actions) button.swal2-hide,
+button.swal2-cancel[style*="display: none"],
+button.swal2-confirm[style*="display: none"] {
+    display: none !important;
+}
+
+div:where(.swal2-actions) button:where(.swal2-styled):not([style*="display: none"]):not(.swal2-hide):not(.swal2-deny) {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    min-height: 42px !important;
+    min-width: 104px !important;
+    padding: 10px 24px !important;
+    border-radius: 10px !important;
+    font-family: inherit !important;
+    font-size: 0.875rem !important;
+    font-weight: 600 !important;
+    letter-spacing: 0.01em !important;
+    cursor: pointer !important;
+    transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1) !important;
+    outline: none !important;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.08) !important;
+    margin: 0 !important;
+}
+
+div:where(.swal2-actions) button:where(.swal2-styled):focus-visible {
+    box-shadow: 0 0 0 3px rgba(0, 27, 228, 0.35) !important;
+}
+
+/* Primary confirm button (OK / Confirm) */
+div:where(.swal2-actions) button:where(.swal2-confirm) {
+    background: #001be4 !important;
+    color: #ffffff !important;
+    border: 1px solid #001be4 !important;
+}
+
+div:where(.swal2-actions) button:where(.swal2-confirm):hover {
+    background: #0015b0 !important;
+    border-color: #0015b0 !important;
+    transform: translateY(-1px) !important;
+    box-shadow: 0 4px 12px rgba(0, 27, 228, 0.28) !important;
+}
+
+div:where(.swal2-actions) button:where(.swal2-confirm):active {
+    transform: translateY(0) !important;
+}
+
+/* Danger confirm button (Delete) */
+.cwt-danger-dialog div:where(.swal2-actions) button:where(.swal2-confirm) {
+    background: #dc2626 !important;
+    color: #ffffff !important;
+    border: 1px solid #dc2626 !important;
+}
+
+.cwt-danger-dialog div:where(.swal2-actions) button:where(.swal2-confirm):hover {
+    background: #b91c1c !important;
+    border-color: #b91c1c !important;
+    box-shadow: 0 4px 12px rgba(220, 38, 38, 0.32) !important;
+}
+
+/* Warning confirm button (Suspend) */
+.cwt-warning-dialog div:where(.swal2-actions) button:where(.swal2-confirm) {
+    background: #d97706 !important;
+    color: #ffffff !important;
+    border: 1px solid #d97706 !important;
+}
+
+.cwt-warning-dialog div:where(.swal2-actions) button:where(.swal2-confirm):hover {
+    background: #b45309 !important;
+    border-color: #b45309 !important;
+    box-shadow: 0 4px 12px rgba(217, 119, 6, 0.32) !important;
+}
+
+/* Cancel button */
+div:where(.swal2-actions) button:where(.swal2-cancel) {
+    background: #ffffff !important;
+    color: #475569 !important;
+    border: 1px solid #cbd5e1 !important;
+}
+
+div:where(.swal2-actions) button:where(.swal2-cancel):hover {
+    background: #f8fafc !important;
+    color: #0f172a !important;
+    border-color: #94a3b8 !important;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06) !important;
+}
+
+/* Timer Progress Bar — pinned to bottom of card with clean gradient */
+div:where(.swal2-timer-progress-bar-container) {
+    position: absolute !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    height: 4px !important;
+    overflow: hidden !important;
+    border-radius: 0 0 20px 20px !important;
+}
+
+div:where(.swal2-timer-progress-bar) {
+    background: linear-gradient(90deg, #001be4, #3b82f6) !important;
+    height: 4px !important;
+}
+
+/* ─── Responsive Adjustments Across 12 Breakpoints ────────────────── */
+
+/* 1. Ultrawide / XXXXL (2560px – 5000px+) */
+@media screen and (min-width: 2560px) {
+    div:where(.swal2-popup.cwt-swal),
+    div:where(.swal2-popup) {
+        max-width: 560px !important;
+        padding: 38px 34px 30px 34px !important;
+        border-radius: 24px !important;
+    }
+    div:where(.swal2-title) {
+        font-size: 1.55rem !important;
+    }
+    div:where(.swal2-html-container) {
+        font-size: 1.05rem !important;
+    }
+    div:where(.swal2-actions) button:where(.swal2-styled) {
+        min-height: 48px !important;
+        padding: 11px 28px !important;
+        font-size: 0.95rem !important;
+    }
+}
+
+/* 2. Large Ultrawide / XXXL (1501px – 2559px) */
+@media screen and (min-width: 1501px) and (max-width: 2559px) {
+    div:where(.swal2-popup.cwt-swal),
+    div:where(.swal2-popup) {
+        max-width: 500px !important;
+        padding: 32px 28px 26px 28px !important;
+    }
+    div:where(.swal2-title) {
+        font-size: 1.35rem !important;
+    }
+}
+
+/* 3. Ultrawide / XXL (1400px – 1500px) */
+@media screen and (min-width: 1400px) and (max-width: 1500px) {
+    div:where(.swal2-popup.cwt-swal),
+    div:where(.swal2-popup) {
+        max-width: 480px !important;
+    }
+}
+
+/* 4. Extra Large Desktop (1200px – 1399px) */
+@media screen and (min-width: 1200px) and (max-width: 1399px) {
+    div:where(.swal2-popup.cwt-swal),
+    div:where(.swal2-popup) {
+        max-width: 460px !important;
+    }
+}
+
+/* 5. Laptop / Small Desktop (1001px – 1199px) */
+@media screen and (min-width: 1001px) and (max-width: 1199px) {
+    div:where(.swal2-popup.cwt-swal),
+    div:where(.swal2-popup) {
+        max-width: 450px !important;
+    }
+}
+
+/* 6. Normal (1000px) */
+@media screen and (width: 1000px) {
+    div:where(.swal2-popup.cwt-swal),
+    div:where(.swal2-popup) {
+        max-width: 450px !important;
+    }
+}
+
+/* 7. Normal Medium (992px – 999px) */
+@media screen and (min-width: 992px) and (max-width: 999px) {
+    div:where(.swal2-popup.cwt-swal),
+    div:where(.swal2-popup) {
+        max-width: 440px !important;
+    }
+}
+
+/* 8. Tablet (768px – 991px) */
+@media screen and (min-width: 768px) and (max-width: 991px) {
+    div:where(.swal2-popup.cwt-swal),
+    div:where(.swal2-popup) {
+        max-width: 420px !important;
+        padding: 26px 22px 22px 22px !important;
+    }
+    div:where(.swal2-title) {
+        font-size: 1.15rem !important;
+    }
+    div:where(.swal2-html-container) {
+        font-size: 0.92rem !important;
+    }
+}
+
+/* 9. Large Mobile (576px – 767px) */
+@media screen and (min-width: 576px) and (max-width: 767px) {
+    div:where(.swal2-popup.cwt-swal),
+    div:where(.swal2-popup) {
+        max-width: min(400px, 94vw) !important;
+        padding: 24px 20px 20px 20px !important;
+        border-radius: 18px !important;
+    }
+}
+
+/* 10. Standard Mobile (481px – 575px) */
+@media screen and (min-width: 481px) and (max-width: 575px) {
+    div:where(.swal2-popup.cwt-swal),
+    div:where(.swal2-popup) {
+        max-width: 92vw !important;
+        min-width: 290px !important;
+        padding: 22px 18px 18px 18px !important;
+        border-radius: 16px !important;
+    }
+    div:where(.swal2-title) {
+        font-size: 1.1rem !important;
+    }
+    div:where(.swal2-actions) {
+        gap: 10px !important;
+    }
+    div:where(.swal2-actions) button:where(.swal2-styled) {
+        flex: 1 1 auto !important;
+        min-height: 40px !important;
+        padding: 9px 16px !important;
+    }
+}
+
+/* 11. Small Mobile (380px – 480px) */
+@media screen and (min-width: 380px) and (max-width: 480px) {
+    div:where(.swal2-container) {
+        padding: 10px !important;
+    }
+    div:where(.swal2-popup.cwt-swal),
+    div:where(.swal2-popup) {
+        width: 94vw !important;
+        min-width: 0 !important;
+        padding: 20px 16px 16px 16px !important;
+        border-radius: 16px !important;
+    }
+    div:where(.swal2-title) {
+        font-size: 1.05rem !important;
+    }
+    div:where(.swal2-html-container) {
+        font-size: 0.88rem !important;
+    }
+    div:where(.swal2-actions) {
+        flex-direction: column-reverse !important;
+        gap: 8px !important;
+        width: 100% !important;
+    }
+    div:where(.swal2-actions) button:where(.swal2-styled) {
+        width: 100% !important;
+        min-height: 40px !important;
+        margin: 0 !important;
+    }
+}
+
+/* 12. Ultra Small Mobile (<= 379px) */
+@media screen and (max-width: 379px) {
+    div:where(.swal2-container) {
+        padding: 6px !important;
+    }
+    div:where(.swal2-popup.cwt-swal),
+    div:where(.swal2-popup) {
+        width: 96vw !important;
+        min-width: 0 !important;
+        padding: 18px 14px 14px 14px !important;
+        border-radius: 14px !important;
+    }
+    div:where(.swal2-icon) {
+        transform: scale(0.8) !important;
+        margin: 0 auto 8px auto !important;
+    }
+    div:where(.swal2-title) {
+        font-size: 0.975rem !important;
+    }
+    div:where(.swal2-html-container) {
+        font-size: 0.825rem !important;
+    }
+    div:where(.swal2-actions) {
+        flex-direction: column-reverse !important;
+        gap: 6px !important;
+        width: 100% !important;
+    }
+    div:where(.swal2-actions) button:where(.swal2-styled) {
+        width: 100% !important;
+        min-height: 38px !important;
+        padding: 8px 12px !important;
+        font-size: 0.8125rem !important;
+    }
+}

@@ -16,6 +16,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 	$password = $_POST['password'] ?? '';
 	if (empty($username) || empty($password)) {
 		$error = 'Please enter both username and password.';
+		setFlash('warning', $error, 'Missing Credentials');
 	} else {
 		$stmt = $pdo->prepare("SELECT id, username, password_hash FROM admin_users WHERE username = ? LIMIT 1");
 		$stmt->execute([$username]);
@@ -26,9 +27,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 			exit;
 		} else {
 			$error = 'Invalid username or password.';
+			setFlash('error', $error, 'Authentication Failed');
 		}
 	}
 }
+
+$flash = getFlash();
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -41,6 +45,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 	<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 	<link rel="stylesheet" href="<?= SITE_URL ?>/assets/css/admin-login.css?v=<?= filemtime(__DIR__ . '/../assets/css/admin-login.css') ?>">
+	<link rel="stylesheet" href="<?= SITE_URL ?>/assets/css/sweetalert2.min.css">
+	<link rel="stylesheet" href="<?= SITE_URL ?>/assets/css/admin-sweetalert.css?v=<?= filemtime(__DIR__ . '/../assets/css/admin-sweetalert.css') ?>">
 </head>
 <body class="admin-login-page">
 <div class="login-wrapper">
@@ -50,9 +56,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 		</div>
 		<h1 class="login-title">Admin Portal</h1>
 		<p class="login-sub">Creative Web Technologies — Secure Access</p>
-		<?php if ($error): ?>
-		<div class="login-alert" role="alert">⚠️ <?= htmlspecialchars($error) ?></div>
-		<?php endif; ?>
 		<form method="POST" action="" class="login-form" novalidate>
 			<div class="form-group">
 				<label for="username" class="form-label">Username</label>
@@ -67,5 +70,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 		<p class="login-footer-note"><a href="<?= SITE_URL ?>/index.php">← Back to Website</a></p>
 	</div>
 </div>
+
+<script src="<?= SITE_URL ?>/assets/js/sweetalert2.all.min.js"></script>
+<script>if (typeof Swal === 'undefined') { document.write('<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"><\/script>'); }</script>
+<script src="<?= SITE_URL ?>/assets/js/admin-sweetalert.js?v=<?= filemtime(__DIR__ . '/../assets/js/admin-sweetalert.js') ?>"></script>
+<?php if ($flash): ?>
+<script>
+window.CWT_FLASH = <?= json_encode($flash, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>;
+if (typeof window.triggerFlashAlert === 'function') {
+	window.triggerFlashAlert(window.CWT_FLASH);
+}
+</script>
+<?php endif; ?>
 </body>
 </html>

@@ -14,35 +14,6 @@ document.addEventListener('DOMContentLoaded', function () {
             .replace(/"/g, '&quot;');
     }
 
-    function notify(type, text) {
-        if (!hasSwal) {
-            window.alert(text);
-            return;
-        }
-        const isSuccess = type === 'success';
-        Swal.fire({
-            icon: isSuccess ? 'success' : 'error',
-            title: isSuccess ? 'Success' : 'Something went wrong',
-            text: text,
-            position: 'center',
-            buttonsStyling: false,
-            heightAuto: false,
-            scrollbarPadding: false,
-            showConfirmButton: !isSuccess,
-            confirmButtonText: 'OK',
-            timer: isSuccess ? 2200 : undefined,
-            timerProgressBar: isSuccess,
-            customClass: {
-                popup: 'svc-swal',
-                confirmButton: 'svc-swal-btn svc-swal-danger'
-            }
-        });
-    }
-
-    if (window.SVC_FLASH && window.SVC_FLASH.text) {
-        notify(window.SVC_FLASH.type, window.SVC_FLASH.text);
-    }
-
     function openModal(id) {
         const modal = document.getElementById(id);
         if (!modal) return;
@@ -86,31 +57,25 @@ document.addEventListener('DOMContentLoaded', function () {
         form.addEventListener('submit', function (e) {
             e.preventDefault();
             const name = form.getAttribute('data-name') || 'this item';
-            if (!hasSwal) {
-                if (window.confirm('Delete ' + name + '?')) form.submit();
-                return;
+            const msg = 'Are you sure you want to delete "' + name + '"? This cannot be undone.';
+            if (typeof window.confirmDelete === 'function') {
+                window.confirmDelete(msg, function () {
+                    form.submit();
+                });
+            } else if (hasSwal) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Delete?',
+                    text: msg,
+                    showCancelButton: true,
+                    confirmButtonText: 'Delete',
+                    cancelButtonText: 'Cancel'
+                }).then(function (res) {
+                    if (res.isConfirmed) form.submit();
+                });
+            } else {
+                if (window.confirm(msg)) form.submit();
             }
-            Swal.fire({
-                icon: 'warning',
-                title: 'Delete?',
-                html: 'Are you sure you want to delete <strong>' + escapeHtml(name) + '</strong>? This cannot be undone.',
-                position: 'center',
-                showCancelButton: true,
-                reverseButtons: true,
-                focusCancel: true,
-                confirmButtonText: 'Delete',
-                cancelButtonText: 'Cancel',
-                buttonsStyling: false,
-                heightAuto: false,
-                scrollbarPadding: false,
-                customClass: {
-                    popup: 'svc-swal',
-                    confirmButton: 'svc-swal-btn svc-swal-danger',
-                    cancelButton: 'svc-swal-btn svc-swal-cancel'
-                }
-            }).then(function (res) {
-                if (res.isConfirmed) form.submit();
-            });
         });
     });
 
@@ -118,14 +83,17 @@ document.addEventListener('DOMContentLoaded', function () {
     const serviceForm = document.getElementById('serviceForm');
     const serviceTitle = document.getElementById('serviceModalTitle');
 
-    document.getElementById('addServiceBtn').addEventListener('click', function () {
-        serviceForm.reset();
-        serviceForm.querySelector('[name="id"]').value = '';
-        serviceForm.querySelector('[name="sort_order"]').value = '0';
-        serviceForm.querySelector('[name="is_active"]').checked = true;
-        serviceTitle.textContent = 'Add Service';
-        openModal('serviceModal');
-    });
+    const addServiceBtn = document.getElementById('addServiceBtn');
+    if (addServiceBtn) {
+        addServiceBtn.addEventListener('click', function () {
+            serviceForm.reset();
+            serviceForm.querySelector('[name="id"]').value = '';
+            serviceForm.querySelector('[name="sort_order"]').value = '0';
+            serviceForm.querySelector('[name="is_active"]').checked = true;
+            serviceTitle.textContent = 'Add Service';
+            openModal('serviceModal');
+        });
+    }
 
     document.querySelectorAll('.edit-service-btn').forEach(function (btn) {
         btn.addEventListener('click', function () {
@@ -191,24 +159,30 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    document.getElementById('addCardBtn').addEventListener('click', function () {
-        addCardRow(null);
-    });
+    const addCardBtn = document.getElementById('addCardBtn');
+    if (addCardBtn) {
+        addCardBtn.addEventListener('click', function () {
+            addCardRow(null);
+        });
+    }
 
-    document.getElementById('addCapabilityBtn').addEventListener('click', function () {
-        capForm.reset();
-        capForm.querySelector('[name="id"]').value = '';
-        capForm.querySelector('[name="sort_order"]').value = '0';
-        capForm.querySelector('[name="is_active"]').checked = true;
-        capForm.querySelector('[name="icon"]').value = 'box';
-        capForm.querySelector('[name="accent"]').value = '#001be4';
-        capForm.querySelector('[name="accent2"]').value = '#0015b0';
-        capForm.querySelector('[name="soft"]').value = 'rgba(0, 27, 228, 0.16)';
-        capCardsList.innerHTML = '';
-        cardIndex = 0;
-        capTitle.textContent = 'Add Capability Section';
-        openModal('capabilityModal');
-    });
+    const addCapabilityBtn = document.getElementById('addCapabilityBtn');
+    if (addCapabilityBtn) {
+        addCapabilityBtn.addEventListener('click', function () {
+            capForm.reset();
+            capForm.querySelector('[name="id"]').value = '';
+            capForm.querySelector('[name="sort_order"]').value = '0';
+            capForm.querySelector('[name="is_active"]').checked = true;
+            capForm.querySelector('[name="icon"]').value = 'box';
+            capForm.querySelector('[name="accent"]').value = '#001be4';
+            capForm.querySelector('[name="accent2"]').value = '#0015b0';
+            capForm.querySelector('[name="soft"]').value = 'rgba(0, 27, 228, 0.16)';
+            capCardsList.innerHTML = '';
+            cardIndex = 0;
+            capTitle.textContent = 'Add Capability Section';
+            openModal('capabilityModal');
+        });
+    }
 
     document.querySelectorAll('.edit-capability-btn').forEach(function (btn) {
         btn.addEventListener('click', function () {

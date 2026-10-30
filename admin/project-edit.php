@@ -22,18 +22,15 @@ $category = getSolutionCategory($pdo, (int)$project['category_id']);
 $details  = getProjectDetails($pdo, $projectId);
 $mockups  = getProjectMockups($pdo, $projectId);
 
-$msg = '';
-$msgType = 'success';
-
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 	/* ─── 1. Handle mockup delete (bypasses content requirement) ────────── */
 	$deleteMockupId = (int)($_POST['delete_mockup_id'] ?? 0);
 	if ($deleteMockupId > 0) {
 		if (deleteProjectMockup($pdo, $deleteMockupId, $projectId)) {
-			$_SESSION['flash_success'] = 'Mockup image removed.';
+			setFlash('success', 'Mockup image removed.');
 		} else {
-			$_SESSION['flash_error'] = 'Could not remove mockup image.';
+			setFlash('error', 'Could not remove mockup image.');
 		}
 		header('Location: project-edit.php?id=' . $projectId);
 		exit;
@@ -69,34 +66,46 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 	/* ─── 3. Handle content + banner save ───────────────────────────────── */
 	$content = $_POST['content'] ?? '';
 
-	// Legacy fields preserved from DB (no longer editable here)
+	// Legacy fields preserved from DB
 	$client_name  = $details['client_name']  ?? '';
 	$industry     = $details['industry']     ?? '';
 	$duration     = $details['duration']     ?? '';
 	$technologies = $details['technologies'] ?? '';
 
-	$bannerImage = $details['banner_image'] ?? '';
+	$oldBannerImage = $details['banner_image'] ?? '';
+	$bannerImage = $oldBannerImage;
+	$bannerRemoved = false;
+	$newBannerUploaded = false;
+
 	if (isset($_POST['remove_banner']) && $_POST['remove_banner'] === '1') {
 		$bannerImage = '';
+		$bannerRemoved = true;
 	}
 	if (!empty($_FILES['banner_image']['name'])) {
 		$uploaded = uploadFile($_FILES['banner_image'], 'projects');
-		if ($uploaded) $bannerImage = $uploaded;
+		if ($uploaded) {
+			$bannerImage = $uploaded;
+			$newBannerUploaded = true;
+			$bannerRemoved = false;
+		}
 	}
 
 	$stripContent = trim(strip_tags($content));
 	if ($stripContent === '' && !preg_match('/<img\b/i', $content)) {
-		// Only warn if there was actually a mockup upload happening — otherwise just skip content save
 		if ($mockupUploadedCount > 0) {
-			$_SESSION['flash_success'] = $mockupUploadedCount . ' mockup image(s) uploaded.';
+			$msg = $mockupUploadedCount . ' mockup image(s) uploaded.';
 			if ($mockupFailedCount > 0) {
-				$_SESSION['flash_error'] = $mockupFailedCount . ' file(s) failed to upload.';
+				$msg .= ' ' . $mockupFailedCount . ' file(s) failed.';
+				setFlash('warning', $msg);
+			} else {
+				setFlash('success', $msg);
 			}
 			header('Location: project-edit.php?id=' . $projectId);
 			exit;
 		}
-		$msg = 'Please add some content before saving.';
-		$msgType = 'error';
+		setFlash('warning', 'Please add some content before saving.');
+		header('Location: project-edit.php?id=' . $projectId);
+		exit;
 	} else {
 		$liveSiteUrl = trim($_POST['live_site_url'] ?? '');
 
@@ -111,40 +120,36 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 				'live_site_url' => $liveSiteUrl,
 			]);
 
+			if ($newBannerUploaded && $oldBannerImage !== '' && $oldBannerImage !== $bannerImage) {
+				deleteUploadedFile($pdo, $oldBannerImage, 'projects');
+			} elseif ($bannerRemoved && $oldBannerImage !== '') {
+				deleteUploadedFile($pdo, $oldBannerImage, 'projects');
+			}
+
 			$flash = 'Project content saved successfully.';
 			if ($mockupUploadedCount > 0) {
 				$flash .= ' ' . $mockupUploadedCount . ' mockup image(s) uploaded.';
 			}
 			if ($mockupFailedCount > 0) {
-				$msgType = 'error';
-				$flash  .= ' ' . $mockupFailedCount . ' file(s) failed to upload.';
+				$flash .= ' ' . $mockupFailedCount . ' file(s) failed to upload.';
+				setFlash('warning', $flash);
+			} else {
+				setFlash('success', $flash);
 			}
 
-			// Refresh in-memory state
-			$details = getProjectDetails($pdo, $projectId);
-
-			// Use session flash so a browser refresh won't re-submit
-			$_SESSION['flash_success'] = $flash;
 			header('Location: project-edit.php?id=' . $projectId);
 			exit;
 		} catch (ProjectContentImageException $error) {
-			$msg = $error->getMessage();
-			$msgType = 'error';
-			$details['content'] = $content;
-			$details['live_site_url'] = $liveSiteUrl;
+			setFlash('error', $error->getMessage());
+			header('Location: project-edit.php?id=' . $projectId);
+			exit;
+		} catch (Throwable $e) {
+			error_log('[project-edit.php] ' . $e->getMessage());
+			setFlash('error', 'An error occurred while saving the project.');
+			header('Location: project-edit.php?id=' . $projectId);
+			exit;
 		}
 	}
-}
-
-// Pick up flash messages
-if (!empty($_SESSION['flash_success'])) {
-	$msg = $_SESSION['flash_success'];
-	$msgType = 'success';
-	unset($_SESSION['flash_success']);
-} elseif (!empty($_SESSION['flash_error'])) {
-	$msg = $_SESSION['flash_error'];
-	$msgType = 'error';
-	unset($_SESSION['flash_error']);
 }
 
 // Always refresh mockups after any action
@@ -162,7 +167,7 @@ include __DIR__ . '/layout_top.php';
 <div class="pe-page-header">
 	<div class="pe-page-header-left">
 		<a href="solution-projects.php<?= $category ? '?category='.$category['id'] : '' ?>" class="pe-back-link">
-			<i class="fa-solid fa-arrow-left"></i> <-- Back to Projects
+			<i class="fa-solid fa-arrow-left"></i> ← Back to Projects
 		</a>
 		<div class="pe-title-block">
 			<span class="pe-cat-pill" style="background:<?= e($category['color'] ?? '#3b82f6') ?>;">
@@ -179,10 +184,6 @@ include __DIR__ . '/layout_top.php';
 		</a>
 	</div>
 </div>
-
-<?php if ($msg !== ''): ?>
-<div class="alert alert-<?= $msgType === 'error' ? 'danger' : 'success' ?>" data-auto-dismiss="2800"><?= e($msg) ?></div>
-<?php endif; ?>
 
 <form id="projectDetailsForm" method="POST" action="project-edit.php?id=<?= $projectId ?>" enctype="multipart/form-data" class="pe-layout">
 

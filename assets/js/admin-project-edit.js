@@ -201,13 +201,20 @@ document.addEventListener('DOMContentLoaded', function () {
 
     if (removeBannerBtn) {
         removeBannerBtn.addEventListener('click', function () {
-            var defaultSrc = bannerPreview.dataset.defaultSrc || '';
-            bannerPreview.src = defaultSrc;
-            bannerPreview.style.display = defaultSrc ? 'block' : 'none';
-            if (bannerEmpty) bannerEmpty.style.display = defaultSrc ? 'none' : 'flex';
-            removeBannerBtn.disabled = true;
-            if (bannerInput) bannerInput.value = '';
-            removeBannerFlag.value = '1';
+            window.confirmImageRemoval({
+                title: 'Remove custom banner?',
+                text: 'The custom banner image will be removed upon saving.'
+            }).then(function (result) {
+                if (result.isConfirmed) {
+                    var defaultSrc = bannerPreview.dataset.defaultSrc || '';
+                    bannerPreview.src = defaultSrc;
+                    bannerPreview.style.display = defaultSrc ? 'block' : 'none';
+                    if (bannerEmpty) bannerEmpty.style.display = defaultSrc ? 'none' : 'flex';
+                    removeBannerBtn.disabled = true;
+                    if (bannerInput) bannerInput.value = '';
+                    removeBannerFlag.value = '1';
+                }
+            });
         });
     }
 

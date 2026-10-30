@@ -6,55 +6,89 @@ require_once __DIR__ . '/../includes/auth.php';
 if (!defined('ADMIN_URL')) define('ADMIN_URL', SITE_URL . '/admin');
 requireAuth();
 
-$msg = '';
-
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 	$action = $_POST['action'] ?? '';
 
-	if ($action === 'add' || $action === 'edit') {
-		$id      = (int)($_POST['id'] ?? 0);
-		$name    = trim($_POST['product_name'] ?? '');
-		$desc    = trim($_POST['description'] ?? '');
-		$url     = trim($_POST['visit_url'] ?? '');
-		$showBtn = isset($_POST['show_button']) ? 1 : 0;
-		$order   = (int)($_POST['sort_order'] ?? 0);
+	try {
+		if ($action === 'add' || $action === 'edit') {
+			$id      = (int)($_POST['id'] ?? 0);
+			$name    = trim($_POST['product_name'] ?? '');
+			$desc    = trim($_POST['description'] ?? '');
+			$url     = trim($_POST['visit_url'] ?? '');
+			$showBtn = isset($_POST['show_button']) ? 1 : 0;
+			$order   = (int)($_POST['sort_order'] ?? 0);
 
-		$logoPath = '';
-		if ($action === 'edit') {
-			$existing = $pdo->prepare("SELECT logo_path FROM products WHERE id=?");
-			$existing->execute([$id]);
-			$logoPath = $existing->fetchColumn() ?: '';
-		}
+			$oldLogo = '';
+			if ($action === 'edit' && $id > 0) {
+				$existing = $pdo->prepare("SELECT logo_path FROM products WHERE id=?");
+				$existing->execute([$id]);
+				$oldLogo = $existing->fetchColumn() ?: '';
+			}
 
-		if (!empty($_FILES['logo']['name'])) {
-			$newLogo = uploadFile($_FILES['logo'], 'products');
-			if ($newLogo) $logoPath = $newLogo;
-		}
+			$logoPath = $oldLogo;
+			$newLogoUploaded = false;
 
-		if ($name === '' || $desc === '' || $logoPath === '') {
-			$msg = 'error_required';
-		} else {
+			if (!empty($_FILES['logo']['name'])) {
+				$newLogo = uploadFile($_FILES['logo'], 'products');
+				if ($newLogo) {
+					$logoPath = $newLogo;
+					$newLogoUploaded = true;
+				} else {
+					setFlash('error', 'Product logo could not be uploaded. Please ensure it is a valid image under 5MB.');
+					header('Location: ' . ADMIN_URL . '/products.php' . ($action === 'edit' ? '?edit=' . $id : ''));
+					exit;
+				}
+			}
+
+			if ($name === '' || $desc === '' || $logoPath === '') {
+				if ($newLogoUploaded && $logoPath !== '') {
+					deleteUploadedFile($pdo, $logoPath, 'products');
+				}
+				setFlash('warning', 'Product Name, Description, and Logo Image are required.');
+				header('Location: ' . ADMIN_URL . '/products.php' . ($action === 'edit' ? '?edit=' . $id : ''));
+				exit;
+			}
+
 			if ($action === 'add') {
-				$pdo->prepare("INSERT INTO products (product_name, description, visit_url, show_button, sort_order, logo_path) VALUES (?,?,?,?,?,?)")
-					->execute([$name, $desc, $url, $showBtn, $order, $logoPath]);
-				$msg = 'added';
+				$stmt = $pdo->prepare("INSERT INTO products (product_name, description, visit_url, show_button, sort_order, logo_path) VALUES (?,?,?,?,?,?)");
+				$ok = $stmt->execute([$name, $desc, $url, $showBtn, $order, $logoPath]);
+				if ($ok) {
+					setFlash('success', 'Product added successfully.');
+				} else {
+					deleteUploadedFile($pdo, $logoPath, 'products');
+					setFlash('error', 'Failed to save product in database.');
+				}
 			} else {
-				$pdo->prepare("UPDATE products SET product_name=?, description=?, visit_url=?, show_button=?, sort_order=?, logo_path=? WHERE id=?")
-					->execute([$name, $desc, $url, $showBtn, $order, $logoPath, $id]);
-				$msg = 'updated';
+				$stmt = $pdo->prepare("UPDATE products SET product_name=?, description=?, visit_url=?, show_button=?, sort_order=?, logo_path=? WHERE id=?");
+				$ok = $stmt->execute([$name, $desc, $url, $showBtn, $order, $logoPath, $id]);
+				if ($ok) {
+					if ($newLogoUploaded && $oldLogo !== '' && $oldLogo !== $logoPath) {
+						deleteUploadedFile($pdo, $oldLogo, 'products');
+					}
+					setFlash('success', 'Product updated successfully.');
+				} else {
+					if ($newLogoUploaded && $logoPath !== '') {
+						deleteUploadedFile($pdo, $logoPath, 'products');
+					}
+					setFlash('error', 'Failed to update product.');
+				}
+			}
+		} elseif ($action === 'delete') {
+			$id = (int)$_POST['id'];
+			if (deleteProductRecordWithFiles($pdo, $id)) {
+				setFlash('success', 'Product deleted successfully.');
+			} else {
+				setFlash('error', 'Could not delete product.');
 			}
 		}
-	} elseif ($action === 'delete') {
-		$id = (int)$_POST['id'];
-		$pdo->prepare("DELETE FROM products WHERE id=?")->execute([$id]);
-		$msg = 'deleted';
+	} catch (Throwable $e) {
+		error_log('[products.php] ' . $e->getMessage());
+		setFlash('error', 'An error occurred while saving the product.');
 	}
 
-	header('Location: ' . ADMIN_URL . '/products.php?msg=' . $msg);
+	header('Location: ' . ADMIN_URL . '/products.php');
 	exit;
 }
-
-if (isset($_GET['msg'])) $msg = $_GET['msg'];
 
 $editProduct = null;
 if (isset($_GET['edit'])) {
@@ -78,12 +112,6 @@ include __DIR__ . '/layout_top.php';
 	<a href="products.php" class="btn btn-secondary btn-sm">+ New Product</a>
 	<?php endif; ?>
 </div>
-
-<?php if ($msg === 'added' || $msg === 'updated' || $msg === 'deleted'): ?>
-<div class="alert alert-success" data-auto-dismiss="2600">Product <?= $msg ?> successfully.</div>
-<?php elseif ($msg === 'error_required'): ?>
-<div class="alert alert-danger" data-auto-dismiss="3000">Description, Logo Image and Product Name are required.</div>
-<?php endif; ?>
 
 <div class="admin-card" style="margin-bottom:20px;">
 	<div class="admin-card-header"><h2><?= $editProduct ? 'Edit Product' : 'Add New Product' ?></h2></div>
@@ -188,7 +216,7 @@ include __DIR__ . '/layout_top.php';
 								<form method="POST" style="margin:0;">
 									<input type="hidden" name="action" value="delete">
 									<input type="hidden" name="id" value="<?= $prod['id'] ?>">
-									<button type="submit" class="btn btn-danger btn-xs" data-confirm="Delete '<?= e($prod['product_name']) ?>'?">Delete</button>
+									<button type="submit" class="btn btn-danger btn-xs" data-confirm="Delete '<?= e($prod['product_name']) ?>'? This will permanently delete its logo.">Delete</button>
 								</form>
 							</div>
 						</td>

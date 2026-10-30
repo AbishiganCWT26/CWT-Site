@@ -6,7 +6,6 @@ require_once __DIR__ . '/../includes/auth.php';
 if (!defined('ADMIN_URL')) define('ADMIN_URL', SITE_URL . '/admin');
 requireAuth();
 
-$msg = '';
 $blogId = isset($_GET['id']) ? (int)$_GET['id'] : 0;
 $blog = [];
 
@@ -25,32 +24,68 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 	if (empty($slug)) $slug = slugify($topic);
 
-	$featuredImage = $blog['featured_image'] ?? '';
+	$oldImage = $blog['featured_image'] ?? '';
+	$featuredImage = $oldImage;
+	$newImageUploaded = false;
+
 	if (!empty($_FILES['featured_image']['name'])) {
 		$newImg = uploadFile($_FILES['featured_image'], 'insights');
-		if ($newImg) $featuredImage = $newImg;
+		if ($newImg) {
+			$featuredImage = $newImg;
+			$newImageUploaded = true;
+		} else {
+			setFlash('error', 'Featured image could not be uploaded. Please ensure it is a valid image under 5MB.');
+			header('Location: ' . ADMIN_URL . '/insight-edit.php' . ($blogId ? '?id=' . $blogId : ''));
+			exit;
+		}
 	}
 
 	$tagsArray = array_filter(array_map('trim', explode(',', $hashtags)));
 
 	if ($topic === '' || $featuredImage === '' || count($tagsArray) < 2) {
-		$msg = 'error_required';
-	} else {
+		if ($newImageUploaded && $featuredImage !== '') {
+			deleteUploadedFile($pdo, $featuredImage, 'insights');
+		}
+		setFlash('warning', 'Title, Featured Image and at least 2 Hashtags are required.');
+		header('Location: ' . ADMIN_URL . '/insight-edit.php' . ($blogId ? '?id=' . $blogId : ''));
+		exit;
+	}
+
+	try {
 		if ($blogId && !empty($blog)) {
 			$stmt = $pdo->prepare("UPDATE blog_details SET topic=?, slug=?, content=?, hashtags=?, featured_image=?, is_published=? WHERE id=?");
-			$stmt->execute([$topic, $slug, $content, $hashtags, $featuredImage, $published, $blogId]);
-			$msg = 'updated';
+			$ok = $stmt->execute([$topic, $slug, $content, $hashtags, $featuredImage, $published, $blogId]);
+			if ($ok) {
+				if ($newImageUploaded && $oldImage !== '' && $oldImage !== $featuredImage) {
+					deleteUploadedFile($pdo, $oldImage, 'insights');
+				}
+				setFlash('success', 'Post updated successfully.');
+			} else {
+				if ($newImageUploaded && $featuredImage !== '') {
+					deleteUploadedFile($pdo, $featuredImage, 'insights');
+				}
+				setFlash('error', 'Failed to update post in database.');
+			}
 		} else {
 			$stmt = $pdo->prepare("INSERT INTO blog_details (topic, slug, content, hashtags, featured_image, is_published, publish_date) VALUES (?,?,?,?,?,?,?)");
-			$stmt->execute([$topic, $slug, $content, $hashtags, $featuredImage, $published, date('Y-m-d')]);
-			$blogId = (int)$pdo->lastInsertId();
-			$msg = 'added';
+			$ok = $stmt->execute([$topic, $slug, $content, $hashtags, $featuredImage, $published, date('Y-m-d')]);
+			if ($ok) {
+				$blogId = (int)$pdo->lastInsertId();
+				setFlash('success', 'Post saved successfully.');
+			} else {
+				if ($newImageUploaded && $featuredImage !== '') {
+					deleteUploadedFile($pdo, $featuredImage, 'insights');
+				}
+				setFlash('error', 'Failed to save post in database.');
+			}
 		}
-
-		$stmt = $pdo->prepare("SELECT * FROM blog_details WHERE id = ?");
-		$stmt->execute([$blogId]);
-		$blog = $stmt->fetch();
+	} catch (Throwable $e) {
+		error_log('[insight-edit.php] ' . $e->getMessage());
+		setFlash('error', 'An error occurred while saving the post.');
 	}
+
+	header('Location: ' . ADMIN_URL . '/insights.php');
+	exit;
 }
 
 $pageTitle = $blogId ? 'Edit Post' : 'New Post';
@@ -67,12 +102,6 @@ include __DIR__ . '/layout_top.php';
 	</div>
 	<a href="insights.php" class="btn btn-secondary btn-sm">← Back to Posts</a>
 </div>
-
-<?php if ($msg === 'added' || $msg === 'updated'): ?>
-<div class="alert alert-success" data-auto-dismiss="2600">Post <?= $msg === 'added' ? 'saved' : 'updated' ?> successfully.</div>
-<?php elseif ($msg === 'error_required'): ?>
-<div class="alert alert-danger" data-auto-dismiss="3400">Title, Featured Image and at least 2 Hashtags are required.</div>
-<?php endif; ?>
 
 <div class="admin-card">
 	<div class="admin-card-body">

@@ -9,7 +9,8 @@ document.addEventListener('DOMContentLoaded', () => {
     status.textContent = 'Changes save automatically.';
     function updatePreview() {
         inputs.forEach(input => {
-            document.querySelector(`[data-pin="${input.value}"]`).hidden = !input.checked;
+            const pin = document.querySelector(`[data-pin="${input.value}"]`);
+            if (pin) pin.hidden = !input.checked;
         });
         const count = inputs.filter(input => input.checked).length;
         document.getElementById('worldMapCount').textContent = `${count} ${count === 1 ? 'country' : 'countries'} selected`;
@@ -30,14 +31,17 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
                 if (!response.ok) throw new Error('Save failed');
                 const result = await response.json();
-                if (!result.ok) throw new Error('Save failed');
+                if (!result.ok) throw new Error(result.message || 'Save failed');
                 status.classList.remove('is-error');
                 status.textContent = `${input.closest('label').dataset.name} ${requested ? 'shown' : 'hidden'} on the client map. Saved.`;
-            } catch (_) {
+            } catch (err) {
                 input.checked = !requested;
                 updatePreview();
                 status.classList.add('is-error');
                 status.textContent = 'Could not save. Please try again, or sign in again if your session expired.';
+                if (typeof window.showErrorAlert === 'function') {
+                    window.showErrorAlert('Could not save changes to the client map. Please try again, or reload the page if your session expired.', 'Save Failed');
+                }
             } finally { input.disabled = false; }
         });
     }));

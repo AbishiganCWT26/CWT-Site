@@ -4,6 +4,7 @@ require_once __DIR__ . '/../includes/db.php';
 require_once __DIR__ . '/../includes/functions.php';
 require_once __DIR__ . '/../includes/auth.php';
 require_once __DIR__ . '/../includes/world-map.php';
+if (!defined('ADMIN_URL')) define('ADMIN_URL', SITE_URL . '/admin');
 requireAuth();
 $catalog = worldMapCatalog();
 $isAjax = ($_POST['action'] ?? '') === 'toggle';
@@ -37,7 +38,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $save = $pdo->prepare('INSERT INTO world_map_countries (country_code, is_active) VALUES (?, 1) ON DUPLICATE KEY UPDATE is_active = 1');
         foreach (array_unique($selected) as $code) $save->execute([$code]);
         $pdo->commit();
-        header('Location: ' . ADMIN_URL . '/world-map.php?saved=1');
+        setFlash('success', 'World map updated successfully.', 'Success');
+        header('Location: ' . ADMIN_URL . '/world-map.php');
         exit;
     } catch (PDOException $error) {
         if ($pdo->inTransaction()) $pdo->rollBack();
@@ -47,7 +49,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             echo json_encode(['ok' => false, 'message' => 'Could not save the change. Please try again.']);
             exit;
         }
-        $saveError = 'Could not save the changes. Please try again.';
+        setFlash('error', 'Could not save the changes. Please try again.', 'Error');
+        header('Location: ' . ADMIN_URL . '/world-map.php');
+        exit;
     }
 }
 $selectedCountries = worldMapSelected($pdo);
@@ -60,8 +64,6 @@ include __DIR__ . '/layout_top.php';
  <div><h1>World Map</h1><p>Choose the countries shown on the Products page's Our Clients map.</p></div>
  <a href="<?= SITE_URL ?>/products.php#our-clients" class="btn btn-secondary" target="_blank" rel="noopener">View website</a>
 </div>
-<?php if (isset($_GET['saved'])): ?><div class="alert alert-success">Map updated.</div><?php endif; ?>
-<?php if (isset($saveError)): ?><div class="alert alert-danger"><?= e($saveError) ?></div><?php endif; ?>
 <div class="admin-card world-map-preview-card">
  <div class="admin-card-header"><h2>Map preview</h2><span id="worldMapCount"><?= count($selectedCodes) ?> countries selected</span></div>
  <div class="admin-card-body">

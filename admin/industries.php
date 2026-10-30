@@ -6,52 +6,86 @@ require_once __DIR__ . '/../includes/auth.php';
 if (!defined('ADMIN_URL')) define('ADMIN_URL', SITE_URL . '/admin');
 requireAuth();
 
-$msg = '';
-
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 	$action = $_POST['action'] ?? '';
 
-	if ($action === 'add' || $action === 'edit') {
-		$id    = (int)($_POST['id'] ?? 0);
-		$name  = trim($_POST['name'] ?? '');
-		$order = (int)($_POST['sort_order'] ?? 0);
+	try {
+		if ($action === 'add' || $action === 'edit') {
+			$id    = (int)($_POST['id'] ?? 0);
+			$name  = trim($_POST['name'] ?? '');
+			$order = (int)($_POST['sort_order'] ?? 0);
 
-		$imagePath = '';
-		if ($action === 'edit') {
-			$existing = $pdo->prepare("SELECT image_path FROM industries WHERE id=?");
-			$existing->execute([$id]);
-			$imagePath = $existing->fetchColumn() ?: '';
-		}
+			$oldImage = '';
+			if ($action === 'edit' && $id > 0) {
+				$existing = $pdo->prepare("SELECT image_path FROM industries WHERE id=?");
+				$existing->execute([$id]);
+				$oldImage = $existing->fetchColumn() ?: '';
+			}
 
-		if (!empty($_FILES['image']['name'])) {
-			$newImg = uploadFile($_FILES['image'], 'industries');
-			if ($newImg) $imagePath = $newImg;
-		}
+			$imagePath = $oldImage;
+			$newImageUploaded = false;
 
-		if ($name === '' || $imagePath === '' || $order < 1) {
-			$msg = 'error_required';
-		} else {
+			if (!empty($_FILES['image']['name'])) {
+				$newImg = uploadFile($_FILES['image'], 'industries');
+				if ($newImg) {
+					$imagePath = $newImg;
+					$newImageUploaded = true;
+				} else {
+					setFlash('error', 'Industry image could not be uploaded. Please ensure it is a valid image under 5MB.');
+					header('Location: ' . ADMIN_URL . '/industries.php' . ($action === 'edit' ? '?edit=' . $id : ''));
+					exit;
+				}
+			}
+
+			if ($name === '' || $imagePath === '' || $order < 1) {
+				if ($newImageUploaded && $imagePath !== '') {
+					deleteUploadedFile($pdo, $imagePath, 'industries');
+				}
+				setFlash('warning', 'Name, Industry Icon/Image and Sort Order are required.');
+				header('Location: ' . ADMIN_URL . '/industries.php' . ($action === 'edit' ? '?edit=' . $id : ''));
+				exit;
+			}
+
 			if ($action === 'add') {
-				$pdo->prepare("INSERT INTO industries (name, image_path, sort_order) VALUES (?,?,?)")
-					->execute([$name, $imagePath, $order]);
-				$msg = 'added';
+				$stmt = $pdo->prepare("INSERT INTO industries (name, image_path, sort_order) VALUES (?,?,?)");
+				$ok = $stmt->execute([$name, $imagePath, $order]);
+				if ($ok) {
+					setFlash('success', 'Industry added successfully.');
+				} else {
+					deleteUploadedFile($pdo, $imagePath, 'industries');
+					setFlash('error', 'Failed to save industry to database.');
+				}
 			} else {
-				$pdo->prepare("UPDATE industries SET name=?, image_path=?, sort_order=? WHERE id=?")
-					->execute([$name, $imagePath, $order, $id]);
-				$msg = 'updated';
+				$stmt = $pdo->prepare("UPDATE industries SET name=?, image_path=?, sort_order=? WHERE id=?");
+				$ok = $stmt->execute([$name, $imagePath, $order, $id]);
+				if ($ok) {
+					if ($newImageUploaded && $oldImage !== '' && $oldImage !== $imagePath) {
+						deleteUploadedFile($pdo, $oldImage, 'industries');
+					}
+					setFlash('success', 'Industry updated successfully.');
+				} else {
+					if ($newImageUploaded && $imagePath !== '') {
+						deleteUploadedFile($pdo, $imagePath, 'industries');
+					}
+					setFlash('error', 'Failed to update industry.');
+				}
+			}
+		} elseif ($action === 'delete') {
+			$id = (int)$_POST['id'];
+			if (deleteIndustryRecordWithFiles($pdo, $id)) {
+				setFlash('success', 'Industry deleted successfully.');
+			} else {
+				setFlash('error', 'Could not delete industry.');
 			}
 		}
-	} elseif ($action === 'delete') {
-		$id = (int)$_POST['id'];
-		$pdo->prepare("DELETE FROM industries WHERE id=?")->execute([$id]);
-		$msg = 'deleted';
+	} catch (Throwable $e) {
+		error_log('[industries.php] ' . $e->getMessage());
+		setFlash('error', 'An error occurred while saving the industry.');
 	}
 
-	header('Location: ' . ADMIN_URL . '/industries.php?msg=' . $msg);
+	header('Location: ' . ADMIN_URL . '/industries.php');
 	exit;
 }
-
-if (isset($_GET['msg'])) $msg = $_GET['msg'];
 
 $editInd = null;
 if (isset($_GET['edit'])) {
@@ -81,12 +115,6 @@ include __DIR__ . '/layout_top.php';
 	<a href="industries.php" class="btn btn-secondary btn-sm">+ Add Industry</a>
 	<?php endif; ?>
 </div>
-
-<?php if ($msg === 'added' || $msg === 'updated' || $msg === 'deleted'): ?>
-<div class="alert alert-success" data-auto-dismiss="2600">Industry <?= $msg ?> successfully.</div>
-<?php elseif ($msg === 'error_required'): ?>
-<div class="alert alert-danger" data-auto-dismiss="3000">Name, Industry Icon/Image and Sort Order are required.</div>
-<?php endif; ?>
 
 <div class="admin-card" style="margin-bottom:20px;">
 	<div class="admin-card-header"><h2><?= $editInd ? 'Edit Industry' : 'Add New Industry' ?></h2></div>
@@ -148,7 +176,7 @@ include __DIR__ . '/layout_top.php';
 								<form method="POST" action="industries.php" style="margin:0;">
 									<input type="hidden" name="action" value="delete">
 									<input type="hidden" name="id" value="<?= $ind['id'] ?>">
-									<button type="submit" class="btn btn-danger btn-xs" data-confirm="Delete industry '<?= e($ind['name']) ?>'?">Delete</button>
+									<button type="submit" class="btn btn-danger btn-xs" data-confirm="Delete industry '<?= e($ind['name']) ?>'? This will permanently delete its icon/image.">Delete</button>
 								</form>
 							</div>
 						</td>

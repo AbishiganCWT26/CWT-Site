@@ -11,7 +11,6 @@ $availableLogos = [];
 foreach ($productLogos as $productLogo) {
     if (!empty($productLogo['logo_path'])) $availableLogos[(int)$productLogo['id']] = $productLogo;
 }
-$msg = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 	$action = $_POST['action'] ?? '';
@@ -26,6 +25,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 		$is_active   = isset($_POST['is_active']) ? 1 : 0;
 
 		$imagePath = '';
+		$oldImageToDelete = null;
 		if ($action === 'edit') {
 			$existing = $pdo->prepare("SELECT image_path, slug, logo_product_id FROM projects WHERE id=?");
 			$existing->execute([$id]);
@@ -34,58 +34,69 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if (!array_key_exists('logo_product_id', $_POST)) $logoProductId = (int)($row['logo_product_id'] ?? 0);
 		}
 
-        if (($_POST['remove_image'] ?? '0') === '1') $imagePath = '';
+        if (($_POST['remove_image'] ?? '0') === '1') {
+			if ($action === 'edit' && !empty($imagePath)) {
+				$oldImageToDelete = $imagePath;
+			}
+			$imagePath = '';
+		}
 
 		if (!empty($_FILES['image']['name'])) {
 			$uploaded = uploadFile($_FILES['image'], 'projects');
-			if ($uploaded) $imagePath = $uploaded;
+			if ($uploaded) {
+				if ($action === 'edit' && !empty($imagePath)) {
+					$oldImageToDelete = $imagePath;
+				}
+				$imagePath = $uploaded;
+			}
 		}
 
         if ($logoProductId > 0 && !isset($availableLogos[$logoProductId])) {
-            $msg = 'error_logo';
+            setFlash('error', 'Please select a product with an uploaded logo, or choose No product logo.', 'Invalid Logo');
         } elseif ($name === '' || $category_id <= 0) {
-			$msg = 'error_required';
+			setFlash('error', 'Project name and category are required.', 'Validation Error');
 		} else {
 			$slug = availableProjectSlug($pdo, $name, $id);
 
 			if ($action === 'add') {
 				$pdo->prepare("INSERT INTO projects (category_id, project_name, short_description, image_path, logo_product_id, slug, sort_order, is_active) VALUES (?,?,?,?,?,?,?,?)")
 					->execute([$category_id, $name, $desc, $imagePath, $logoProductId ?: null, $slug, $sort_order, $is_active]);
-				$msg = 'added';
+				setFlash('success', 'Project added successfully.', 'Added');
 			} else {
                 $pdo->beginTransaction();
                 try {
                     $oldSlug = $pdo->prepare('SELECT slug FROM projects WHERE id = ? FOR UPDATE');
                     $oldSlug->execute([$id]);
                     rememberProjectSlug($pdo, $id, (string)$oldSlug->fetchColumn());
-				$pdo->prepare("UPDATE projects SET category_id=?, project_name=?, short_description=?, image_path=?, logo_product_id=?, slug=?, sort_order=?, is_active=? WHERE id=?")
-					->execute([$category_id, $name, $desc, $imagePath, $logoProductId ?: null, $slug, $sort_order, $is_active, $id]);
+					$pdo->prepare("UPDATE projects SET category_id=?, project_name=?, short_description=?, image_path=?, logo_product_id=?, slug=?, sort_order=?, is_active=? WHERE id=?")
+						->execute([$category_id, $name, $desc, $imagePath, $logoProductId ?: null, $slug, $sort_order, $is_active, $id]);
                     $pdo->commit();
+					if ($oldImageToDelete && $oldImageToDelete !== $imagePath) {
+						deleteUploadedFile($pdo, $oldImageToDelete, 'projects');
+					}
+					setFlash('success', 'Project updated successfully.', 'Updated');
                 } catch (Throwable $error) {
                     if ($pdo->inTransaction()) $pdo->rollBack();
-                    throw $error;
+                    setFlash('error', 'Could not update project: ' . $error->getMessage(), 'Database Error');
                 }
-				$msg = 'updated';
 			}
 		}
 	} elseif ($action === 'delete') {
 		$id = (int)$_POST['id'];
-		$pdo->prepare("DELETE FROM projects WHERE id=?")->execute([$id]);
-		$msg = 'deleted';
+		deleteProjectRecordWithFiles($pdo, $id);
+		setFlash('success', 'Project and its associated images were deleted successfully.', 'Deleted');
 	} elseif ($action === 'toggle') {
 		$id = (int)$_POST['id'];
 		$active = (int)$_POST['is_active'];
 		$pdo->prepare("UPDATE projects SET is_active=? WHERE id=?")->execute([$active, $id]);
-		$msg = 'updated';
+		setFlash('success', 'Project status updated.', 'Status Updated');
 	}
 
-	$redir = ADMIN_URL . '/solution-projects.php?msg=' . $msg;
-	if (!empty($_POST['return_category'])) $redir .= '&category=' . (int)$_POST['return_category'];
+	$redir = ADMIN_URL . '/solution-projects.php';
+	if (!empty($_POST['return_category'])) $redir .= '?category=' . (int)$_POST['return_category'];
 	header('Location: ' . $redir);
 	exit;
 }
-
-if (isset($_GET['msg'])) $msg = $_GET['msg'];
 
 $categories = getSolutionCategories($pdo, false);
 $filterCat = isset($_GET['category']) ? (int)$_GET['category'] : 0;
@@ -132,14 +143,6 @@ while ($row = $contentStmt->fetch()) {
 	<a href="solution-projects.php<?= $filterCat ? '?category='.$filterCat : '' ?>" class="btn btn-secondary btn-sm">+ New Project</a>
 	<?php endif; ?>
 </div>
-
-<?php if ($msg === 'added' || $msg === 'updated' || $msg === 'deleted'): ?>
-<div class="alert alert-success" data-auto-dismiss="2600">Project <?= $msg ?> successfully.</div>
-<?php elseif ($msg === 'error_logo'): ?>
-<div class="alert alert-danger">Please select a product with an uploaded logo, or choose No product logo.</div>
-<?php elseif ($msg === 'error_required'): ?>
-<div class="alert alert-danger" data-auto-dismiss="3000">Project name and category are required.</div>
-<?php endif; ?>
 
 <div class="cat-filter-bar">
 	<a href="solution-projects.php" class="cat-filter-chip <?= $filterCat === 0 ? 'active' : '' ?>">
@@ -299,7 +302,7 @@ while ($row = $contentStmt->fetch()) {
                                     <input type="hidden" name="action" value="delete">
                                     <input type="hidden" name="id" value="<?= $p['id'] ?>">
                                     <input type="hidden" name="return_category" value="<?= $filterCat ?>">
-                                    <button type="submit" class="btn btn-danger btn-xs" data-confirm="Delete '<?= e($p['project_name']) ?>'?">Delete</button>
+                                    <button type="submit" class="btn btn-danger btn-xs" data-confirm="Delete '<?= e($p['project_name']) ?>'? This will permanently delete this project and all its uploaded images and mockups.">Delete</button>
                                 </form>
                             </div>
                         </td>

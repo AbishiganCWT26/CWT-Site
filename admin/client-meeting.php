@@ -12,12 +12,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 	if ($action === 'toggle_read' && $id > 0) {
 		$pdo->prepare("UPDATE client_meetings SET is_read = IF(is_read = 1, 0, 1) WHERE id = ?")->execute([$id]);
+		setFlash('success', 'Meeting status updated.');
 		header('Location: ' . ADMIN_URL . '/client-meeting.php');
 		exit;
 	}
 
 	if ($action === 'mark_all_read') {
 		$pdo->exec("UPDATE client_meetings SET is_read = 1 WHERE is_read = 0");
+		setFlash('success', 'All meetings marked as read.');
 		header('Location: ' . ADMIN_URL . '/client-meeting.php');
 		exit;
 	}

@@ -6,114 +6,146 @@ require_once __DIR__ . '/../includes/auth.php';
 if (!defined('ADMIN_URL')) define('ADMIN_URL', SITE_URL . '/admin');
 requireAuth();
 
-$msg = '';
-
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
-    // Catch silent failure when the request exceeds post_max_size (PHP empties $_POST and $_FILES)
+    // Catch silent failure when the request exceeds post_max_size
     if (empty($_POST) && empty($_FILES) && (int)($_SERVER['CONTENT_LENGTH'] ?? 0) > 0) {
-        $msg = 'error_too_large';
-    } else {
-        $action = $_POST['action'] ?? '';
-
-        try {
-            if ($action === 'add') {
-                $name  = trim($_POST['company_name'] ?? '');
-                $order = (int)($_POST['sort_order'] ?? 0);
-
-                $logoPath  = '';
-                $fileError = $_FILES['logo']['error'] ?? UPLOAD_ERR_NO_FILE;
-
-                if ($fileError === UPLOAD_ERR_INI_SIZE || $fileError === UPLOAD_ERR_FORM_SIZE) {
-                    $msg = 'error_too_large';
-                } elseif ($fileError !== UPLOAD_ERR_NO_FILE) {
-                    $uploaded = ($fileError === UPLOAD_ERR_OK) ? uploadFile($_FILES['logo'], 'clients') : false;
-                    if ($uploaded === false) {
-                        $msg = 'error_upload';
-                    } else {
-                        $logoPath = $uploaded;
-                    }
-                }
-
-                if ($msg === '') {
-                    if ($name === '' || $logoPath === '') {
-                        $msg = 'error_required';
-                    } else {
-                        $stmt = $pdo->prepare("INSERT INTO clients (company_name,logo_path,sort_order,is_active) VALUES(?,?,?,1)");
-                        $ok   = $stmt->execute([$name, $logoPath, $order]);
-                        $msg  = $ok ? 'added' : 'error_db';
-                    }
-                }
-            } elseif ($action === 'edit') {
-                $id    = (int)($_POST['id'] ?? 0);
-                $name  = trim($_POST['company_name'] ?? '');
-                $order = (int)($_POST['sort_order'] ?? 0);
-
-                $stmt = $pdo->prepare("SELECT logo_path FROM clients WHERE id=?");
-                $stmt->execute([$id]);
-                $current = $stmt->fetchColumn();
-
-                if ($current === false) {
-                    $msg = 'error_notfound';
-                } else {
-                    $logoPath  = $current ?: '';
-                    $fileError = $_FILES['logo']['error'] ?? UPLOAD_ERR_NO_FILE;
-
-                    if ($fileError === UPLOAD_ERR_INI_SIZE || $fileError === UPLOAD_ERR_FORM_SIZE) {
-                        $msg = 'error_too_large';
-                    } elseif ($fileError !== UPLOAD_ERR_NO_FILE) {
-                        $uploaded = ($fileError === UPLOAD_ERR_OK) ? uploadFile($_FILES['logo'], 'clients') : false;
-                        if ($uploaded === false) {
-                            // Keep the previous logo AND report the failure
-                            header('Location: ' . ADMIN_URL . '/clients?msg=error_upload&edit=' . $id);
-                            exit;
-                        }
-                        $logoPath = $uploaded;
-                    }
-
-                    if ($msg === '') {
-                        if ($name === '') {
-                            $msg = 'error_required';
-                        } else {
-                            $stmt = $pdo->prepare("UPDATE clients SET company_name=?, logo_path=?, sort_order=? WHERE id=?");
-                            $ok   = $stmt->execute([$name, $logoPath, $order, $id]);
-                            $msg  = $ok ? 'updated' : 'error_db';
-                        }
-                    }
-                }
-            } elseif ($action === 'toggle') {
-                $id     = (int)$_POST['id'];
-                $active = (int)$_POST['is_active'];
-                $stmt   = $pdo->prepare("UPDATE clients SET is_active=? WHERE id=?");
-                $msg    = $stmt->execute([$active, $id]) ? 'updated' : 'error_db';
-            } elseif ($action === 'delete') {
-                $id   = (int)$_POST['id'];
-                $stmt = $pdo->prepare("DELETE FROM clients WHERE id=?");
-                $msg  = $stmt->execute([$id]) ? 'deleted' : 'error_db';
-            }
-        } catch (Throwable $e) {
-            error_log('[clients.php] ' . $e->getMessage());
-            $msg = 'error_db';
-        }
+        setFlash('error', 'The selected file is too large. Please upload an image under 5 MB.');
+        header('Location: ' . ADMIN_URL . '/clients.php');
+        exit;
     }
 
-    header('Location: ' . ADMIN_URL . '/clients?msg=' . urlencode($msg));
-    exit;
-}
+    $action = $_POST['action'] ?? '';
 
-if (isset($_GET['msg'])) $msg = $_GET['msg'];
+    try {
+        if ($action === 'add') {
+            $name  = trim($_POST['company_name'] ?? '');
+            $order = (int)($_POST['sort_order'] ?? 0);
 
-/* Flash configuration: [type, message] */
-$flash = null;
-switch ($msg) {
-    case 'added':           $flash = ['success', 'Client added successfully.']; break;
-    case 'updated':         $flash = ['success', 'Client updated successfully.']; break;
-    case 'deleted':         $flash = ['success', 'Client deleted successfully.']; break;
-    case 'error_required':  $flash = ['error', 'Logo image and company name are required.']; break;
-    case 'error_upload':    $flash = ['error', 'The logo could not be uploaded. Please use a JPG, PNG, GIF, WebP or SVG image under 5 MB.']; break;
-    case 'error_too_large': $flash = ['error', 'The selected file is too large. Please upload an image under 5 MB.']; break;
-    case 'error_notfound':  $flash = ['error', 'That client could not be found. Please reload the page.']; break;
-    case 'error_db':        $flash = ['error', 'The change could not be saved. Database error.']; break;
+            $logoPath  = '';
+            $fileError = $_FILES['logo']['error'] ?? UPLOAD_ERR_NO_FILE;
+
+            if ($fileError === UPLOAD_ERR_INI_SIZE || $fileError === UPLOAD_ERR_FORM_SIZE) {
+                setFlash('error', 'The selected file is too large. Please upload an image under 5 MB.');
+                header('Location: ' . ADMIN_URL . '/clients.php');
+                exit;
+            } elseif ($fileError !== UPLOAD_ERR_NO_FILE) {
+                $uploaded = ($fileError === UPLOAD_ERR_OK) ? uploadFile($_FILES['logo'], 'clients') : false;
+                if ($uploaded === false) {
+                    setFlash('error', 'The logo could not be uploaded. Please use a JPG, PNG, GIF, WebP or SVG image under 5 MB.');
+                    header('Location: ' . ADMIN_URL . '/clients.php');
+                    exit;
+                }
+                $logoPath = $uploaded;
+            }
+
+            if ($name === '' || $logoPath === '') {
+                setFlash('warning', 'Logo image and company name are required.');
+                header('Location: ' . ADMIN_URL . '/clients.php');
+                exit;
+            }
+
+            $stmt = $pdo->prepare("INSERT INTO clients (company_name,logo_path,sort_order,is_active) VALUES(?,?,?,1)");
+            $ok   = $stmt->execute([$name, $logoPath, $order]);
+            if ($ok) {
+                setFlash('success', 'Client added successfully.');
+            } else {
+                deleteUploadedFile($pdo, $logoPath, 'clients');
+                setFlash('error', 'The change could not be saved due to a database error.');
+            }
+            header('Location: ' . ADMIN_URL . '/clients.php');
+            exit;
+
+        } elseif ($action === 'edit') {
+            $id    = (int)($_POST['id'] ?? 0);
+            $name  = trim($_POST['company_name'] ?? '');
+            $order = (int)($_POST['sort_order'] ?? 0);
+
+            $stmt = $pdo->prepare("SELECT logo_path FROM clients WHERE id=?");
+            $stmt->execute([$id]);
+            $current = $stmt->fetchColumn();
+
+            if ($current === false) {
+                setFlash('error', 'That client could not be found. Please reload the page.');
+                header('Location: ' . ADMIN_URL . '/clients.php');
+                exit;
+            }
+
+            $oldLogoPath = $current ?: '';
+            $logoPath    = $oldLogoPath;
+            $newUploaded = false;
+            $fileError   = $_FILES['logo']['error'] ?? UPLOAD_ERR_NO_FILE;
+
+            if ($fileError === UPLOAD_ERR_INI_SIZE || $fileError === UPLOAD_ERR_FORM_SIZE) {
+                setFlash('error', 'The selected file is too large. Please upload an image under 5 MB.');
+                header('Location: ' . ADMIN_URL . '/clients.php?edit=' . $id);
+                exit;
+            } elseif ($fileError !== UPLOAD_ERR_NO_FILE) {
+                $uploaded = ($fileError === UPLOAD_ERR_OK) ? uploadFile($_FILES['logo'], 'clients') : false;
+                if ($uploaded === false) {
+                    setFlash('error', 'The logo could not be uploaded. Please use a JPG, PNG, GIF, WebP or SVG image under 5 MB.');
+                    header('Location: ' . ADMIN_URL . '/clients.php?edit=' . $id);
+                    exit;
+                }
+                $logoPath = $uploaded;
+                $newUploaded = true;
+            }
+
+            if ($name === '') {
+                if ($newUploaded && $logoPath !== '') {
+                    deleteUploadedFile($pdo, $logoPath, 'clients');
+                }
+                setFlash('warning', 'Company name is required.');
+                header('Location: ' . ADMIN_URL . '/clients.php?edit=' . $id);
+                exit;
+            }
+
+            $stmt = $pdo->prepare("UPDATE clients SET company_name=?, logo_path=?, sort_order=? WHERE id=?");
+            $ok   = $stmt->execute([$name, $logoPath, $order, $id]);
+
+            if ($ok) {
+                if ($newUploaded && $oldLogoPath !== '' && $oldLogoPath !== $logoPath) {
+                    deleteUploadedFile($pdo, $oldLogoPath, 'clients');
+                }
+                setFlash('success', 'Client updated successfully.');
+            } else {
+                if ($newUploaded && $logoPath !== '') {
+                    deleteUploadedFile($pdo, $logoPath, 'clients');
+                }
+                setFlash('error', 'The change could not be saved. Database error.');
+            }
+            header('Location: ' . ADMIN_URL . '/clients.php');
+            exit;
+
+        } elseif ($action === 'toggle') {
+            $id     = (int)$_POST['id'];
+            $active = (int)$_POST['is_active'];
+            $stmt   = $pdo->prepare("UPDATE clients SET is_active=? WHERE id=?");
+            $ok     = $stmt->execute([$active, $id]);
+            if ($ok) {
+                setFlash('success', $active ? 'Client activated.' : 'Client deactivated.');
+            } else {
+                setFlash('error', 'Failed to update client status.');
+            }
+            header('Location: ' . ADMIN_URL . '/clients.php');
+            exit;
+
+        } elseif ($action === 'delete') {
+            $id = (int)$_POST['id'];
+            if (deleteClientRecordWithFiles($pdo, $id)) {
+                setFlash('success', 'Client deleted successfully.');
+            } else {
+                setFlash('error', 'Could not delete client.');
+            }
+            header('Location: ' . ADMIN_URL . '/clients.php');
+            exit;
+        }
+    } catch (Throwable $e) {
+        error_log('[clients.php] ' . $e->getMessage());
+        setFlash('error', 'The change could not be saved. An error occurred.');
+        header('Location: ' . ADMIN_URL . '/clients.php');
+        exit;
+    }
 }
 
 $clients = $pdo->query("SELECT * FROM clients ORDER BY sort_order ASC, id ASC")->fetchAll();
@@ -149,7 +181,7 @@ include __DIR__ . '/layout_top.php';
 <div class="admin-card" style="margin-bottom:20px;">
     <div class="admin-card-header"><h2><?= $editClient ? 'Edit Client' : 'Add New Client' ?></h2></div>
     <div class="admin-card-body">
-        <form method="POST" action="<?= e(ADMIN_URL) ?>/clients" enctype="multipart/form-data">
+        <form method="POST" action="<?= e(ADMIN_URL) ?>/clients.php" enctype="multipart/form-data">
             <input type="hidden" name="action" value="<?= $editClient ? 'edit' : 'add' ?>">
             <?php if ($editClient): ?><input type="hidden" name="id" value="<?= $editClient['id'] ?>"><?php endif; ?>
             <div class="form-row">
@@ -244,7 +276,7 @@ include __DIR__ . '/layout_top.php';
                                 <form method="POST" style="margin:0;">
                                     <input type="hidden" name="action" value="delete">
                                     <input type="hidden" name="id" value="<?= $client['id'] ?>">
-                                    <button type="submit" class="btn btn-danger btn-xs" data-confirm="Delete '<?= e($client['company_name']) ?>'?">Delete</button>
+                                    <button type="submit" class="btn btn-danger btn-xs" data-confirm="Delete '<?= e($client['company_name']) ?>'? This will permanently remove its logo image.">Delete</button>
                                 </form>
                             </div>
                         </td>
@@ -258,38 +290,4 @@ include __DIR__ . '/layout_top.php';
 </div>
 
 <script src="<?= SITE_URL ?>/assets/js/admin-clients.js?v=<?= filemtime(__DIR__ . '/../assets/js/admin-clients.js') ?>"></script>
-
-<!-- SweetAlert2: CDN first, local copy as fallback, native alert as last resort -->
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-<?php if ($flash): ?>
-<script>
-(function () {
-    var flashIcon  = <?= json_encode($flash[0]) ?>;
-    var flashTitle = <?= json_encode($flash[1]) ?>;
-    var localSwal  = <?= json_encode(SITE_URL . '/assets/vendor/sweetalert2.all.min.js') ?>;
-
-    function fire() {
-        Swal.fire({
-            icon: flashIcon,
-            title: flashTitle,
-            confirmButtonText: 'OK',
-            confirmButtonColor: '#001be4'
-        });
-    }
-
-    function loadLocalCopy() {
-        var s = document.createElement('script');
-        s.src = localSwal;
-        s.onload = function () { if (window.Swal) { fire(); } else { alert(flashTitle); } };
-        s.onerror = function () { alert(flashTitle); };
-        document.head.appendChild(s);
-    }
-
-    document.addEventListener('DOMContentLoaded', function () {
-        if (window.Swal) { fire(); } else { loadLocalCopy(); }
-    });
-})();
-</script>
-<?php endif; ?>
-
 <?php include __DIR__ . '/layout_bottom.php'; ?>

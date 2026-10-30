@@ -7,7 +7,6 @@ if (!defined('ADMIN_URL')) define('ADMIN_URL', SITE_URL . '/admin');
 requireAuth();
 
 $errors  = [];
-$success = false;
 $formUsername = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -47,25 +46,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 	if (empty($errors)) {
 		$newId = createAdminUser($pdo, $username, $password);
 		if ($newId !== false) {
-			$_SESSION['flash_success'] = 'Admin user "' . $username . '" created successfully.';
+			setFlash('success', 'Admin user "' . $username . '" created successfully.');
 			header('Location: ' . ADMIN_URL . '/add-admin.php');
 			exit;
 		} else {
 			$errors['username'] = 'That username is already taken. Please choose another.';
+			setFlash('error', 'That username is already taken. Please choose another.');
 		}
+	} else {
+		setFlash('warning', implode(' ', $errors), 'Validation Error');
 	}
-}
-
-// Read and clear flash messages
-$flashSuccess = '';
-$flashError   = '';
-if (!empty($_SESSION['flash_success'])) {
-	$flashSuccess = $_SESSION['flash_success'];
-	unset($_SESSION['flash_success']);
-}
-if (!empty($_SESSION['flash_error'])) {
-	$flashError = $_SESSION['flash_error'];
-	unset($_SESSION['flash_error']);
 }
 
 $pageTitle = 'Add Admin';
@@ -193,12 +183,6 @@ include __DIR__ . '/layout_top.php';
 		</div>
 	</div>
 </div>
-
-<?php if ($flashSuccess): ?>
-<div id="flash-data" data-message="<?= e($flashSuccess) ?>" data-type="success" style="display:none;"></div>
-<?php elseif ($flashError): ?>
-<div id="flash-data" data-message="<?= e($flashError) ?>" data-type="error" style="display:none;"></div>
-<?php endif; ?>
 
 <script src="<?= SITE_URL ?>/assets/js/admin-add_admin.js"></script>
 <?php include __DIR__ . '/layout_bottom.php'; ?>
