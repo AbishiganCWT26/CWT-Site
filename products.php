@@ -21,6 +21,30 @@ usort($categories, function($a, $b) {
 	return $b['project_count'] - $a['project_count'];
 });
 
+/* ---- data for the split-view explorer (read by assets/js/portfolio-explorer.js) ---- */
+$explorerData = [];
+foreach ($categories as $solution) {
+	$items = [];
+	foreach ($solution['projects'] as $item) {
+		$items[] = [
+			'name'    => (string)($item['project_name'] ?? ''),
+			// Uses a client field if your projects query returns one; otherwise the card shows the short description.
+			'client'  => (string)($item['client_name'] ?? $item['client'] ?? ''),
+			'summary' => (string)($item['short_description'] ?? ''),
+			'image'   => !empty($item['image_path']) ? (string)imgUrl($item['image_path']) : '',
+			'url'     => 'project-detail.php?slug=' . urlencode($item['slug']),
+		];
+	}
+	$explorerData[] = [
+		'id'       => (string)$solution['id'],
+		'title'    => (string)$solution['name'],
+		'tagline'  => (string)($solution['description'] ?? ''),
+		'color'    => (string)($solution['color'] ?: '#001be4'),
+		'projects' => $items,
+	];
+}
+$explorerJson = json_encode($explorerData, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT);
+
 $pageTitle = 'Our Digital Solutions Portfolio — Creative Web Technologies';
 ?>
 <!DOCTYPE html>
@@ -32,9 +56,10 @@ $pageTitle = 'Our Digital Solutions Portfolio — Creative Web Technologies';
 	<meta name="description" content="Explore Creative Web Technologies' digital solutions portfolio — transforming data into smarter decisions across industries.">
 	<link rel="preconnect" href="https://fonts.googleapis.com">
 	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-	<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Exo+2:wght@300;400;500;600;700;800&family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+	<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Exo+2:wght@300;400;500;600;700;800&family=Manrope:wght@400;500;700;800&family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
 	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
 	<link rel="stylesheet" href="<?= SITE_URL ?>/assets/css/products.css?v=<?= filemtime(__DIR__ . '/assets/css/products.css') ?>">
+	<link rel="stylesheet" href="<?= SITE_URL ?>/assets/css/portfolio-explorer.css?v=<?= filemtime(__DIR__ . '/assets/css/portfolio-explorer.css') ?>">
 	<script>document.documentElement.classList.add('js');</script>
 <link rel="stylesheet" href="<?= SITE_URL ?>/assets/css/modern.css?v=<?= filemtime(__DIR__ . '/assets/css/modern.css') ?>">
 <link rel="stylesheet" href="<?= SITE_URL ?>/assets/css/design.css?v=<?= filemtime(__DIR__ . '/assets/css/design.css') ?>">
@@ -137,17 +162,23 @@ $pageTitle = 'Our Digital Solutions Portfolio — Creative Web Technologies';
   <?php endif; ?>
   <?php if ($portfolioClients): ?>
   <h3 class="prd-marquee-title">Worldwide Trusted Clients</h3>
-  <div class="prd-client-logos" aria-label="Our clients">
-   <?php foreach ($portfolioClients as $client): $clientLogo = imgUrl($client['logo_path']); ?>
-   <div><?php if ($clientLogo): ?><img src="<?= e($clientLogo) ?>" alt="<?= e($client['company_name']) ?>" loading="lazy"><?php else: ?><span><?= e($client['company_name']) ?></span><?php endif; ?></div>
-   <?php endforeach; ?>
+  <div class="prd-client-logos-marquee" aria-label="Our clients">
+   <div class="prd-client-logos-track">
+    <?php foreach ($portfolioClients as $client): $clientLogo = imgUrl($client['logo_path']); ?>
+    <div class="marquee-logo"><?php if ($clientLogo): ?><img src="<?= e($clientLogo) ?>" alt="<?= e($client['company_name']) ?>" loading="lazy"><?php else: ?><span><?= e($client['company_name']) ?></span><?php endif; ?></div>
+    <?php endforeach; ?>
+    <?php foreach ($portfolioClients as $client): $clientLogo = imgUrl($client['logo_path']); ?>
+    <div class="marquee-logo" aria-hidden="true"><?php if ($clientLogo): ?><img src="<?= e($clientLogo) ?>" alt="" loading="lazy"><?php else: ?><span><?= e($client['company_name']) ?></span><?php endif; ?></div>
+    <?php endforeach; ?>
+   </div>
   </div>
   <?php endif; ?>
  </div>
 </section>
 
-<section class="prd-section prd-section-light" id="portfolio" aria-labelledby="portfolio-heading">
+<section class="prd-section prd-section-light pe" id="portfolio" aria-labelledby="portfolio-heading" data-pe-theme="light">
 	<div class="prd-container">
+		<h2 id="portfolio-heading" class="pe-sr">Our solutions and projects</h2>
 
 		<?php if (empty($categories)): ?>
 			<div class="prd-empty reveal">
@@ -155,51 +186,62 @@ $pageTitle = 'Our Digital Solutions Portfolio — Creative Web Technologies';
 				<p class="prd-empty-text">Solutions coming soon. <a href="<?= ADMIN_URL ?>/solution-category.php">Add via admin</a>.</p>
 			</div>
 		<?php else: ?>
-			<div class="prd-portfolio-rows">
-				<?php foreach ($categories as $index => $solution): ?>
-				<?php
-					$rowSide       = ($index % 2 === 0) ? 'left' : 'right';
-					$projects      = $solution['projects'];
-					$projectCount  = count($projects);
-					$isSingle      = ($projectCount === 1);
-					$fullWidthLast = ($projectCount > 1 && $projectCount % 2 !== 0);
-				?>
-				<div class="prd-row prd-row-<?= $rowSide ?> reveal" style="--cat-color: <?= e($solution['color']) ?>;">
-					<div class="prd-image-area">
-						<div class="prd-project-grid">
-							<?php if (empty($projects)): ?>
-							<div class="prd-project-card prd-project-card-empty prd-project-card-full">
-								<h4>No projects yet</h4>
-								<p>Coming soon</p>
-							</div>
-							<?php else: ?>
-								<?php foreach ($projects as $pIndex => $item): ?>
-								<?php
-									$isLast    = ($pIndex === $projectCount - 1);
-									$fullClass = ($isSingle || ($fullWidthLast && $isLast)) ? ' prd-project-card-full' : '';
-									$hasImg    = !empty($item['image_path']);
-									$bgStyle   = $hasImg ? 'style="--item-bg: url(\'' . e(imgUrl($item['image_path'])) . '\');"' : '';
-								?>
-								<a href="project-detail.php?slug=<?= urlencode($item['slug']) ?>" class="prd-project-card<?= $fullClass ?>" <?= $bgStyle ?>>
-									<h4><?= e($item['project_name']) ?></h4>
-									<?php if (!empty($item['short_description'])): ?>
-									<p><?= e($item['short_description']) ?></p>
-									<?php endif; ?>
-								</a>
-								<?php endforeach; ?>
-							<?php endif; ?>
+		<div class="pe-app" id="peApp">
+
+			<button id="peReopen" class="pe-reopen" type="button" aria-label="Show sector list">
+				<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+			</button>
+
+			<!-- sidebar -->
+			<aside class="pe-side" id="peSide" aria-label="Solution sectors">
+				<div class="pe-side-inner">
+					<div class="pe-side-head">
+						<div class="pe-search">
+							<span class="pe-s-ico"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg></span>
+							<input id="peSideSearch" type="search" placeholder="Search projects or clients…" autocomplete="off" aria-label="Search projects">
+						</div>
+						<div class="pe-head-actions" id="peHeadActions">
+							<button class="pe-side-hide" id="peHide" type="button" aria-label="Hide sector list" title="Hide sector list">
+								<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+							</button>
 						</div>
 					</div>
-					<div class="prd-text-area">
-						<h3><?= e(strtoupper($solution['name'])) ?></h3>
-						<div class="prd-line"></div>
-						<?php if (!empty($solution['description'])): ?>
-						<p><?= e($solution['description']) ?></p>
-						<?php endif; ?>
+
+					<div class="pe-list" id="peList"></div>
+				</div>
+			</aside>
+
+			<!-- main -->
+			<div class="pe-main" id="peMain">
+				<div class="pe-mobile-bar" id="peMobileBar">
+					<div class="pe-mb-row" id="peMbRow">
+						<div class="pe-dd" id="peDd">
+							<button class="pe-dd-btn" id="peDdBtn" type="button" aria-haspopup="listbox" aria-expanded="false">
+								<span class="pe-dd-dot" id="peDdDot"></span>
+								<span class="pe-dd-label" id="peDdLabel">Select sector</span>
+								<span class="pe-dd-chev"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg></span>
+							</button>
+							<div class="pe-dd-panel" id="peDdPanel" role="listbox"></div>
+						</div>
+						<div class="pe-m-acts">
+							<button type="button" data-act="expand" title="Expand all" aria-label="Expand all">
+								<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="7 13 12 18 17 13"></polyline><polyline points="7 6 12 11 17 6"></polyline></svg>
+							</button>
+							<button type="button" data-act="collapse" title="Collapse all" aria-label="Collapse all">
+								<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="7 11 12 6 17 11"></polyline><polyline points="7 18 12 13 17 18"></polyline></svg>
+							</button>
+						</div>
+					</div>
+					<div class="pe-m-search">
+						<span class="pe-s-ico"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg></span>
+						<input id="peMobileSearch" type="search" placeholder="Search projects or clients…" autocomplete="off" aria-label="Search projects">
 					</div>
 				</div>
-				<?php endforeach; ?>
+
+				<div id="peContent" aria-live="polite"></div>
 			</div>
+		</div>
+		<script type="application/json" id="peData"><?= $explorerJson ?></script>
 		<?php endif; ?>
 	</div>
 </section>
@@ -209,5 +251,6 @@ $pageTitle = 'Our Digital Solutions Portfolio — Creative Web Technologies';
 </main>
 <?php require_once __DIR__ . '/includes/footer.php'; ?>
 <script src="<?= SITE_URL ?>/assets/js/products.js?v=<?= filemtime(__DIR__ . '/assets/js/products.js') ?>"></script>
+<script src="<?= SITE_URL ?>/assets/js/portfolio-explorer.js?v=<?= filemtime(__DIR__ . '/assets/js/portfolio-explorer.js') ?>"></script>
 </body>
 </html>

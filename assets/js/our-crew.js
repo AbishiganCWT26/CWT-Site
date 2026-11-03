@@ -1,3 +1,5 @@
+// C:\xampp\htdocs\CWT Site\assets\js\our-crew.js
+
 document.addEventListener('DOMContentLoaded', function () {
 
     const navbar = document.querySelector('.cwt-navbar, .navbar');

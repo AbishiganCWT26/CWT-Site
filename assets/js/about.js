@@ -1,3 +1,5 @@
+// C:\xampp\htdocs\CWT Site\assets\js\about.js
+
 document.addEventListener('DOMContentLoaded', function () {
 
     /* ---------------------------------------------------------
@@ -14,7 +16,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     /* ---------------------------------------------------------
-       Reveal on scroll
+       Reveal on scroll (About + Crew sections share .reveal)
        --------------------------------------------------------- */
     const revealObserver = new IntersectionObserver(function (entries) {
         entries.forEach(function (entry) {
@@ -403,6 +405,66 @@ document.addEventListener('DOMContentLoaded', function () {
             requestAnimationFrame(tick);
         })();
     }
+
+    /* =========================================================
+       OUR CREW — team directory hover / focus linking
+       (merged from our-crew.js). Wrapped in an IIFE so it can
+       exit early without stopping the rest of this file.
+       Only active on desktop-with-hover (>= 901px); on smaller
+       screens the card grid is shown instead (see about.css).
+       ========================================================= */
+    (function initCrewTeam() {
+        const team = document.getElementById('crTeam');
+        if (!team) return;
+
+        const photos = team.querySelectorAll('.cr-team-photo');
+        const items = team.querySelectorAll('.cr-team-item');
+
+        const isDesktopHoverLayout = function () {
+            return window.matchMedia('(hover: hover) and (min-width: 901px)').matches &&
+                getComputedStyle(team).display !== 'none';
+        };
+
+        const clearActive = function () {
+            team.classList.remove('is-hovering');
+            photos.forEach(function (p) { p.classList.remove('is-active'); });
+            items.forEach(function (i) { i.classList.remove('is-active'); });
+        };
+
+        const setActive = function (id) {
+            team.classList.add('is-hovering');
+            photos.forEach(function (p) {
+                p.classList.toggle('is-active', p.dataset.id === id);
+            });
+            items.forEach(function (i) {
+                i.classList.toggle('is-active', i.dataset.id === id);
+            });
+        };
+
+        photos.forEach(function (photo) {
+            photo.addEventListener('mouseenter', function () {
+                if (isDesktopHoverLayout()) setActive(photo.dataset.id);
+            });
+            photo.addEventListener('mouseleave', function () {
+                if (isDesktopHoverLayout()) clearActive();
+            });
+        });
+
+        items.forEach(function (item) {
+            item.addEventListener('mouseenter', function () {
+                if (isDesktopHoverLayout()) setActive(item.dataset.id);
+            });
+            item.addEventListener('mouseleave', function () {
+                if (isDesktopHoverLayout()) clearActive();
+            });
+            item.addEventListener('focus', function () {
+                if (isDesktopHoverLayout()) setActive(item.dataset.id);
+            });
+            item.addEventListener('blur', function () {
+                if (isDesktopHoverLayout()) clearActive();
+            });
+        });
+    })();
 
     /* =========================================================
        THEME TOGGLE AWARENESS

@@ -184,6 +184,70 @@ $service_icons = [
 			});
 		})();
 		</script>
+
+		<script>
+		(function () {
+			var cards = Array.prototype.slice.call(document.querySelectorAll('.home-showcase .showcase-card'));
+			if (!cards.length) return;
+			if (!('IntersectionObserver' in window)) return;
+			if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+			var STEP = 250;
+			var GAP = 40;
+			var nextFree = 0;
+			var origins = ['top-left', 'top', 'top-right', 'right', 'bottom-right', 'bottom', 'bottom-left', 'left'];
+
+			cards.forEach(function (card) {
+				card.classList.add('anim-hidden');
+			});
+
+			function getOffsets(card, origin) {
+				var rect = card.getBoundingClientRect();
+				var x = 0;
+				var y = 0;
+
+				if (origin.indexOf('left') !== -1) x = -(rect.left + rect.width + GAP);
+				if (origin.indexOf('right') !== -1) x = window.innerWidth - rect.left + GAP;
+				if (origin.indexOf('top') !== -1) y = -(rect.top + rect.height + GAP);
+				if (origin.indexOf('bottom') !== -1) y = window.innerHeight - rect.top + GAP;
+
+				return { x: x, y: y };
+			}
+
+			var observer = new IntersectionObserver(function (entries) {
+				var visible = entries
+					.filter(function (entry) { return entry.isIntersecting; })
+					.map(function (entry) { return entry.target; })
+					.sort(function (a, b) { return cards.indexOf(a) - cards.indexOf(b); });
+
+				visible.forEach(function (card) {
+					observer.unobserve(card);
+
+					var now = performance.now();
+					var start = Math.max(now, nextFree);
+					nextFree = start + STEP;
+
+					var index = cards.indexOf(card);
+					var offsets = getOffsets(card, origins[index % origins.length]);
+
+					card.style.setProperty('--from-x', offsets.x + 'px');
+					card.style.setProperty('--from-y', offsets.y + 'px');
+					card.style.animationDelay = (start - now) + 'ms';
+					card.classList.remove('anim-hidden');
+					card.classList.add('anim-play');
+
+					card.addEventListener('animationend', function () {
+						card.classList.remove('anim-play');
+						card.style.animationDelay = '';
+					}, { once: true });
+				});
+			}, { threshold: 0.15 });
+
+			cards.forEach(function (card) {
+				observer.observe(card);
+			});
+		})();
+		</script>
 	<?php endif; ?>
 	<!-- END HOMEPAGE SHOWCASE SECTION -->
 

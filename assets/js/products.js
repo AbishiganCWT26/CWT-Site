@@ -322,17 +322,318 @@ document.addEventListener('DOMContentLoaded', function () {
     const logosEl = document.querySelector('.prd-client-logos');
     if (logosEl) setupMarquee(logosEl);
 
-    const countriesEl = document.querySelector('.prd-client-countries');
-    function syncCountriesMarquee() {
-        if (!countriesEl) return;
-        if (marqueeMedia.matches) setupMarquee(countriesEl);
-        else teardownMarquee(countriesEl);
-    }
-    syncCountriesMarquee();
-    if (marqueeMedia.addEventListener) {
-        marqueeMedia.addEventListener('change', syncCountriesMarquee);
-    } else if (marqueeMedia.addListener) {
-        marqueeMedia.addListener(syncCountriesMarquee);
-    }
+
 
 });
+
+/* Portfolio Explorer (split view) — data comes from #peData (JSON printed by index.php) */
+(function () {
+    'use strict';
+
+    var root = document.getElementById('portfolio');
+    var dataEl = document.getElementById('peData');
+    if (!root || !dataEl) return;
+
+    var cats;
+    try { cats = JSON.parse(dataEl.textContent) || []; } catch (e) { cats = []; }
+    if (!cats.length) return;
+
+    /* ---------------- helpers ---------------- */
+    function esc(s) {
+        return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+            return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+        });
+    }
+    function pad(n) { return String(n).padStart(2, '0'); }
+    function initials(name) {
+        var w = String(name || '').replace(/[^\p{L} ]/gu, '').split(/\s+/).filter(Boolean).slice(0, 2);
+        return w.map(function (x) { return x[0].toUpperCase(); }).join('') || '•';
+    }
+    function plural(n) { return n + (n === 1 ? ' project' : ' projects'); }
+    function firstWord(t) { return String(t).split(' & ')[0]; }
+    function cssUrl(u) { return "url('" + String(u).replace(/['"()\\\s]/g, encodeURIComponent) + "')"; }
+    function total() { return cats.reduce(function (n, c) { return n + c.projects.length; }, 0); }
+    function $(sel) { return root.querySelector(sel); }
+
+    /* ---------------- state / elements ---------------- */
+    var cur = 0, searchQuery = '', lastMode = null, observer = null, searchTimer = null;
+
+    var appEl = $('#peApp'), listEl = $('#peList'), mainEl = $('#peMain'), contentEl = $('#peContent');
+    var sideSearchEl = $('#peSideSearch'), mobileSearchEl = $('#peMobileSearch');
+    var hideBtn = $('#peHide'), reopenBtn = $('#peReopen');
+    var ddEl = $('#peDd'), ddBtn = $('#peDdBtn'), ddPanel = $('#peDdPanel'), ddDot = $('#peDdDot'), ddLabel = $('#peDdLabel');
+
+    var mq = window.matchMedia('(max-width: 950px)');
+    function isMobile() { return mq.matches; }
+
+    /* ---------------- theme: follow the page's own light/dark mode ---------------- */
+    var DARK_RE = /(^|[\s_-])dark([\s_-]|$)/i;
+    var LIGHT_RE = /(^|[\s_-])light([\s_-]|$)/i;
+
+    function readPageTheme() {
+        var html = document.documentElement, body = document.body;
+        var attrs = ['data-theme', 'data-bs-theme', 'data-color-scheme', 'data-mode', 'data-color-mode', 'theme'];
+        var els = [html, body];
+        for (var e = 0; e < els.length; e++) {
+            for (var a = 0; a < attrs.length; a++) {
+                var v = els[e].getAttribute(attrs[a]);
+                if (v) return DARK_RE.test(v) ? 'dark' : 'light';
+            }
+        }
+        for (var k = 0; k < els.length; k++) {
+            var cls = els[k].className || '';
+            if (DARK_RE.test(cls)) return 'dark';
+            if (LIGHT_RE.test(cls)) return 'light';
+        }
+        var cs = getComputedStyle(html).colorScheme || '';
+        if (/\bdark\b/.test(cs) && !/\blight\b/.test(cs)) return 'dark';
+        return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    }
+    function syncTheme() {
+        var t = readPageTheme();
+        if (root.getAttribute('data-pe-theme') !== t) root.setAttribute('data-pe-theme', t);
+    }
+    syncTheme();
+    var themeWatch = new MutationObserver(syncTheme);
+    var watchOpts = { attributes: true, attributeFilter: ['class', 'data-theme', 'data-bs-theme', 'data-color-scheme', 'data-mode', 'data-color-mode', 'theme', 'style'] };
+    themeWatch.observe(document.documentElement, watchOpts);
+    themeWatch.observe(document.body, watchOpts);
+    var schemeMq = window.matchMedia('(prefers-color-scheme: dark)');
+    if (schemeMq.addEventListener) schemeMq.addEventListener('change', syncTheme);
+    else if (schemeMq.addListener) schemeMq.addListener(syncTheme);
+    window.addEventListener('storage', syncTheme);
+
+    /* ---------------- sidebar hide / show ---------------- */
+    function setSidebar(hidden) {
+        appEl.classList.toggle('sidebar-hidden', hidden);
+        try { localStorage.setItem('cwt-pe-sidebar', hidden ? 'hidden' : 'visible'); } catch (e) { }
+    }
+    hideBtn.addEventListener('click', function () { setSidebar(true); });
+    reopenBtn.addEventListener('click', function () { setSidebar(false); });
+    try { if (localStorage.getItem('cwt-pe-sidebar') === 'hidden') setSidebar(true); } catch (e) { }
+
+    /* ---------------- sidebar + dropdown ---------------- */
+
+
+    listEl.innerHTML = cats.map(function (c, i) {
+        return '<button class="pe-item" type="button" data-i="' + i + '" style="--ic:' + esc(c.color) + '"><span class="pe-item-accent" aria-hidden="true"></span>' +
+            '<span class="pe-item-text"><b>' + esc(c.title) + '</b></span>' +
+            '<span class="pe-item-arrow" aria-hidden="true"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg></span></button>';
+    }).join('');
+
+    ddPanel.innerHTML = cats.map(function (c, i) {
+        return '<button class="pe-dd-opt" type="button" role="option" data-i="' + i + '" style="--c:' + esc(c.color) + '">' +
+            '<span class="pe-dd-bullet" style="background:' + esc(c.color) + '" aria-hidden="true"></span>' +
+            '<span class="pe-o-txt"><span class="pe-o-name">' + esc(c.title) + '</span><span class="pe-o-count">' + plural(c.projects.length) + '</span></span>' +
+            '<span class="pe-o-check"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg></span></button>';
+    }).join('');
+
+    function updateDDLabel(i) {
+        var c = cats[i];
+        ddDot.style.setProperty('--c', c.color);
+        ddDot.style.background = c.color;
+        ddLabel.textContent = c.title;
+        ddPanel.querySelectorAll('.pe-dd-opt').forEach(function (o) { o.classList.toggle('on', +o.dataset.i === i); });
+    }
+    function openDD() { ddEl.classList.add('open'); ddBtn.setAttribute('aria-expanded', 'true'); }
+    function closeDD() { ddEl.classList.remove('open'); ddBtn.setAttribute('aria-expanded', 'false'); }
+
+    ddBtn.addEventListener('click', function (e) {
+        e.stopPropagation();
+        ddEl.classList.contains('open') ? closeDD() : openDD();
+    });
+    ddPanel.addEventListener('click', function (e) {
+        var opt = e.target.closest('.pe-dd-opt');
+        if (!opt) return;
+        var i = +opt.dataset.i;
+        closeDD(); updateDDLabel(i); setSearch('');
+        var sec = document.getElementById('pe-sec-' + cats[i].id);
+        if (sec) sec.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+    document.addEventListener('click', function (e) { if (!ddEl.contains(e.target)) closeDD(); });
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeDD(); });
+
+    /* ---------------- html pieces ---------------- */
+    function bannerHTML(c, i) {
+        return '<div class="pe-banner">' +
+            '<div class="pe-k">Sector ' + pad(i + 1) + ' / ' + pad(cats.length) + '</div>' +
+            '<h4>' + esc(c.title) + '</h4>' +
+            (c.tagline ? '<p>' + esc(c.tagline) + '</p>' : '') +
+            '<span class="pe-b-chev"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg></span>' +
+            '</div>';
+    }
+
+    function cardHTML(p, k, badgeText, color, delay) {
+        var sub = p.client || p.summary || '';
+        var label = p.client || p.name;
+        return '<a class="pe-pc" style="--c:' + esc(color) + ';animation-delay:' + delay + 'ms" href="' + esc(p.url) + '">' +
+            '<div class="pe-top">' +
+            (p.image
+                ? '<div class="pe-ini has-img" role="img" aria-label="' + esc(label) + '" style="background-image:' + esc(cssUrl(p.image)) + '"></div>'
+                : '<div class="pe-ini">' + esc(initials(label)) + '</div>') +
+            (badgeText ? '<span class="pe-badge">' + esc(badgeText) + '</span>' : '<span class="pe-idx">' + pad(k + 1) + '</span>') +
+            '</div>' +
+            '<div><h5>' + esc(p.name) + '</h5>' + (sub ? '<div class="pe-cl">' + esc(sub) + '</div>' : '') + '</div>' +
+            '<div class="pe-cta">View Details <i>→</i></div></a>';
+    }
+
+    function cardsHTML(c) {
+        if (!c.projects.length) return '<div class="pe-empty-res"><h5>No projects yet</h5><p>Coming soon</p></div>';
+        return '<div class="pe-cards">' + c.projects.map(function (p, k) {
+            return cardHTML(p, k, '', c.color, 100 + k * 80);
+        }).join('') + '</div>';
+    }
+
+    /* ---------------- desktop render ---------------- */
+    function renderDesktop(i, updateHash) {
+        cur = (i + cats.length) % cats.length;
+        var c = cats[cur];
+        listEl.querySelectorAll('.pe-item').forEach(function (b, k) { b.classList.toggle('on', k === cur); });
+        updateDDLabel(cur);
+
+        var prev = cats[(cur - 1 + cats.length) % cats.length];
+        var next = cats[(cur + 1) % cats.length];
+
+        contentEl.innerHTML =
+            '<div class="pe-panel" style="--c:' + esc(c.color) + '">' +
+            bannerHTML(c, cur) + cardsHTML(c) +
+            '<div class="pe-nav">' +
+            '<button type="button" data-go="-1">← ' + esc(firstWord(prev.title)) + '</button>' +
+            '<button type="button" data-go="1">' + esc(firstWord(next.title)) + ' →</button>' +
+            '</div></div>';
+
+        mainEl.scrollTop = 0; /* inner scroll only — never jump the page */
+        if (updateHash !== false) {
+            try { history.replaceState(null, '', '#sector-' + c.id); } catch (e) { }
+        }
+    }
+
+    /* ---------------- mobile render ---------------- */
+    function renderMobile() {
+        contentEl.innerHTML = cats.map(function (c, i) {
+            return '<div class="pe-panel" id="pe-sec-' + esc(c.id) + '" style="--c:' + esc(c.color) + '">' +
+                bannerHTML(c, i) +
+                '<div class="pe-panel-body"><div class="pe-panel-inner">' + cardsHTML(c) + '</div></div></div>';
+        }).join('');
+
+        if (observer) { observer.disconnect(); observer = null; }
+        if ('IntersectionObserver' in window) {
+            observer = new IntersectionObserver(function (entries) {
+                entries.forEach(function (en) {
+                    if (!en.isIntersecting) return;
+                    var id = en.target.id.slice(7);
+                    for (var i = 0; i < cats.length; i++) if (String(cats[i].id) === id) { updateDDLabel(i); break; }
+                });
+            }, { rootMargin: '-200px 0px -55% 0px', threshold: 0 });
+            contentEl.querySelectorAll('.pe-panel').forEach(function (p) { observer.observe(p); });
+        }
+        updateDDLabel(0);
+    }
+
+    /* ---------------- search ---------------- */
+    function renderSearch(q) {
+        if (observer) { observer.disconnect(); observer = null; }
+        var query = q.toLowerCase().trim(), results = [];
+        cats.forEach(function (c) {
+            c.projects.forEach(function (p) {
+                if ((p.name + ' ' + (p.client || '') + ' ' + (p.summary || '')).toLowerCase().indexOf(query) > -1) {
+                    results.push({ p: p, c: c });
+                }
+            });
+        });
+
+        var head = '<div class="pe-search-head"><h4>' + results.length + ' project' + (results.length === 1 ? '' : 's') +
+            ' found</h4><p>Showing results for <span class="pe-q">“' + esc(q) + '”</span></p></div>';
+
+        if (!results.length) {
+            contentEl.innerHTML = '<div class="pe-panel">' + head +
+                '<div class="pe-empty-res"><h5>No projects found</h5><p>Try a different project name or client.</p></div></div>';
+        } else {
+            contentEl.innerHTML = '<div class="pe-panel">' + head + '<div class="pe-cards">' +
+                results.map(function (r, i) { return cardHTML(r.p, i, firstWord(r.c.title), r.c.color, i * 45); }).join('') +
+                '</div></div>';
+        }
+        mainEl.scrollTop = 0;
+    }
+
+    function setSearch(q) {
+        searchQuery = (q || '').trim();
+        if (sideSearchEl.value !== searchQuery) sideSearchEl.value = searchQuery;
+        if (mobileSearchEl.value !== searchQuery) mobileSearchEl.value = searchQuery;
+        document.body.classList.toggle('pe-searching', !!searchQuery);
+
+        if (searchQuery) renderSearch(searchQuery);
+        else if (isMobile()) renderMobile();
+        else renderDesktop(cur, false);
+    }
+    function debounced(q) { clearTimeout(searchTimer); searchTimer = setTimeout(function () { setSearch(q); }, 120); }
+    sideSearchEl.addEventListener('input', function () { debounced(this.value); });
+    mobileSearchEl.addEventListener('input', function () { debounced(this.value); });
+
+    /* ---------------- mode sync ---------------- */
+    function sync(force) {
+        var mode = isMobile() ? 'mobile' : 'desktop';
+        if (mode === lastMode && !force) return;
+        lastMode = mode;
+        if (searchQuery) renderSearch(searchQuery);
+        else if (mode === 'mobile') renderMobile();
+        else renderDesktop(cur, false);
+    }
+
+    /* ---------------- events ---------------- */
+    listEl.addEventListener('click', function (e) {
+        var b = e.target.closest('.pe-item');
+        if (!b) return;
+        setSearch('');
+        renderDesktop(+b.dataset.i);
+    });
+
+    contentEl.addEventListener('click', function (e) {
+        var navBtn = e.target.closest('[data-go]');
+        if (navBtn && !isMobile()) { setSearch(''); renderDesktop(cur + (+navBtn.dataset.go)); return; }
+        if (isMobile() && !searchQuery) {
+            var banner = e.target.closest('.pe-banner');
+            if (banner) banner.closest('.pe-panel').classList.toggle('collapsed');
+        }
+    });
+
+    $('.pe-m-acts').addEventListener('click', function (e) {
+        var btn = e.target.closest('[data-act]');
+        if (!btn) return;
+        contentEl.querySelectorAll('.pe-panel').forEach(function (p) {
+            p.classList.toggle('collapsed', btn.dataset.act === 'collapse');
+        });
+    });
+
+    /* arrow keys: only while focus is inside the explorer, so page scrolling stays intact */
+    appEl.addEventListener('keydown', function (e) {
+        if (isMobile()) return;
+        if (/^(INPUT|SELECT|TEXTAREA)$/.test((e.target && e.target.tagName) || '')) return;
+        var fwd = e.key === 'ArrowDown' || e.key === 'ArrowRight';
+        var back = e.key === 'ArrowUp' || e.key === 'ArrowLeft';
+        if (!fwd && !back) return;
+        e.preventDefault();
+        setSearch('');
+        renderDesktop(cur + (fwd ? 1 : -1));
+        var it = listEl.querySelector('.pe-item.on');
+        if (it && listEl.contains(document.activeElement)) it.focus({ preventScroll: true });
+    });
+
+    if (mq.addEventListener) mq.addEventListener('change', function () { sync(false); });
+    else if (mq.addListener) mq.addListener(function () { sync(false); });
+
+    /* ---------------- init ---------------- */
+    var start = -1;
+    for (var s = 0; s < cats.length; s++) if ('#sector-' + cats[s].id === location.hash) { start = s; break; }
+    if (start > -1) cur = start;
+
+    sync(true);
+
+    if (start > -1) {
+        setTimeout(function () { root.scrollIntoView({ block: 'start' }); }, 80);
+        if (isMobile()) {
+            var target = document.getElementById('pe-sec-' + cats[start].id);
+            if (target) setTimeout(function () { target.scrollIntoView({ block: 'start' }); }, 120);
+        }
+    }
+})();

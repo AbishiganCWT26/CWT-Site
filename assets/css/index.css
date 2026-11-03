@@ -2839,3 +2839,46 @@ html[data-theme="dark"] .marquee-logo {
         flex-basis: 100%;
     }
 }
+
+.showcase-card.anim-hidden {
+    opacity: 0;
+}
+
+.showcase-card.anim-play {
+    animation: showcaseElastic .95s cubic-bezier(.22, 1, .36, 1) backwards;
+}
+
+@keyframes showcaseElastic {
+    0% {
+        opacity: 0;
+        transform: scale(.4);
+    }
+
+    55% {
+        opacity: 1;
+        transform: scale(1.12);
+    }
+
+    72% {
+        transform: scale(.96);
+    }
+
+    86% {
+        transform: scale(1.03);
+    }
+
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .showcase-card.anim-hidden {
+        opacity: 1;
+    }
+
+    .showcase-card.anim-play {
+        animation: none;
+    }
+}

@@ -454,7 +454,7 @@ body.cwt-public {
     position: relative;
     z-index: 1;
     padding: 48px 24px 64px;
-    background: transparent !important;
+    background-color: transparent !important;
     text-align: center;
 }
 

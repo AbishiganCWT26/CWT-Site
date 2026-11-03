@@ -67,11 +67,11 @@ html[data-theme="dark"] body.cwt-public :is(.abt-hero, .svc-hero, .ct-hero, .ins
 }
 
 /* Ensure hero content sits above the inverted map overlay. */
-html[data-theme="dark"] .cwt-public :is(.abt-hero, .svc-hero, .ct-hero, .ins-hero, .cr-hero, .cs-hero, .pp-hero, .ind-hero) {
+html[data-theme="dark"] .cwt-public :is(.abt-hero, .svc-hero, .ct-hero, .prd-hero, .ins-hero, .cr-hero, .cs-hero, .pp-hero, .ind-hero) {
     position: relative;
 }
 
-html[data-theme="dark"] .cwt-public :is(.abt-hero, .svc-hero, .ct-hero, .ins-hero, .cr-hero, .cs-hero, .pp-hero, .ind-hero)>* {
+html[data-theme="dark"] .cwt-public :is(.abt-hero, .svc-hero, .ct-hero, .prd-hero, .ins-hero, .cr-hero, .cs-hero, .pp-hero, .ind-hero)>* {
     position: relative;
     z-index: 1;
 }
@@ -81,8 +81,26 @@ html[data-theme="dark"] .prd-page.prd-map-enhanced .prd-hero {
     background-image: linear-gradient(90deg, #0b1425a0 0%, #0b142580 45%, #152a4a70 100%) !important;
 }
 
-/* Products page uses its own <img> travel map; don't show the ::after map on prd-hero. */
+/* Products page: the <img> travel map lives in #our-clients, NOT in .prd-hero.
+   So we DO need the ::after world-map overlay on .prd-hero just like every other hero.
+   The only difference: prd-hero already has position:relative via the shared rule above,
+   and the content z-index stacking is handled by the >* rule. */
 html[data-theme="dark"] body.cwt-public .prd-hero::after {
+    content: '' !important;
+    display: block !important;
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    background: url('../../World-Map-Dots.svg') no-repeat right 4vw top 104px;
+    background-size: min(780px, 90vw) auto;
+    filter: brightness(0) invert(1);
+    opacity: 0.13;
+    pointer-events: none;
+}
+
+/* When the JS map animation is active (prd-map-enhanced), the real <img> travel map
+   slides in front of the hero — hide the static ::after overlay to avoid duplication. */
+html[data-theme="dark"] body.prd-map-enhanced .prd-hero::after {
     display: none !important;
 }
 
@@ -210,7 +228,7 @@ html[data-theme="dark"] .prd-country-pin {
 }
 
 html[data-theme="dark"] .cwt-public .prd-clients {
-    background: transparent !important;
+    background-color: transparent !important;
 }
 
 /* The travelling map sits behind this section until its animation finishes.
