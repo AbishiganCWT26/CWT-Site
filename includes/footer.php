@@ -14,7 +14,6 @@ $footerThemeAttr = in_array($footerTheme, ['light', 'dark'], true)
 ?>
 
 <link rel="stylesheet" href="<?= SITE_URL ?>/assets/css/footer.css?v=<?= filemtime(__DIR__ . '/../assets/css/footer.css') ?>">
-
 <footer class="cwt-footer"<?= $footerThemeAttr ?> role="contentinfo">
 	<!-- Animated background: particles.js canvas -->
 	<div id="cwt-particles" class="cwt-footer-particles" aria-hidden="true"></div>
@@ -67,10 +66,6 @@ $footerThemeAttr = in_array($footerTheme, ['light', 'dark'], true)
 						<a href="<?= SITE_URL ?>/about.php">
 							<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
 							<span>About Us</span>
-						</a>
-						<a href="<?= SITE_URL ?>/our-crew.php">
-							<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
-							<span>Our Crew</span>
 						</a>
 						<a href="<?= SITE_URL ?>/products.php">
 							<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>

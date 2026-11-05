@@ -588,7 +588,7 @@ body.abt-page ol {
 
 .abt-read-more:hover {
     transform: translateY(-2px);
-    color: #ffffff;
+    color: #ffffff !important;
     border-color: transparent;
     box-shadow: 0 14px 28px -12px rgba(0, 27, 228, 0.55);
 }
