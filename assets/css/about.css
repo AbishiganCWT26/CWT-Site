@@ -101,7 +101,6 @@ body.abt-page img {
 
 body.abt-page a {
     text-decoration: none;
-    color: inherit;
 }
 
 body.abt-page ul,
@@ -4269,4 +4268,396 @@ html[data-theme="dark"] .cwt-public #our-crew>section {
     background-image: var(--ambient-pattern) !important;
     background-size: 28px 28px !important;
     animation: cwt-ambient-dots 48s linear infinite !important;
+}
+
+
+/* =========================================================
+   AWARDS & RECOGNITION SHOWCASE
+   Namespaced under .abt-recognition-* to prevent conflicts.
+   ========================================================= */
+
+/* --- Section wrapper (reuses existing section class) --- */
+.abt-recognition-section {
+    position: relative;
+    overflow: hidden;
+}
+
+/* --- Two-column layout --- */
+.abt-recognition-wrap {
+    display: grid;
+    grid-template-columns: 1.1fr 0.9fr;
+    gap: 48px;
+    align-items: center;
+    padding: 64px 0 80px;
+}
+
+/* ---- Left: Text Content ---- */
+.abt-recognition-heading {
+    font-size: clamp(1.6rem, 2.5vw, 2.2rem);
+    font-weight: 700;
+    line-height: 1.2;
+    color: var(--text-primary);
+    margin: 0 0 20px;
+    transition: color var(--transition);
+}
+
+.abt-recognition-accent {
+    display: block;
+    color: var(--primary);
+    margin-top: 4px;
+}
+
+.abt-recognition-para {
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+    line-height: 1.7;
+    margin: 0 0 28px;
+    transition: color var(--transition);
+}
+
+.abt-recognition-cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--primary);
+    color: #ffffff;
+    text-decoration: none;
+    border: none;
+    padding: 11px 28px;
+    border-radius: var(--radius-sm);
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background var(--transition), transform 0.2s ease,
+        box-shadow var(--transition), color var(--transition);
+    box-shadow: 0 4px 14px var(--primary-glow);
+}
+
+.abt-recognition-cta:hover {
+    background: var(--primary-dark);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px var(--primary-glow);
+    color: #ffffff;
+}
+
+.abt-recognition-cta:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 3px;
+}
+
+/* ---- Right: Carousel ---- */
+.abt-recognition-showcase {
+    position: relative;
+    height: 310px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    perspective: 900px;
+}
+
+/* Individual card - sized at 190x270 (aspect ratio ~1:1.42) for optimal certificate & award display */
+.abt-recognition-card {
+    position: absolute;
+    width: 200px;
+    height: 270px;
+    border-radius: 14px;
+    border: 2px solid var(--border);
+    overflow: hidden;
+    background: var(--card-bg);
+    box-shadow: var(--card-shadow);
+    transition: transform 0.42s cubic-bezier(0.4, 0, 0.2, 1),
+        opacity 0.42s ease,
+        border-color 0.42s ease,
+        box-shadow 0.42s ease;
+    will-change: transform, opacity;
+}
+
+.abt-recognition-card img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    display: block;
+    pointer-events: none;
+    user-select: none;
+    -webkit-user-drag: none;
+    transition: opacity 0.3s ease;
+}
+
+/* --- Positional states --- */
+.abt-recognition-card--left {
+    transform: translateX(-105px) scale(0.85);
+    z-index: 2;
+    opacity: 0.55;
+    pointer-events: auto;
+    cursor: pointer;
+}
+
+.abt-recognition-card--center {
+    transform: translateX(0) scale(1);
+    z-index: 3;
+    opacity: 1;
+    border-color: var(--primary);
+    box-shadow: 0 0 24px var(--primary-glow), var(--card-shadow);
+    pointer-events: auto;
+    cursor: default;
+}
+
+.abt-recognition-card--right {
+    transform: translateX(105px) scale(0.85);
+    z-index: 2;
+    opacity: 0.55;
+    pointer-events: auto;
+    cursor: pointer;
+}
+
+/* Offstage states for multi-image carousel rotation */
+.abt-recognition-card--hidden-left {
+    transform: translateX(-160px) scale(0.65);
+    z-index: 0;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.abt-recognition-card--hidden-right {
+    transform: translateX(160px) scale(0.65);
+    z-index: 0;
+    opacity: 0;
+    pointer-events: none;
+}
+
+/* Hover effects on the showcase container */
+.abt-recognition-showcase:hover .abt-recognition-card--left {
+    transform: translateX(-125px) scale(0.85) rotateY(8deg);
+}
+
+.abt-recognition-showcase:hover .abt-recognition-card--right {
+    transform: translateX(125px) scale(0.85) rotateY(-8deg);
+}
+
+.abt-recognition-showcase:hover .abt-recognition-card--center {
+    transform: translateX(0) scale(1.03);
+}
+
+/* --- Navigation arrows --- */
+.abt-recognition-nav {
+    position: absolute;
+    bottom: -32px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 16px;
+    z-index: 10;
+}
+
+.abt-recognition-arrow {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: 1.5px solid var(--border);
+    background: var(--card-bg);
+    color: var(--text-muted);
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background var(--transition), color var(--transition),
+        border-color var(--transition), transform 0.15s ease,
+        box-shadow var(--transition);
+    line-height: 1;
+    padding: 0;
+}
+
+.abt-recognition-arrow:hover {
+    background: var(--primary);
+    color: #ffffff;
+    border-color: var(--primary);
+    box-shadow: 0 4px 12px var(--primary-glow);
+}
+
+.abt-recognition-arrow:active {
+    transform: scale(0.9);
+}
+
+.abt-recognition-arrow:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+}
+
+/* --- Decorative bottom glow --- */
+.abt-recognition-glow {
+    position: absolute;
+    bottom: 16px;
+    left: 32px;
+    width: 140px;
+    height: 48px;
+    background: var(--primary);
+    border-radius: 50%;
+    filter: blur(36px);
+    opacity: 0.12;
+    pointer-events: none;
+    z-index: 0;
+}
+
+/* ---- Reduced motion ---- */
+@media (prefers-reduced-motion: reduce) {
+    .abt-recognition-card {
+        transition: opacity 0.1s ease;
+    }
+
+    .abt-recognition-cta,
+    .abt-recognition-arrow {
+        transition: none;
+    }
+}
+
+/* ---- Dark mode overrides (surface colours) ---- */
+html[data-theme="dark"] .abt-recognition-card,
+body[data-theme="dark"] .abt-recognition-card,
+[data-theme="dark"] .abt-recognition-card {
+    background: var(--card-bg);
+}
+
+html[data-theme="dark"] .abt-recognition-arrow,
+body[data-theme="dark"] .abt-recognition-arrow,
+[data-theme="dark"] .abt-recognition-arrow {
+    background: var(--card-bg);
+    color: var(--text-muted);
+    border-color: var(--border);
+}
+
+/* ---- Responsive ---- */
+
+/* Tablet: 768px – 1000px */
+@media (max-width: 1000px) {
+    .abt-recognition-wrap {
+        gap: 32px;
+        padding: 48px 0 80px;
+    }
+
+    .abt-recognition-showcase {
+        height: 275px;
+    }
+
+    .abt-recognition-card {
+        width: 160px;
+        height: 230px;
+    }
+
+    .abt-recognition-card--left {
+        transform: translateX(-88px) scale(0.85);
+    }
+
+    .abt-recognition-card--right {
+        transform: translateX(88px) scale(0.85);
+    }
+
+    .abt-recognition-card--hidden-left {
+        transform: translateX(-140px) scale(0.65);
+    }
+
+    .abt-recognition-card--hidden-right {
+        transform: translateX(140px) scale(0.65);
+    }
+
+    .abt-recognition-showcase:hover .abt-recognition-card--left {
+        transform: translateX(-104px) scale(0.85) rotateY(8deg);
+    }
+
+    .abt-recognition-showcase:hover .abt-recognition-card--right {
+        transform: translateX(104px) scale(0.85) rotateY(-8deg);
+    }
+}
+
+/* Mobile: below 768px – stack vertically */
+@media (max-width: 767px) {
+    .abt-recognition-wrap {
+        grid-template-columns: 1fr;
+        text-align: center;
+        gap: 24px;
+        padding: 40px 0 90px;
+    }
+
+    .abt-recognition-heading {
+        font-size: 1.55rem;
+    }
+
+    .abt-recognition-cta {
+        margin: 0 auto;
+    }
+
+    .abt-recognition-showcase {
+        height: 255px;
+        margin-top: 8px;
+    }
+
+    .abt-recognition-card {
+        width: 140px;
+        height: 200px;
+    }
+
+    .abt-recognition-card--left {
+        transform: translateX(-78px) scale(0.85);
+    }
+
+    .abt-recognition-card--right {
+        transform: translateX(78px) scale(0.85);
+    }
+
+    .abt-recognition-card--hidden-left {
+        transform: translateX(-120px) scale(0.65);
+    }
+
+    .abt-recognition-card--hidden-right {
+        transform: translateX(120px) scale(0.65);
+    }
+
+    .abt-recognition-showcase:hover .abt-recognition-card--left {
+        transform: translateX(-78px) scale(0.85);
+    }
+
+    .abt-recognition-showcase:hover .abt-recognition-card--right {
+        transform: translateX(78px) scale(0.85);
+    }
+
+    .abt-recognition-showcase:hover .abt-recognition-card--center {
+        transform: translateX(0) scale(1);
+    }
+
+    .abt-recognition-glow {
+        display: none;
+    }
+
+    .abt-recognition-nav {
+        bottom: -40px;
+    }
+}
+
+/* Very small: below 400px */
+@media (max-width: 399px) {
+    .abt-recognition-showcase {
+        height: 225px;
+    }
+
+    .abt-recognition-card {
+        width: 120px;
+        height: 172px;
+    }
+
+    .abt-recognition-card--left {
+        transform: translateX(-65px) scale(0.85);
+    }
+
+    .abt-recognition-card--right {
+        transform: translateX(65px) scale(0.85);
+    }
+
+    .abt-recognition-card--hidden-left {
+        transform: translateX(-100px) scale(0.65);
+    }
+
+    .abt-recognition-card--hidden-right {
+        transform: translateX(100px) scale(0.65);
+    }
 }

@@ -22,16 +22,36 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 		$is_active = isset($_POST['is_active']) ? 1 : 0;
 		$leadsRaw = trim((string)($_POST['lead'] ?? ''));
 		$teamRaw = trim((string)($_POST['team'] ?? ''));
+		$removeImage = isset($_POST['remove_service_image']) && $_POST['remove_service_image'] === '1';
 
-		if ($title === '') {
-			setFlash('error', 'Service title is required.', 'Validation Error');
+		$existingImage = null;
+		if ($id > 0) {
+			$imgStmt = $pdo->prepare("SELECT service_image FROM services WHERE id = ?");
+			$imgStmt->execute([$id]);
+			$existingImage = $imgStmt->fetchColumn() ?: null;
+		}
+
+		$imgResult = cwt_handle_service_image_upload($_FILES['service_image'] ?? ['error' => UPLOAD_ERR_NO_FILE], $existingImage);
+		$imageError = '';
+		$newImageName = $imgResult['filename'];
+
+		if (!$imgResult['ok']) {
+			$imageError = $imgResult['error'];
+		} elseif ($removeImage && ($imgResult['filename'] === $existingImage)) {
+			cwt_delete_service_image($existingImage);
+			$newImageName = null;
+		}
+
+		if ($title === '' || $imageError !== '') {
+			$errMsg = $title === '' ? 'Service title is required.' : $imageError;
+			setFlash('error', $errMsg, 'Validation Error');
 		} else {
 			if ($id > 0) {
-				$pdo->prepare("UPDATE services SET num=?, title=?, description=?, short_description=?, consultant_name=?, consultant_role=?, sort_order=?, is_active=? WHERE id=?")
-					->execute([$num, $title, $description, $short_description, $consultant_name, $consultant_role, $sort_order, $is_active, $id]);
+				$pdo->prepare("UPDATE services SET num=?, title=?, description=?, short_description=?, consultant_name=?, consultant_role=?, sort_order=?, is_active=?, service_image=? WHERE id=?")
+					->execute([$num, $title, $description, $short_description, $consultant_name, $consultant_role, $sort_order, $is_active, $newImageName, $id]);
 			} else {
-				$pdo->prepare("INSERT INTO services (num, title, description, short_description, consultant_name, consultant_role, sort_order, is_active) VALUES (?,?,?,?,?,?,?,?)")
-					->execute([$num, $title, $description, $short_description, $consultant_name, $consultant_role, $sort_order, $is_active]);
+				$pdo->prepare("INSERT INTO services (num, title, description, short_description, consultant_name, consultant_role, sort_order, is_active, service_image) VALUES (?,?,?,?,?,?,?,?,?)")
+					->execute([$num, $title, $description, $short_description, $consultant_name, $consultant_role, $sort_order, $is_active, $newImageName]);
 				$id = (int)$pdo->lastInsertId();
 			}
 			$pdo->prepare("DELETE FROM service_leads WHERE service_id = ?")->execute([$id]);
@@ -52,7 +72,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 	if ($action === 'delete_service') {
 		$id = (int)($_POST['id'] ?? 0);
+		$delImgStmt = $pdo->prepare("SELECT service_image FROM services WHERE id = ?");
+		$delImgStmt->execute([$id]);
+		$delImgName = $delImgStmt->fetchColumn() ?: null;
 		$pdo->prepare("DELETE FROM services WHERE id = ?")->execute([$id]);
+		if ($delImgName !== null && $delImgName !== '') {
+			cwt_delete_service_image($delImgName);
+		}
 		setFlash('success', 'Service deleted successfully.', 'Deleted');
 		header('Location: ' . ADMIN_URL . '/services.php');
 		exit;
@@ -125,6 +151,7 @@ $iconOptions = [
 $pageTitle = 'Services & Capabilities';
 include __DIR__ . '/layout_top.php';
 ?>
+<link rel="stylesheet" href="<?= SITE_URL ?>/assets/css/admin-sweetalert.css?v=<?= filemtime(__DIR__ . '/../assets/css/admin-sweetalert.css') ?>">
 <link rel="stylesheet" href="<?= SITE_URL ?>/assets/css/admin-services.css?v=<?= filemtime(__DIR__ . '/../assets/css/admin-services.css') ?>">
 
 <svg class="svc-sprite" width="0" height="0" aria-hidden="true" focusable="false">
@@ -265,15 +292,18 @@ include __DIR__ . '/layout_top.php';
 	</section>
 </div>
 
-<div class="svc-modal" id="serviceModal" aria-hidden="true" role="dialog" aria-labelledby="serviceModalTitle">
+<div class="svc-modal svc-modal-service" id="serviceModal" aria-hidden="true" role="dialog" aria-labelledby="serviceModalTitle">
 	<div class="svc-modal-backdrop" data-close="serviceModal"></div>
-	<div class="svc-modal-dialog">
-		<form method="POST" action="" id="serviceForm">
+	<div class="svc-modal-dialog svc-service-dialog">
+		<form method="POST" action="" id="serviceForm" enctype="multipart/form-data">
 			<input type="hidden" name="csrf_token" value="<?= e(csrfToken()) ?>">
 			<input type="hidden" name="action" value="save_service">
 			<input type="hidden" name="id" value="">
 			<div class="svc-dialog-head">
-				<h3 id="serviceModalTitle">Add Service</h3>
+				<div class="svc-dialog-head-left">
+					<span class="svc-dialog-badge" id="serviceModalBadge">Service</span>
+					<h3 id="serviceModalTitle">Add Service</h3>
+				</div>
 				<button type="button" class="svc-icon-btn" data-close="serviceModal" aria-label="Close dialog">
 					<svg class="svc-ico" viewBox="0 0 24 24" aria-hidden="true"><use href="#svc-i-close"></use></svg>
 				</button>
@@ -292,7 +322,7 @@ include __DIR__ . '/layout_top.php';
 				</div>
 				<div class="svc-field">
 					<label class="svc-label">Title <span class="svc-req">*</span></label>
-					<input type="text" name="title" class="svc-input" required maxlength="255">
+					<input type="text" name="title" class="svc-input" required maxlength="255" placeholder="e.g. AI & Digital Transformation">
 				</div>
 				<div class="svc-field">
 					<label class="svc-label">Short Description</label>
@@ -300,7 +330,7 @@ include __DIR__ . '/layout_top.php';
 				</div>
 				<div class="svc-field">
 					<label class="svc-label">Full Description</label>
-					<textarea name="description" class="svc-input" rows="4"></textarea>
+					<textarea name="description" class="svc-input" rows="2" placeholder="Full service overview..."></textarea>
 				</div>
 				<div class="svc-form-row svc-form-row-2">
 					<div class="svc-field">
@@ -312,13 +342,49 @@ include __DIR__ . '/layout_top.php';
 						<input type="text" name="consultant_role" class="svc-input" placeholder="Practice Lead" maxlength="255">
 					</div>
 				</div>
-				<div class="svc-field">
-					<label class="svc-label">Lead Names (comma-separated)</label>
-					<input type="text" name="lead" class="svc-input" placeholder="Alice Smith, Bob Jones">
+				<div class="svc-form-row svc-form-row-2">
+					<div class="svc-field">
+						<label class="svc-label">Lead Names (comma-separated)</label>
+						<input type="text" name="lead" class="svc-input" placeholder="Alice Smith, Bob Jones">
+					</div>
+					<div class="svc-field">
+						<label class="svc-label">Team Members (comma-separated)</label>
+						<input type="text" name="team" class="svc-input" placeholder="Carol White, Dan Brown, Eve Black">
+					</div>
 				</div>
-				<div class="svc-field">
-					<label class="svc-label">Team Members (comma-separated)</label>
-					<input type="text" name="team" class="svc-input" placeholder="Carol White, Dan Brown, Eve Black">
+				<div class="svc-field" id="svcImageField">
+					<label class="svc-label">Image of the Service</label>
+					<input type="file" name="service_image" id="serviceImageInput" class="svc-input svc-file-input" accept=".jpg,.jpeg,.png,.webp,.gif,image/jpeg,image/png,image/webp,image/gif">
+					<span class="svc-hint">JPG, PNG, WebP or GIF · max 10 MB</span>
+					<span class="svc-img-error" id="serviceImageError" style="display:none;color:#ef4444;font-size:11px;margin-top:3px;"></span>
+
+					<div id="serviceImagePreviewWrap" style="display:none;margin-top:6px;">
+						<div class="svc-img-subhead">New image preview:</div>
+						<div class="svc-preview-box">
+							<img id="serviceImagePreview" src="" alt="Preview">
+							<button type="button" class="svc-btn svc-btn-ghost svc-btn-xs" id="cancelNewImageBtn" title="Cancel selected file">
+								<svg class="svc-ico" viewBox="0 0 24 24" aria-hidden="true"><use href="#svc-i-close"></use></svg>
+								<span>Cancel</span>
+							</button>
+						</div>
+					</div>
+
+					<div id="serviceCurrentImageWrap" style="display:none;margin-top:6px;">
+						<div class="svc-img-subhead">Current image:</div>
+						<div class="svc-current-box">
+							<img id="serviceCurrentImage" src="" alt="Current image">
+							<input type="hidden" name="remove_service_image" value="0" id="removeServiceImage">
+							<button type="button" class="svc-btn svc-btn-danger-soft svc-btn-xs" id="removeServiceImageBtn" title="Remove current image">
+								<svg class="svc-ico" viewBox="0 0 24 24" aria-hidden="true"><use href="#svc-i-trash"></use></svg>
+								<span>Remove image</span>
+							</button>
+						</div>
+					</div>
+
+					<div id="serviceImageRemovedNotice" style="display:none;" class="svc-remove-alert">
+						<span>Image marked for removal (will be deleted on save).</span>
+						<button type="button" class="svc-btn svc-btn-ghost svc-btn-xs" id="undoRemoveServiceImageBtn">Undo</button>
+					</div>
 				</div>
 				<label class="svc-toggle">
 					<input type="checkbox" name="is_active" value="1" checked>
@@ -327,9 +393,9 @@ include __DIR__ . '/layout_top.php';
 			</div>
 			<div class="svc-dialog-foot">
 				<button type="button" class="svc-btn svc-btn-ghost" data-close="serviceModal">Cancel</button>
-				<button type="submit" class="svc-btn svc-btn-primary">
+				<button type="submit" class="svc-btn svc-btn-primary" id="serviceSubmitBtn">
 					<svg class="svc-ico" viewBox="0 0 24 24" aria-hidden="true"><use href="#svc-i-save"></use></svg>
-					<span>Save Service</span>
+					<span id="serviceSubmitBtnText">Save Service</span>
 				</button>
 			</div>
 		</form>
@@ -451,6 +517,9 @@ include __DIR__ . '/layout_top.php';
 	</div>
 </template>
 
-<script>window.CAP_ICONS = <?= json_encode($iconOptions) ?>;</script>
+<script>
+window.CAP_ICONS = <?= json_encode($iconOptions) ?>;
+window.UPLOAD_URL = <?= json_encode(UPLOAD_URL) ?>;
+</script>
 <script src="<?= SITE_URL ?>/assets/js/admin-services.js?v=<?= filemtime(__DIR__ . '/../assets/js/admin-services.js') ?>"></script>
 <?php include __DIR__ . '/layout_bottom.php'; ?>

@@ -91,6 +91,14 @@ document.addEventListener('DOMContentLoaded', function () {
             serviceForm.querySelector('[name="sort_order"]').value = '0';
             serviceForm.querySelector('[name="is_active"]').checked = true;
             serviceTitle.textContent = 'Add Service';
+            if (serviceModal) {
+                serviceModal.classList.remove('is-edit-mode');
+                serviceModal.classList.add('is-add-mode');
+            }
+            var serviceBadge = document.getElementById('serviceModalBadge');
+            if (serviceBadge) serviceBadge.textContent = 'New';
+            var serviceSubmitText = document.getElementById('serviceSubmitBtnText');
+            if (serviceSubmitText) serviceSubmitText.textContent = 'Save Service';
             openModal('serviceModal');
         });
     }
@@ -116,6 +124,14 @@ document.addEventListener('DOMContentLoaded', function () {
             serviceForm.querySelector('[name="lead"]').value = (data.lead || []).join(', ');
             serviceForm.querySelector('[name="team"]').value = (data.team || []).join(', ');
             serviceTitle.textContent = 'Edit Service';
+            if (serviceModal) {
+                serviceModal.classList.remove('is-add-mode');
+                serviceModal.classList.add('is-edit-mode');
+            }
+            var serviceBadge = document.getElementById('serviceModalBadge');
+            if (serviceBadge) serviceBadge.textContent = 'Edit #' + (data.num || ('0' + data.id).slice(-2));
+            var serviceSubmitText = document.getElementById('serviceSubmitBtnText');
+            if (serviceSubmitText) serviceSubmitText.textContent = 'Update Service';
             openModal('serviceModal');
         });
     });
@@ -211,4 +227,180 @@ document.addEventListener('DOMContentLoaded', function () {
             openModal('capabilityModal');
         });
     });
+
+    var serviceImageInput = document.getElementById('serviceImageInput');
+    var serviceImagePreview = document.getElementById('serviceImagePreview');
+    var serviceImagePreviewWrap = document.getElementById('serviceImagePreviewWrap');
+    var cancelNewImageBtn = document.getElementById('cancelNewImageBtn');
+    var serviceImageError = document.getElementById('serviceImageError');
+    var serviceCurrentImageWrap = document.getElementById('serviceCurrentImageWrap');
+    var serviceCurrentImage = document.getElementById('serviceCurrentImage');
+    var removeServiceImage = document.getElementById('removeServiceImage');
+    var removeServiceImageBtn = document.getElementById('removeServiceImageBtn');
+    var serviceImageRemovedNotice = document.getElementById('serviceImageRemovedNotice');
+    var undoRemoveServiceImageBtn = document.getElementById('undoRemoveServiceImageBtn');
+    var serviceSubmitBtn = serviceForm ? serviceForm.querySelector('[type="submit"]') : null;
+
+    var ALLOWED_EXTS = ['jpg', 'jpeg', 'png', 'webp', 'gif'];
+    var ALLOWED_TYPES = ['image/jpeg', 'image/jpg', 'image/pjpeg', 'image/png', 'image/x-png', 'image/webp', 'image/gif'];
+    var MAX_SIZE = 10 * 1024 * 1024;
+
+    function showImgError(msg) {
+        if (!serviceImageError) return;
+        serviceImageError.textContent = msg;
+        serviceImageError.style.display = msg ? 'block' : 'none';
+        if (serviceImageInput) {
+            if (msg) serviceImageInput.classList.add('is-invalid');
+            else serviceImageInput.classList.remove('is-invalid');
+        }
+        if (serviceSubmitBtn) serviceSubmitBtn.disabled = !!msg;
+    }
+
+    function clearImgPreview() {
+        if (serviceImagePreviewWrap) serviceImagePreviewWrap.style.display = 'none';
+        if (serviceImagePreview) { serviceImagePreview.src = ''; }
+        if (serviceImageInput) { serviceImageInput.value = ''; }
+    }
+
+    if (serviceImageInput) {
+        serviceImageInput.addEventListener('change', function () {
+            var file = serviceImageInput.files && serviceImageInput.files[0];
+            showImgError('');
+            if (serviceImagePreviewWrap) serviceImagePreviewWrap.style.display = 'none';
+            if (!file) return;
+
+            var fileName = file.name || '';
+            var ext = (fileName.split('.').pop() || '').toLowerCase();
+
+            if (!ALLOWED_EXTS.includes(ext) || (file.type && !ALLOWED_TYPES.includes(file.type))) {
+                showImgError('Only JPG, PNG, WebP or GIF images are allowed.');
+                serviceImageInput.value = '';
+                return;
+            }
+            if (file.size > MAX_SIZE) {
+                showImgError('File exceeds the 10 MB limit.');
+                serviceImageInput.value = '';
+                return;
+            }
+
+            var reader = new FileReader();
+            reader.onload = function (e) {
+                if (serviceImagePreview) {
+                    serviceImagePreview.src = e.target.result;
+                }
+                if (serviceImagePreviewWrap) {
+                    serviceImagePreviewWrap.style.display = 'block';
+                }
+            };
+            reader.onerror = function () {
+                showImgError('Could not load image preview.');
+            };
+            reader.readAsDataURL(file);
+
+            if (serviceImageRemovedNotice) serviceImageRemovedNotice.style.display = 'none';
+            if (removeServiceImage) removeServiceImage.value = '0';
+        });
+    }
+
+    if (cancelNewImageBtn) {
+        cancelNewImageBtn.addEventListener('click', function () {
+            clearImgPreview();
+            showImgError('');
+            if (serviceCurrentImage && serviceCurrentImage.getAttribute('src') && removeServiceImage && removeServiceImage.value !== '1') {
+                if (serviceCurrentImageWrap) serviceCurrentImageWrap.style.display = 'block';
+            }
+        });
+    }
+
+    function markImageForRemoval() {
+        if (removeServiceImage) removeServiceImage.value = '1';
+        if (serviceCurrentImageWrap) serviceCurrentImageWrap.style.display = 'none';
+        if (serviceImageRemovedNotice) serviceImageRemovedNotice.style.display = 'flex';
+    }
+
+    function undoImageRemoval() {
+        if (removeServiceImage) removeServiceImage.value = '0';
+        if (serviceImageRemovedNotice) serviceImageRemovedNotice.style.display = 'none';
+        if (serviceCurrentImageWrap && serviceCurrentImage && serviceCurrentImage.getAttribute('src')) {
+            serviceCurrentImageWrap.style.display = 'block';
+        }
+    }
+
+    if (removeServiceImageBtn) {
+        removeServiceImageBtn.addEventListener('click', function (e) {
+            e.preventDefault();
+            var confirmOpts = {
+                title: 'Remove Image?',
+                text: 'Are you sure you want to remove this service image? It will be permanently removed when you save.',
+                confirmText: 'Yes, Remove',
+                cancelText: 'Cancel',
+                icon: 'warning',
+                danger: true
+            };
+
+            if (typeof window.confirmImageRemoval === 'function') {
+                window.confirmImageRemoval(confirmOpts, function () {
+                    markImageForRemoval();
+                });
+            } else if (hasSwal) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: confirmOpts.title,
+                    text: confirmOpts.text,
+                    showCancelButton: true,
+                    confirmButtonText: confirmOpts.confirmText,
+                    confirmButtonColor: '#ef4444',
+                    cancelButtonText: confirmOpts.cancelText
+                }).then(function (result) {
+                    if (result && result.isConfirmed) {
+                        markImageForRemoval();
+                    }
+                });
+            } else {
+                if (window.confirm(confirmOpts.text)) {
+                    markImageForRemoval();
+                }
+            }
+        });
+    }
+
+    if (undoRemoveServiceImageBtn) {
+        undoRemoveServiceImageBtn.addEventListener('click', function () {
+            undoImageRemoval();
+        });
+    }
+
+    var _origAddServiceClick = addServiceBtn ? addServiceBtn.onclick : null;
+    if (addServiceBtn) {
+        addServiceBtn.addEventListener('click', function () {
+            clearImgPreview();
+            showImgError('');
+            if (serviceCurrentImage) serviceCurrentImage.src = '';
+            if (serviceCurrentImageWrap) serviceCurrentImageWrap.style.display = 'none';
+            if (serviceImageRemovedNotice) serviceImageRemovedNotice.style.display = 'none';
+            if (removeServiceImage) removeServiceImage.value = '0';
+        });
+    }
+
+    document.querySelectorAll('.edit-service-btn').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            clearImgPreview();
+            showImgError('');
+            if (serviceImageRemovedNotice) serviceImageRemovedNotice.style.display = 'none';
+            if (removeServiceImage) removeServiceImage.value = '0';
+
+            var data;
+            try { data = JSON.parse(btn.getAttribute('data-service')); } catch (e) { return; }
+            var imgName = data.service_image || '';
+            if (imgName && serviceCurrentImageWrap && serviceCurrentImage) {
+                var uploadBase = window.UPLOAD_URL || '../uploads/';
+                serviceCurrentImage.src = uploadBase + 'services/' + encodeURIComponent(imgName);
+                serviceCurrentImageWrap.style.display = 'block';
+            } else {
+                if (serviceCurrentImage) serviceCurrentImage.src = '';
+                if (serviceCurrentImageWrap) serviceCurrentImageWrap.style.display = 'none';
+            }
+        });
+    });
+
 });

@@ -486,3 +486,206 @@ document.addEventListener('DOMContentLoaded', function () {
     themeObserver.observe(document.body, { attributes: true, attributeFilter: ['data-theme', 'class'] });
 
 });
+
+
+/* =========================================================
+   AWARDS & RECOGNITION CAROUSEL
+   Supports dynamic N-card rotations while displaying 3 cards in front
+   ========================================================= */
+(function initRecognitionCarousel() {
+    var showcase = document.getElementById('abtRecognitionShowcase');
+    if (!showcase) return;
+
+    var cards = Array.prototype.slice.call(showcase.querySelectorAll('.abt-recognition-card'));
+    var total = cards.length;
+    if (total < 3) return;
+
+    var prevBtn = document.getElementById('abtRecPrev');
+    var nextBtn = document.getElementById('abtRecNext');
+
+    // Default center index is 1 (card 0 is left, 1 is center, 2 is right, 3+ hidden)
+    var currentIndex = 1;
+
+    var posClasses = [
+        'abt-recognition-card--center',
+        'abt-recognition-card--left',
+        'abt-recognition-card--right',
+        'abt-recognition-card--hidden-left',
+        'abt-recognition-card--hidden-right'
+    ];
+
+    function setCardPos(card, posClass, disableTransition) {
+        if (disableTransition) {
+            card.style.transition = 'none';
+        }
+        posClasses.forEach(function (c) { card.classList.remove(c); });
+        card.classList.add(posClass);
+        if (disableTransition) {
+            void card.offsetWidth; // Force reflow
+            card.style.transition = '';
+        }
+    }
+
+    function renderCarousel(targetIndex, direction) {
+        if (total === 3) {
+            currentIndex = targetIndex;
+            var l = (currentIndex - 1 + 3) % 3;
+            var r = (currentIndex + 1) % 3;
+            setCardPos(cards[l], 'abt-recognition-card--left');
+            setCardPos(cards[currentIndex], 'abt-recognition-card--center');
+            setCardPos(cards[r], 'abt-recognition-card--right');
+            return;
+        }
+
+        var prevIndex = currentIndex;
+        currentIndex = targetIndex;
+
+        var newLeft = (currentIndex - 1 + total) % total;
+        var newRight = (currentIndex + 1) % total;
+
+        // Ensure incoming cards start from the correct offstage side without visual jumps
+        if (direction === 'next') {
+            if (cards[newRight].classList.contains('abt-recognition-card--hidden-left')) {
+                setCardPos(cards[newRight], 'abt-recognition-card--hidden-right', true);
+            }
+        } else if (direction === 'prev') {
+            if (cards[newLeft].classList.contains('abt-recognition-card--hidden-right')) {
+                setCardPos(cards[newLeft], 'abt-recognition-card--hidden-left', true);
+            }
+        }
+
+        // Apply new positions with smooth CSS transitions
+        cards.forEach(function (card, idx) {
+            if (idx === currentIndex) {
+                setCardPos(card, 'abt-recognition-card--center');
+            } else if (idx === newLeft) {
+                setCardPos(card, 'abt-recognition-card--left');
+            } else if (idx === newRight) {
+                setCardPos(card, 'abt-recognition-card--right');
+            } else {
+                // Card is offstage
+                if (direction === 'next') {
+                    var oldLeft = (prevIndex - 1 + total) % total;
+                    if (idx === oldLeft) {
+                        setCardPos(card, 'abt-recognition-card--hidden-left');
+                    } else {
+                        setCardPos(card, 'abt-recognition-card--hidden-right');
+                    }
+                } else if (direction === 'prev') {
+                    var oldRight = (prevIndex + 1) % total;
+                    if (idx === oldRight) {
+                        setCardPos(card, 'abt-recognition-card--hidden-right');
+                    } else {
+                        setCardPos(card, 'abt-recognition-card--hidden-left');
+                    }
+                } else {
+                    setCardPos(card, 'abt-recognition-card--hidden-right');
+                }
+            }
+        });
+    }
+
+    function goNext() {
+        var nextIdx = (currentIndex + 1) % total;
+        renderCarousel(nextIdx, 'next');
+    }
+
+    function goPrev() {
+        var prevIdx = (currentIndex - 1 + total) % total;
+        renderCarousel(prevIdx, 'prev');
+    }
+
+    /* ---------------------------------------------------------
+       Auto-advance every 2 seconds
+       --------------------------------------------------------- */
+    var autoInterval = parseInt(showcase.dataset.interval, 10) || 1500;
+    var autoTimer = null;
+
+    function startAutoPlay() {
+        stopAutoPlay();
+        autoTimer = setInterval(function () {
+            goNext();
+        }, autoInterval);
+    }
+
+    function stopAutoPlay() {
+        if (autoTimer) {
+            clearInterval(autoTimer);
+            autoTimer = null;
+        }
+    }
+
+    function resetAutoPlay() {
+        stopAutoPlay();
+        startAutoPlay();
+    }
+
+    // Start auto-play initially
+    startAutoPlay();
+
+    // Pause on mouse hover, resume when cursor leaves
+    showcase.addEventListener('mouseenter', stopAutoPlay);
+    showcase.addEventListener('mouseleave', startAutoPlay);
+
+    // Pause if document tab is hidden, resume when tab is focused
+    document.addEventListener('visibilitychange', function () {
+        if (document.hidden) {
+            stopAutoPlay();
+        } else {
+            startAutoPlay();
+        }
+    });
+
+    if (nextBtn) {
+        nextBtn.addEventListener('click', function (e) {
+            e.preventDefault();
+            resetAutoPlay();
+            goNext();
+        });
+    }
+
+    if (prevBtn) {
+        prevBtn.addEventListener('click', function (e) {
+            e.preventDefault();
+            resetAutoPlay();
+            goPrev();
+        });
+    }
+
+    // Direct card click interaction: clicking left rotates prev, right rotates next
+    cards.forEach(function (card) {
+        card.addEventListener('click', function () {
+            if (card.classList.contains('abt-recognition-card--left')) {
+                resetAutoPlay();
+                goPrev();
+            } else if (card.classList.contains('abt-recognition-card--right')) {
+                resetAutoPlay();
+                goNext();
+            }
+        });
+    });
+
+    // Keyboard support on showcase
+    showcase.addEventListener('keydown', function (e) {
+        if (e.key === 'ArrowRight') { resetAutoPlay(); goNext(); }
+        else if (e.key === 'ArrowLeft') { resetAutoPlay(); goPrev(); }
+    });
+
+    // Touch / swipe support
+    var touchStartX = null;
+    showcase.addEventListener('touchstart', function (e) {
+        stopAutoPlay();
+        touchStartX = e.touches[0].clientX;
+    }, { passive: true });
+
+    showcase.addEventListener('touchend', function (e) {
+        startAutoPlay();
+        if (touchStartX === null) return;
+        var delta = e.changedTouches[0].clientX - touchStartX;
+        touchStartX = null;
+        if (Math.abs(delta) < 40) return;
+        resetAutoPlay();
+        if (delta < 0) { goNext(); }
+        else { goPrev(); }
+    }, { passive: true });
+})();

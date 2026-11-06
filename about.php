@@ -247,6 +247,92 @@ $pageTitle = 'About Us — Creative Web Technologies';
 </section>
 <?php endif; ?>
 
+<section class="abt-section abt-section-tint abt-recognition-section" id="awards" aria-labelledby="awards-heading">
+	<div class="abt-container">
+		<div class="abt-sec-head reveal">
+			<span class="abt-sec-label">Recognition</span>
+			<h2 class="abt-sec-title" id="awards-heading">Awards &amp; Achievements</h2>
+			<p class="abt-sec-sub">Celebrating excellence through innovation and industry recognition.</p>
+		</div>
+		<div class="abt-recognition-wrap">
+
+			<!-- Left Side: Text Content -->
+			<div class="abt-recognition-content">
+				<h2 class="abt-recognition-heading" id="awards-heading">
+					Celebrating Our <span class="abt-recognition-accent">Achievements</span>
+				</h2>
+				<p class="abt-recognition-para">Celebrating our achievements and industry recognition, our awards reflect a commitment to excellence, innovation, and technological leadership. Each recognition represents our dedication to delivering impactful solutions, exceeding industry standards, and continuously advancing the future of technology.</p>
+				<a href="#about-cwt" class="abt-recognition-cta" aria-label="View our about section for more details">View Details</a>
+			</div>
+
+			<!-- Right Side: Carousel -->
+			<div class="abt-recognition-showcase" id="abtRecognitionShowcase" data-interval="2000" aria-label="Award images carousel">
+				<?php
+				$awardSampleDir = __DIR__ . '/uploads/award/sample';
+				$awardSampleImages = [];
+				if (is_dir($awardSampleDir)) {
+					$scanFiles = scandir($awardSampleDir);
+					if ($scanFiles !== false) {
+						natsort($scanFiles);
+						foreach ($scanFiles as $f) {
+							if ($f === '.' || $f === '..') continue;
+							$ext = strtolower(pathinfo($f, PATHINFO_EXTENSION));
+							if (in_array($ext, ['jpg', 'jpeg', 'png', 'webp', 'gif', 'svg'])) {
+								$awardSampleImages[] = $f;
+							}
+						}
+					}
+				}
+				// Fallback if directory is empty
+				if (empty($awardSampleImages)) {
+					$awardSampleImages = ['award sample - 1.jpg', 'award sample - 2.jpeg', 'certificate sample-1.jpg'];
+				}
+				// Guarantee at least 3 cards for carousel structure
+				if (count($awardSampleImages) === 1) {
+					$awardSampleImages = [$awardSampleImages[0], $awardSampleImages[0], $awardSampleImages[0]];
+				} elseif (count($awardSampleImages) === 2) {
+					$awardSampleImages = [$awardSampleImages[0], $awardSampleImages[1], $awardSampleImages[0]];
+				}
+
+				foreach ($awardSampleImages as $idx => $imgFile):
+					$imgUrl = SITE_URL . '/uploads/award/sample/' . rawurlencode($imgFile);
+					$rawTitle = pathinfo($imgFile, PATHINFO_FILENAME);
+					$altText = ucwords(trim(str_replace(['-', '_'], ' ', preg_replace('/\s+/', ' ', $rawTitle))));
+
+					// Initial positions:
+					// Card 0: left
+					// Card 1: center (featured)
+					// Card 2: right
+					// Card 3+: hidden offstage right
+					$posClass = 'abt-recognition-card--hidden-right';
+					if ($idx === 0) {
+						$posClass = 'abt-recognition-card--left';
+					} elseif ($idx === 1) {
+						$posClass = 'abt-recognition-card--center';
+					} elseif ($idx === 2) {
+						$posClass = 'abt-recognition-card--right';
+					}
+				?>
+				<div class="abt-recognition-card <?= $posClass ?>" id="abtRecCard<?= $idx ?>" data-index="<?= $idx ?>" aria-label="<?= e($altText) ?>">
+					<img src="<?= e($imgUrl) ?>" alt="<?= e($altText) ?>" loading="lazy" draggable="false">
+				</div>
+				<?php endforeach; ?>
+
+				<!-- Navigation Arrows -->
+				<div class="abt-recognition-nav" role="group" aria-label="Carousel navigation">
+					<button class="abt-recognition-arrow abt-recognition-arrow--prev" id="abtRecPrev" aria-label="Previous award">&#10094;</button>
+					<button class="abt-recognition-arrow abt-recognition-arrow--next" id="abtRecNext" aria-label="Next award">&#10095;</button>
+				</div>
+			</div>
+
+		</div><!-- /.abt-recognition-wrap -->
+
+		<!-- Decorative glow -->
+		<span class="abt-recognition-glow" aria-hidden="true"></span>
+
+	</div>
+</section>
+
 <?php if (!empty($vm)): ?>
 <section class="abt-section abt-section-tint" id="vision-mission" aria-labelledby="vm-heading">
 	<div class="abt-container">
