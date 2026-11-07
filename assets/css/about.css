@@ -4313,10 +4313,12 @@ html[data-theme="dark"] .cwt-public #our-crew>section {
     line-height: 1.7;
     margin: 0 0 28px;
     transition: color var(--transition);
+    text-align: justify;
 }
 
 .abt-recognition-cta {
-    display: inline-flex;
+    display: none;
+    /*display: inline-flex;*/
     align-items: center;
     gap: 6px;
     background: var(--primary);
