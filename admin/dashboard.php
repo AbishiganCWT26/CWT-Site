@@ -17,6 +17,7 @@ $stats = [
 	'crew'       => $pdo->query("SELECT COUNT(*) FROM crew")->fetchColumn(),
 	'world_map'  => $pdo->query("SELECT COUNT(*) FROM world_map_countries WHERE is_active=1")->fetchColumn(),
 	'meetings'   => $pdo->query("SELECT COUNT(*) FROM client_meetings WHERE is_read=0")->fetchColumn(),
+	'awards'     => $pdo->query("SELECT COUNT(*) FROM awards")->fetchColumn(),
 ];
 
 $pageTitle = 'Dashboard';
@@ -43,6 +44,7 @@ include __DIR__ . '/layout_top.php';
 	<a href="<?= ADMIN_URL ?>/crew.php" class="dash-stat-card"><div class="dash-stat-icon green">👥</div><div><div class="dash-stat-num"><?= $stats['crew'] ?></div><div class="dash-stat-label">Crew Members</div></div></a>
 	<a href="<?= ADMIN_URL ?>/world-map.php" class="dash-stat-card"><div class="dash-stat-icon amber">🗺️</div><div><div class="dash-stat-num"><?= $stats['world_map'] ?></div><div class="dash-stat-label">World Map Countries</div></div></a>
 	<a href="<?= ADMIN_URL ?>/client-meeting.php" class="dash-stat-card dash-stat-accent"><div class="dash-stat-icon white">📩</div><div><div class="dash-stat-num"><?= $stats['meetings'] ?></div><div class="dash-stat-label">Unread Meetings</div></div></a>
+	<a href="<?= ADMIN_URL ?>/award.php" class="dash-stat-card"><div class="dash-stat-icon amber">🏆</div><div><div class="dash-stat-num"><?= $stats['awards'] ?></div><div class="dash-stat-label">Awards</div></div></a>
 	<a href="<?= ADMIN_URL ?>/add-admin.php" class="dash-stat-card">
 		<div class="dash-stat-icon blue">🔐</div>
 		<div>
@@ -59,6 +61,7 @@ include __DIR__ . '/layout_top.php';
 			<?php
 			$links = [
 				['href'=>'about.php','icon'=>'ℹ️','label'=>'About Us'],
+				['href'=>'award.php','icon'=>'🏆','label'=>'Awards'],
 				['href'=>'services.php','icon'=>'🛠️','label'=>'Services & Verticals'],
 				['href'=>'products.php','icon'=>'🚀','label'=>'Products'],
 				['href'=>'industries.php','icon'=>'🏭','label'=>'Industries'],

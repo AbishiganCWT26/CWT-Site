@@ -1,0 +1,61 @@
+.aw-thumb {
+	height: 60px;
+	width: auto;
+	border-radius: 6px;
+	object-fit: cover;
+	display: block;
+	pointer-events: none;
+	user-select: none;
+	-webkit-user-drag: none;
+}
+
+.aw-para-cell {
+	max-width: 320px;
+	font-size: 0.85rem;
+	color: var(--text-muted, #6b7280);
+}
+
+.aw-current-img {
+	margin-top: 10px;
+}
+
+.aw-current-img img {
+	max-height: 120px;
+	border-radius: 8px;
+	object-fit: contain;
+	display: block;
+	pointer-events: none;
+	user-select: none;
+	-webkit-user-drag: none;
+}
+
+.empty-state {
+	color: var(--text-muted, #6b7280);
+	font-style: italic;
+	padding: 16px 0;
+}
+
+.badge-grey {
+	background: var(--border, #e5e7eb);
+	color: var(--text-muted, #6b7280);
+	border-radius: 4px;
+	padding: 2px 8px;
+	font-size: 0.78rem;
+}
+
+.req {
+	color: var(--danger, #ef4444);
+}
+
+.form-hint {
+	font-size: 0.75rem;
+	color: var(--text-muted, #6b7280);
+	margin-top: 4px;
+	line-height: 1.4;
+}
+
+img[data-preview] {
+	-webkit-user-drag: none;
+	user-select: none;
+	pointer-events: none;
+}

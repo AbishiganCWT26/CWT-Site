@@ -113,7 +113,14 @@ $pageTitle = 'Our Services — Creative Web Technologies';
 		</div>
 
 		<div class="svc-hub-grid reveal">
-			<?php foreach ($services as $i => $s): ?>
+			<?php foreach ($services as $i => $s):
+				$svcImageFile = isset($s['service_image']) ? trim((string)$s['service_image']) : '';
+				$svcImageValid = $svcImageFile !== ''
+					&& strpos($svcImageFile, '..') === false
+					&& basename($svcImageFile) === $svcImageFile
+					&& preg_match('/^[A-Za-z0-9._\- ]+\.(jpe?g|png|gif|webp|svg|avif)$/i', $svcImageFile);
+				$svcImageUrl = $svcImageValid ? cwt_service_image_url($svcImageFile) : '';
+			?>
 			<div class="svc-hub-card" data-service-index="<?= (int)$i ?>">
 				<div class="svc-hub-heading">
 					<h3 class="svc-hub-name"><?= e($s['title']) ?></h3>
@@ -152,7 +159,15 @@ $pageTitle = 'Our Services — Creative Web Technologies';
 							<?php endforeach; ?>
 						</span>
 					</div>
+
+					<button class="svc-hub-more-btn" type="button" data-img="<?= e($svcImageUrl) ?>" data-title="<?= e($s['title']) ?>" aria-haspopup="dialog">
+						<span>View More Details</span>
+						<i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
+					</button>
 				</div>
+				<?php if (!empty($svcImageUrl)): ?>
+				<button class="svc-view-more" type="button" data-img="<?= e($svcImageUrl) ?>" data-title="<?= e($s['title']) ?>" aria-label="View image for <?= e($s['title']) ?>">View More</button>
+				<?php endif; ?>
 			</div>
 			<?php endforeach; ?>
 		</div>
@@ -387,8 +402,11 @@ $pageTitle = 'Our Services — Creative Web Technologies';
 </section>
 </main>
 <?php require_once __DIR__ . '/includes/footer.php'; ?>
-<script>window.CWT_SECTIONS = <?= json_encode($sectionsForJs, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) ?>;</script>
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+window.SITE_URL = <?= json_encode(SITE_URL) ?>;
+window.CWT_SECTIONS = <?= json_encode($sectionsForJs, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) ?>;
+</script>
+<script src="<?= SITE_URL ?>/assets/js/sweetalert2.all.min.js"></script>
 <script src="<?= SITE_URL ?>/assets/js/services.js?v=<?= filemtime(__DIR__ . '/assets/js/services.js') ?>"></script>
 </body>
 </html>

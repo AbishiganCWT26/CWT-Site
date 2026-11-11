@@ -107,6 +107,8 @@ $pageTitle = 'About Us Content';
 include __DIR__ . '/layout_top.php';
 ?>
 
+<link rel="stylesheet" href="<?= SITE_URL ?>/assets/css/admin-about.css?v=<?= filemtime(__DIR__ . '/../assets/css/admin-about.css') ?>">
+
 <div class="page-header">
 	<div>
 		<h1>About Us Content</h1>

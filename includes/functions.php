@@ -1082,3 +1082,134 @@ function getCapabilitySectionById(PDO $pdo, int $id): array
 
 	return $section;
 }
+
+function cwt_service_image_url(?string $filename): string
+{
+	if ($filename === null || $filename === '') return '';
+	if (str_starts_with($filename, 'http://') || str_starts_with($filename, 'https://')) {
+		return $filename;
+	}
+	$clean = basename(trim($filename));
+	if ($clean === '' || $clean === '.' || $clean === '..') return '';
+	$diskPath = UPLOAD_DIR . 'services/' . $clean;
+	if (!file_exists($diskPath)) return '';
+	return UPLOAD_URL . 'services/' . rawurlencode($clean);
+}
+
+function cwt_handle_service_image_upload(array $file, ?string $oldName = null): array
+{
+	if (!isset($file['error']) || $file['error'] === UPLOAD_ERR_NO_FILE || (isset($file['error']) && $file['error'] !== UPLOAD_ERR_OK && $file['error'] !== UPLOAD_ERR_NO_FILE)) {
+		if (isset($file['error']) && $file['error'] === UPLOAD_ERR_NO_FILE) {
+			return ['ok' => true, 'error' => '', 'filename' => $oldName];
+		}
+		return ['ok' => false, 'error' => 'Upload failed (error code ' . ($file['error'] ?? 'unknown') . ').', 'filename' => null];
+	}
+	if (!isset($file['tmp_name']) || !is_uploaded_file($file['tmp_name'])) {
+		return ['ok' => true, 'error' => '', 'filename' => $oldName];
+	}
+	$maxSize = 10 * 1024 * 1024;
+	$size    = @filesize($file['tmp_name']);
+	if ($size === false || $size === 0) {
+		return ['ok' => false, 'error' => 'Uploaded file is empty.', 'filename' => null];
+	}
+	if ($size > $maxSize) {
+		return ['ok' => false, 'error' => 'File exceeds the 10 MB limit.', 'filename' => null];
+	}
+	$ext = strtolower(pathinfo($file['name'] ?? '', PATHINFO_EXTENSION));
+	if ($ext === 'jpeg') $ext = 'jpg';
+	$allowedExt = ['jpg', 'png', 'gif', 'webp'];
+	if (!in_array($ext, $allowedExt, true)) {
+		return ['ok' => false, 'error' => 'Only jpg, jpeg, png, webp, gif images are allowed.', 'filename' => null];
+	}
+	if (class_exists('finfo')) {
+		$finfo    = new finfo(FILEINFO_MIME_TYPE);
+		$mimeType = $finfo->file($file['tmp_name']);
+		$allowedMime = [
+			'jpg'  => ['image/jpeg', 'image/jpg', 'image/pjpeg'],
+			'png'  => ['image/png', 'image/x-png'],
+			'gif'  => ['image/gif'],
+			'webp' => ['image/webp'],
+		];
+		if (!in_array($mimeType, $allowedMime[$ext] ?? [], true)) {
+			return ['ok' => false, 'error' => 'File MIME type does not match its extension.', 'filename' => null];
+		}
+	}
+	$dir = rtrim(UPLOAD_DIR . 'services', '/') . '/';
+	if (!is_dir($dir)) {
+		if (!@mkdir($dir, 0755, true) && !is_dir($dir)) {
+			return ['ok' => false, 'error' => 'Upload directory could not be created.', 'filename' => null];
+		}
+	}
+	$filename = 'service-' . uniqid('', true) . '.' . $ext;
+	$dest     = $dir . $filename;
+	if (!@move_uploaded_file($file['tmp_name'], $dest)) {
+		return ['ok' => false, 'error' => 'Could not move uploaded file.', 'filename' => null];
+	}
+	if ($oldName !== null && $oldName !== '') {
+		cwt_delete_service_image($oldName);
+	}
+	return ['ok' => true, 'error' => '', 'filename' => $filename];
+}
+
+function cwt_delete_service_image(?string $filename): void
+{
+	if ($filename === null || $filename === '') return;
+	$filename = basename($filename);
+	if ($filename === '' || $filename === '.' || $filename === '..') return;
+	$path = rtrim(UPLOAD_DIR . 'services', '/') . '/' . $filename;
+	$real = realpath($path);
+	if ($real === false || !is_file($real)) return;
+	$base = realpath(rtrim(UPLOAD_DIR . 'services', '/'));
+	if ($base === false) return;
+	if (strpos($real, $base . DIRECTORY_SEPARATOR) !== 0) return;
+	@unlink($real);
+}
+
+function get_awards(PDO $pdo): array
+{
+	$stmt = $pdo->query("SELECT * FROM awards ORDER BY id ASC");
+	return $stmt->fetchAll();
+}
+
+function get_award_by_id(PDO $pdo, int $id): array|false
+{
+	$stmt = $pdo->prepare("SELECT * FROM awards WHERE id = ?");
+	$stmt->execute([$id]);
+	return $stmt->fetch();
+}
+
+function create_award(PDO $pdo, string $image, string $title, string $para): int
+{
+	$stmt = $pdo->prepare("INSERT INTO awards (image, title, para) VALUES (?, ?, ?)");
+	$stmt->execute([$image, $title, $para]);
+	return (int)$pdo->lastInsertId();
+}
+
+function update_award(PDO $pdo, int $id, string $image, string $title, string $para): bool
+{
+	$stmt = $pdo->prepare("UPDATE awards SET image=?, title=?, para=?, updated_at=NOW() WHERE id=?");
+	return $stmt->execute([$image, $title, $para, $id]);
+}
+
+function delete_award(PDO $pdo, int $id): bool
+{
+	$existing = get_award_by_id($pdo, $id);
+	$stmt = $pdo->prepare("DELETE FROM awards WHERE id=?");
+	$ok = $stmt->execute([$id]);
+	if ($ok && $existing && !empty($existing['image'])) {
+		deleteUploadedFile($pdo, 'award/' . $existing['image'], 'award');
+	}
+	return $ok;
+}
+
+function deleteAwardRecordWithFiles(PDO $pdo, int $awardId): bool
+{
+	return delete_award($pdo, $awardId);
+}
+
+function handle_award_image_upload(array $file): string|false
+{
+	$result = uploadFile($file, 'award');
+	if ($result === false) return false;
+	return basename($result);
+}

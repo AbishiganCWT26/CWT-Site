@@ -366,7 +366,7 @@
                 type = 'error';
             } else if (msg === 'error_too_large') {
                 title = 'File Too Large';
-                text = 'The uploaded file exceeds the maximum allowed size (5MB).';
+                text = 'The uploaded file exceeds the maximum allowed size (10MB).';
                 type = 'error';
             } else if (msg === 'error_db') {
                 title = 'Database Error';
