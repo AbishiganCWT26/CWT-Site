@@ -423,7 +423,7 @@ html .cwt-public main>section:not([class*="-hero"]):not([class*="-cta"]) {
     background-image: var(--ambient-pattern) !important;
     background-size: 28px 28px;
     background-position: 0 0;
-    animation: cwt-ambient-dots 48s linear infinite;
+    /* Keep the texture static to avoid repainting the whole page every frame. */
 }
 
 @keyframes cwt-ambient-dots {

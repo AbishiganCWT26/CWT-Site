@@ -361,46 +361,18 @@
 
 /* ----------------------------------------------------------
    7. BOTTOM BAR — EDITORIAL SIGNATURE
-   Centered · stacked · borderless · ambient glow
+   Centered · stacked · borderless
    ---------------------------------------------------------- */
 
 .cwt-footer-bottom {
     position: relative;
-    margin-top: 60px;
-    padding: 46px 20px 10px;
+    margin-top: 24px;
+    padding: 12px 20px 10px;
     text-align: center;
-    background-image: radial-gradient(ellipse 520px 90px at 50% 0%,
-            var(--cwt-bottom-glow),
-            transparent 70%);
-    background-repeat: no-repeat;
     transition: background 0.3s ease;
 }
 
-/* Full-width hairline */
-.cwt-footer-bottom::before {
-    content: "";
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 1px;
-    background: var(--cwt-bottom-border);
-    pointer-events: none;
-}
 
-/* Centered accent segment sitting on the hairline */
-.cwt-footer-bottom::after {
-    content: "";
-    position: absolute;
-    top: -1px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 72px;
-    height: 3px;
-    border-radius: 3px;
-    background: var(--cwt-bottom-accent);
-    pointer-events: none;
-}
 
 .cwt-footer-bottom-inner {
     position: relative;
@@ -599,8 +571,8 @@
     }
 
     .cwt-footer-bottom {
-        margin-top: 72px;
-        padding: 52px 20px 12px;
+        margin-top: 24px;
+        padding: 12px 20px 12px;
     }
 }
 
@@ -637,8 +609,8 @@
     }
 
     .cwt-footer-bottom {
-        margin-top: 48px;
-        padding: 40px 16px 8px;
+        margin-top: 24px;
+        padding: 12px 16px 8px;
     }
 }
 
@@ -656,8 +628,8 @@
     }
 
     .cwt-footer-bottom {
-        margin-top: 40px;
-        padding: 36px 12px 6px;
+        margin-top: 24px;
+        padding: 12px 12px 6px;
     }
 
     .cwt-footer-bottom-inner {
@@ -679,13 +651,10 @@
     }
 
     .cwt-footer-bottom {
-        margin-top: 36px;
-        padding: 32px 10px 4px;
+        margin-top: 24px;
+        padding: 12px 10px 4px;
     }
 
-    .cwt-footer-bottom::after {
-        width: 60px;
-    }
 
     .cwt-copy {
         font-size: 11.5px;
@@ -716,8 +685,8 @@
     }
 
     .cwt-footer-bottom {
-        margin-top: 32px;
-        padding: 30px 6px 4px;
+        margin-top: 24px;
+        padding: 12px 6px 4px;
     }
 
     .cwt-footer-bottom-inner {
@@ -756,13 +725,10 @@
     }
 
     .cwt-footer-bottom {
-        margin-top: 28px;
-        padding: 26px 4px 2px;
+        margin-top: 24px;
+        padding: 12px 4px 2px;
     }
 
-    .cwt-footer-bottom::after {
-        width: 50px;
-    }
 
     .cwt-copy {
         font-size: 10.5px;

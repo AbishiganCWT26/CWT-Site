@@ -39,7 +39,7 @@ document.addEventListener('DOMContentLoaded', function () {
             const ctx = heroCanvas.getContext('2d');
             if (!ctx || !hero) return;
 
-            const DENSITY_DIVISOR = 1200, MAX_STARS = 900, MOUSE_RADIUS = 220, MOUSE_FORCE = 2.2;
+            const DENSITY_DIVISOR = 3600, MAX_STARS = 300, MOUSE_RADIUS = 220, MOUSE_FORCE = 2.2;
             const SPRING = 0.012, DAMPING = 0.91, CONSTELLATION_RANGE = 90, CONSTELLATION_ALPHA = 0.16;
             const COLORS = { white: [255, 255, 255], paleBlue: [200, 220, 255], blue400: [91, 156, 255], blue500: [43, 123, 255], pink: [126, 160, 248] };
             let w = 0, h = 0, stars = [], running = true;

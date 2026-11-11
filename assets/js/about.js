@@ -176,8 +176,8 @@ document.addEventListener('DOMContentLoaded', function () {
             if (!ctx || !hero) return;
 
             /* ---------- Tuning ---------- */
-            const DENSITY_DIVISOR = 1200;
-            const MAX_STARS = 900;
+            const DENSITY_DIVISOR = 3600;
+            const MAX_STARS = 300;
             const MOUSE_RADIUS = 220;
             const MOUSE_FORCE = 2.2;
             const SPRING = 0.012;
@@ -197,7 +197,7 @@ document.addEventListener('DOMContentLoaded', function () {
             const mouse = { x: 0, y: 0, active: false };
 
             function resize() {
-                const dpr = window.devicePixelRatio || 1;
+                const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
                 const rect = hero.getBoundingClientRect();
                 w = rect.width; h = rect.height;
                 heroCanvas.width = Math.round(w * dpr);

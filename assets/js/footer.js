@@ -44,6 +44,9 @@
     var reduceMotion = window.matchMedia &&
         window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     var isMobile = window.innerWidth < 768;
+    var footerVisible = !('IntersectionObserver' in window);
+    var particleSystem = null;
+    var particlesRunning = false;
 
     /* Read a themed CSS custom property off the footer element */
     function token(name, fallback) {
@@ -76,7 +79,7 @@
         return {
             particles: {
                 number: {
-                    value: isMobile ? 40 : 100,
+                    value: isMobile ? 24 : 60,
                     density: { enable: true, value_area: 500 }
                 },
                 color: { value: token('--cwt-particles-color', '#4169E1') },
@@ -98,7 +101,7 @@
                     width: 1
                 },
                 move: {
-                    enable: !reduceMotion,
+                    enable: false, // Start only when the footer is visible.
                     speed: 2,
                     direction: 'none',
                     random: false,
@@ -115,22 +118,59 @@
                     resize: true
                 }
             },
-            retina_detect: true
+            retina_detect: false
         };
     }
 
     function initParticles() {
         destroyParticles();
+        particlesRunning = false;
+        particleSystem = null;
         window.particlesJS('cwt-particles', buildConfig());
+        var instances = window.pJSDom || [];
+        var instance = instances[instances.length - 1];
+        particleSystem = instance && instance.pJS;
     }
 
-    initParticles();
+    function synchronizeParticles() {
+        var visible = footerVisible && !document.hidden;
+        if (!particleSystem) {
+            if (!visible) return;
+            initParticles();
+        }
+        if (!particleSystem) return;
+        var shouldRun = visible && !reduceMotion;
+        if (shouldRun === particlesRunning) return;
+        particlesRunning = shouldRun;
+        particleSystem.particles.move.enable = shouldRun;
+        if (shouldRun) {
+            particleSystem.fn.vendors.draw();
+        } else {
+            window.cancelAnimationFrame(particleSystem.fn.drawAnimFrame);
+        }
+    }
+
+    if ('IntersectionObserver' in window) {
+        new IntersectionObserver(function (entries) {
+            footerVisible = entries[0].isIntersecting;
+            synchronizeParticles();
+        }).observe(footer);
+    }
+    document.addEventListener('visibilitychange', synchronizeParticles);
+    var motionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+    var onMotionChange = function () {
+        reduceMotion = motionQuery.matches;
+        synchronizeParticles();
+    };
+    if (motionQuery.addEventListener) motionQuery.addEventListener('change', onMotionChange);
+    else if (motionQuery.addListener) motionQuery.addListener(onMotionChange);
+    synchronizeParticles();
 
     /* Re-colour the canvas when the OS theme flips
        (only if the footer theme isn't pinned by data-theme). */
     if (!footer.hasAttribute('data-theme') && window.matchMedia) {
         var mq = window.matchMedia('(prefers-color-scheme: dark)');
-        var onThemeChange = function () { initParticles(); };
+        var onThemeChange = function () { if (particleSystem) { initParticles(); synchronizeParticles(); } };
 
         if (typeof mq.addEventListener === 'function') {
             mq.addEventListener('change', onThemeChange);
