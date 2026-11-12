@@ -48,7 +48,7 @@ $service_icons = [
 						<span class="typegraphic-kicker">Technology</span>
 						<span class="typegraphic-built-row"><span class="typegraphic-built">built</span><svg class="typegraphic-spark" viewBox="0 0 80 80" fill="none"><path d="M40 3v74M3 40h74M14 14l52 52M14 66l52-52" stroke="currentColor" stroke-width="3"/><circle cx="40" cy="40" r="12" stroke="currentColor" stroke-width="2"/></svg></span>
 						<span class="typegraphic-bridge"><span>around your</span><span class="typegraphic-arrow">&#8599;</span></span>
-						<span class="typegraphic-ambition">ambition.</span>
+						<span class="typegraphic-ambition">ambition</span>
 						<svg class="typegraphic-underline" viewBox="0 0 440 24" fill="none" preserveAspectRatio="none"><path d="M3 17C100 1 246 2 437 13M32 22C135 10 254 8 364 16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
 					</span>
 				</h1>

@@ -8,7 +8,7 @@ requireAuth();
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 	if (empty($_POST) && empty($_FILES) && (int)($_SERVER['CONTENT_LENGTH'] ?? 0) > 0) {
-		setFlash('error', 'The uploaded file is too large. Please upload an image under 5MB.');
+		setFlash('error', 'The uploaded file is too large. Please upload an image under 10MB and a 3D file under 10MB.');
 		header('Location: ' . ADMIN_URL . '/award.php');
 		exit;
 	}
@@ -29,12 +29,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 			$imgName = handle_award_image_upload($_FILES['award_image']);
 			if ($imgName === false) {
-				setFlash('error', 'Award image could not be uploaded. Use jpg, jpeg, png, webp, or gif under 5MB.');
+				setFlash('error', 'Award image could not be uploaded. Use jpg, jpeg, png, webp, or gif under 10MB.');
 				header('Location: ' . ADMIN_URL . '/award.php');
 				exit;
 			}
 
-			create_award($pdo, $imgName, $title, $para);
+			$file3dName = null;
+			if (!empty($_FILES['award_3d_file']['name'])) {
+				$file3dName = handle_award_3d_upload($_FILES['award_3d_file']);
+				if ($file3dName === false) {
+					deleteUploadedFile($pdo, 'award/' . $imgName, 'award');
+					setFlash('error', '3D file could not be uploaded. Use an html file under 10MB.');
+					header('Location: ' . ADMIN_URL . '/award.php');
+					exit;
+				}
+			}
+
+			create_award($pdo, $imgName, $title, $para, $file3dName);
 			setFlash('success', 'Award added successfully.');
 			header('Location: ' . ADMIN_URL . '/award.php');
 			exit;
@@ -58,7 +69,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 				exit;
 			}
 
-			$imgName = $existing['image'];
+			$imgName    = $existing['image'];
+			$oldImgName = '';
 			if (!empty($_FILES['award_image']['name'])) {
 				$newImg = handle_award_image_upload($_FILES['award_image']);
 				if ($newImg === false) {
@@ -66,14 +78,33 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 					header('Location: ' . ADMIN_URL . '/award.php?edit_award=' . $id);
 					exit;
 				}
-				$oldImgName = $existing['image'];
-				$imgName = $newImg;
-				update_award($pdo, $id, $imgName, $title, $para);
-				if ($oldImgName !== '') {
-					deleteUploadedFile($pdo, 'award/' . $oldImgName, 'award');
+				$oldImgName = (string)$existing['image'];
+				$imgName    = $newImg;
+			}
+
+			$file3dName    = $existing['3d_file'] ?? null;
+			$oldFile3dName = '';
+			if (!empty($_FILES['award_3d_file']['name'])) {
+				$newFile3d = handle_award_3d_upload($_FILES['award_3d_file']);
+				if ($newFile3d === false) {
+					if ($oldImgName !== '') {
+						deleteUploadedFile($pdo, 'award/' . $imgName, 'award');
+					}
+					setFlash('error', '3D file could not be uploaded. Use an html file under 10MB.');
+					header('Location: ' . ADMIN_URL . '/award.php?edit_award=' . $id);
+					exit;
 				}
-			} else {
-				update_award($pdo, $id, $imgName, $title, $para);
+				$oldFile3dName = (string)($existing['3d_file'] ?? '');
+				$file3dName    = $newFile3d;
+			}
+
+			update_award($pdo, $id, $imgName, $title, $para, $file3dName);
+
+			if ($oldImgName !== '') {
+				deleteUploadedFile($pdo, 'award/' . $oldImgName, 'award');
+			}
+			if ($oldFile3dName !== '') {
+				delete_award_3d_file($pdo, $oldFile3dName);
 			}
 
 			setFlash('success', 'Award updated successfully.');
@@ -153,7 +184,7 @@ include __DIR__ . '/layout_top.php';
 			<div class="form-group">
 				<label class="form-label">Award Image <?= $editAward ? '(leave blank to keep current)' : '<span class="req">*</span>' ?></label>
 				<input type="file" name="award_image" class="form-control-file" accept="image/*" data-preview="awardImgPreview" <?= $editAward ? '' : 'required' ?>>
-				<div class="form-hint">Accepted formats: JPG, JPEG, PNG, WebP, GIF under 5MB.</div>
+				<div class="form-hint">Accepted formats: JPG, JPEG, PNG, WebP, GIF under 10MB.</div>
 				<?php if ($editAward && !empty($editAward['image'])): ?>
 				<div class="aw-current-img">
 					<img id="awardImgPreview" src="<?= e(SITE_URL . '/uploads/award/' . $editAward['image']) ?>" alt="Current award image">
@@ -162,7 +193,19 @@ include __DIR__ . '/layout_top.php';
 				<img id="awardImgPreview" class="img-preview" style="display:none;" src="" alt="">
 				<?php endif; ?>
 			</div>
-			<div style="display:flex;gap:8px;flex-wrap:wrap;">
+			<div class="form-group">
+				<label class="form-label">3D Model File <?= $editAward ? '(optional, leave blank to keep current)' : '(optional)' ?></label>
+				<input type="file" name="award_3d_file" id="award3dFile" class="form-control-file" accept=".html,.htm,text/html">
+				<div class="form-hint">HTML file containing the three.js 3D award model. Max 10MB. When present it is shown on the Recognition page instead of the image.</div>
+				<div class="aw-3d-info" id="award3dInfo"<?= ($editAward && !empty($editAward['3d_file'])) ? '' : ' style="display:none;"' ?>>
+					<span class="aw-3d-badge"><i class="fa-solid fa-cube" aria-hidden="true"></i> 3D</span>
+					<span class="aw-3d-name" id="award3dName"><?= e($editAward['3d_file'] ?? '') ?></span>
+					<?php if ($editAward && !empty($editAward['3d_file'])): ?>
+					<a href="<?= e(SITE_URL . '/uploads/award/3D/' . rawurlencode($editAward['3d_file'])) ?>" target="_blank" rel="noopener" class="aw-3d-link">Preview</a>
+					<?php endif; ?>
+				</div>
+			</div>
+			<div class="aw-form-actions" style="display:flex;gap:8px;flex-wrap:wrap;">
 				<button type="submit" class="btn btn-primary"><?= $editAward ? '💾 Update Award' : '➕ Add Award' ?></button>
 				<?php if ($editAward): ?>
 				<a href="award.php" class="btn btn-secondary">Cancel Edit</a>
@@ -185,6 +228,7 @@ include __DIR__ . '/layout_top.php';
 						<th style="width:90px;">Image</th>
 						<th>Title</th>
 						<th>Paragraph</th>
+						<th style="width:90px;">3D</th>
 						<th style="width:140px;">Actions</th>
 					</tr>
 				</thead>
@@ -201,13 +245,20 @@ include __DIR__ . '/layout_top.php';
 					<td><strong><?= e($aw['title']) ?></strong></td>
 					<td class="aw-para-cell"><?= e(mb_substr($aw['para'], 0, 100)) ?><?= mb_strlen($aw['para']) > 100 ? '…' : '' ?></td>
 					<td>
+						<?php if (!empty($aw['3d_file'])): ?>
+						<a href="<?= e(SITE_URL . '/uploads/award/3D/' . rawurlencode($aw['3d_file'])) ?>" target="_blank" rel="noopener" class="aw-3d-badge">3D</a>
+						<?php else: ?>
+						<span class="badge badge-grey">None</span>
+						<?php endif; ?>
+					</td>
+					<td>
 						<div style="display:flex;gap:6px;flex-wrap:wrap;">
 							<a href="award.php?edit_award=<?= (int)$aw['id'] ?>" class="btn btn-secondary btn-xs">Edit</a>
 							<form method="POST" action="award.php" style="margin:0;">
 								<input type="hidden" name="csrf_token" value="<?= e(csrfToken()) ?>">
 								<input type="hidden" name="section" value="award_delete">
 								<input type="hidden" name="award_id" value="<?= (int)$aw['id'] ?>">
-								<button type="submit" class="btn btn-danger btn-xs" data-confirm="Delete award '<?= e($aw['title']) ?>'? This will permanently remove the image.">Delete</button>
+								<button type="submit" class="btn btn-danger btn-xs" data-confirm="Delete award '<?= e($aw['title']) ?>'? This will permanently remove the image and 3D file.">Delete</button>
 							</form>
 						</div>
 					</td>
@@ -222,4 +273,3 @@ include __DIR__ . '/layout_top.php';
 
 <script src="<?= SITE_URL ?>/assets/js/admin-award.js?v=<?= filemtime(__DIR__ . '/../assets/js/admin-award.js') ?>"></script>
 <?php include __DIR__ . '/layout_bottom.php'; ?>
-

@@ -1,6 +1,7 @@
 .aw-thumb {
 	height: 60px;
 	width: auto;
+	max-width: 100%;
 	border-radius: 6px;
 	object-fit: cover;
 	display: block;
@@ -13,6 +14,7 @@
 	max-width: 320px;
 	font-size: 0.85rem;
 	color: var(--text-muted, #6b7280);
+	overflow-wrap: anywhere;
 }
 
 .aw-current-img {
@@ -21,12 +23,61 @@
 
 .aw-current-img img {
 	max-height: 120px;
+	max-width: 100%;
 	border-radius: 8px;
 	object-fit: contain;
 	display: block;
 	pointer-events: none;
 	user-select: none;
 	-webkit-user-drag: none;
+}
+
+.aw-3d-info {
+	display: flex;
+	align-items: center;
+	flex-wrap: wrap;
+	gap: 8px 10px;
+	margin-top: 10px;
+	padding: 10px 12px;
+	border: 1px solid var(--border, #e5e7eb);
+	border-radius: 8px;
+	background: rgba(0, 27, 228, 0.04);
+	max-width: 100%;
+}
+
+.aw-3d-badge {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	padding: 2px 10px;
+	border-radius: 999px;
+	background: rgba(0, 27, 228, 0.1);
+	color: #001be4;
+	font-size: 0.75rem;
+	font-weight: 700;
+	letter-spacing: 0.04em;
+	text-decoration: none;
+	white-space: nowrap;
+}
+
+a.aw-3d-badge:hover {
+	background: rgba(0, 27, 228, 0.18);
+}
+
+.aw-3d-name {
+	min-width: 0;
+	font-size: 0.82rem;
+	color: var(--text-muted, #6b7280);
+	overflow-wrap: anywhere;
+	word-break: break-all;
+}
+
+.aw-3d-link {
+	font-size: 0.82rem;
+	font-weight: 600;
+	color: #001be4;
+	text-decoration: underline;
+	white-space: nowrap;
 }
 
 .empty-state {
@@ -58,4 +109,38 @@ img[data-preview] {
 	-webkit-user-drag: none;
 	user-select: none;
 	pointer-events: none;
+}
+
+#awardForm .form-control-file {
+	max-width: 100%;
+}
+
+@media (max-width: 767px) {
+	.aw-para-cell {
+		max-width: 200px;
+	}
+
+	.aw-thumb {
+		height: 48px;
+	}
+
+	.aw-form-actions {
+		flex-direction: column;
+	}
+
+	.aw-form-actions .btn {
+		width: 100%;
+		text-align: center;
+	}
+}
+
+@media (max-width: 479px) {
+	.aw-3d-info {
+		flex-direction: column;
+		align-items: flex-start;
+	}
+
+	.aw-current-img img {
+		max-height: 96px;
+	}
 }

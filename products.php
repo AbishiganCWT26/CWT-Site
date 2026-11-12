@@ -61,9 +61,9 @@ $pageTitle = 'Our Digital Solutions Portfolio — Creative Web Technologies';
 	<link rel="stylesheet" href="<?= SITE_URL ?>/assets/css/products.css?v=<?= filemtime(__DIR__ . '/assets/css/products.css') ?>">
 	<link rel="stylesheet" href="<?= SITE_URL ?>/assets/css/portfolio-explorer.css?v=<?= filemtime(__DIR__ . '/assets/css/portfolio-explorer.css') ?>">
 	<script>document.documentElement.classList.add('js');</script>
-<link rel="stylesheet" href="<?= SITE_URL ?>/assets/css/modern.css?v=<?= filemtime(__DIR__ . '/assets/css/modern.css') ?>">
-<link rel="stylesheet" href="<?= SITE_URL ?>/assets/css/design.css?v=<?= filemtime(__DIR__ . '/assets/css/design.css') ?>">
-<?php require_once __DIR__ . '/includes/theme.php'; ?>
+	<link rel="stylesheet" href="<?= SITE_URL ?>/assets/css/modern.css?v=<?= filemtime(__DIR__ . '/assets/css/modern.css') ?>">
+	<link rel="stylesheet" href="<?= SITE_URL ?>/assets/css/design.css?v=<?= filemtime(__DIR__ . '/assets/css/design.css') ?>">
+	<?php require_once __DIR__ . '/includes/theme.php'; ?>
 </head>
 <body class="prd-page cwt-public">
 
@@ -84,7 +84,7 @@ $pageTitle = 'Our Digital Solutions Portfolio — Creative Web Technologies';
 				Digital Solutions Portfolio
 			</span>
 			<h1 class="prd-hero-title">
-				Our Digital Solutions <span class="prd-hero-accent">Portfolio</span>
+				Our Digital<span class="prd-hero-accent">Solutions</span>
 			</h1>
 			<p class="prd-hero-text">
 				Transforming Data into Smarter Decisions for a Better Tomorrow. Explore the solutions we've delivered across industries, built with the latest technology and a relentless focus on outcomes.
@@ -92,6 +92,7 @@ $pageTitle = 'Our Digital Solutions Portfolio — Creative Web Technologies';
 		</div>
 	</div>
 
+	<!-- Nexus Field decorative swirl arcs -->
 	<svg class="hero-swirl hero-swirl-tr" viewBox="0 0 520 420" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
 		<defs>
 			<linearGradient id="heroSwirlGradTR" x1="60" y1="0" x2="520" y2="260" gradientUnits="userSpaceOnUse">
@@ -133,47 +134,48 @@ $pageTitle = 'Our Digital Solutions Portfolio — Creative Web Technologies';
 		</g>
 	</svg>
 
-	
+	<!-- Nexus Field interactive starfield -->
+	<canvas id="heroCanvas" class="hero-canvas" aria-hidden="true"></canvas>
 </section>
 
 <section class="prd-clients prd-section" id="our-clients" aria-labelledby="prd-clients-heading">
- <div class="prd-container">
-  <div class="prd-clients-heading">
-   <span class="prd-clients-eyebrow">Our Clients</span>
-   <h2 id="prd-clients-heading">Great work knows no borders.</h2>
-   <p>Built in Sri Lanka. Made for ambitious teams.</p>
-  </div>
-  <div class="prd-client-map-slot">
-   <div class="prd-travel-map">
-    <img class="prd-travel-map-base" src="<?= SITE_URL ?>/World-Map-Dots.svg" alt="">
-    <?php foreach ($clientCountries as $country): ?>
-    <button type="button" class="prd-country-pin" data-country="<?= e($country['code']) ?>" aria-label="<?= e($country['name']) ?>" style="left:<?= $country['x'] / 2640.041 * 100 ?>%;top:<?= $country['y'] / 1226.7573 * 100 ?>%"><span aria-hidden="true"><?= e($country['name']) ?></span></button>
-    <?php endforeach; ?>
-   </div>
-   <div class="prd-travel-highlight" aria-hidden="true">
-    <img src="<?= SITE_URL ?>/assets/Images/sri-lanka-highlight.svg?v=2" alt="">
-   </div>
-  </div>
-  <?php if ($clientCountries): ?>
-  <h3 class="prd-marquee-title">Countries We Have Worked With</h3>
-  <ul class="prd-client-countries" aria-label="Countries we have worked with">
-   <?php foreach ($clientCountries as $country): ?><li><?= e($country['name']) ?></li><?php endforeach; ?>
-  </ul>
-  <?php endif; ?>
-  <?php if ($portfolioClients): ?>
-  <h3 class="prd-marquee-title">Worldwide Trusted Clients</h3>
-  <div class="prd-client-logos-marquee" aria-label="Our clients">
-   <div class="prd-client-logos-track">
-    <?php foreach ($portfolioClients as $client): $clientLogo = imgUrl($client['logo_path']); ?>
-    <div class="marquee-logo"><?php if ($clientLogo): ?><img src="<?= e($clientLogo) ?>" alt="<?= e($client['company_name']) ?>" loading="lazy"><?php else: ?><span><?= e($client['company_name']) ?></span><?php endif; ?></div>
-    <?php endforeach; ?>
-    <?php foreach ($portfolioClients as $client): $clientLogo = imgUrl($client['logo_path']); ?>
-    <div class="marquee-logo" aria-hidden="true"><?php if ($clientLogo): ?><img src="<?= e($clientLogo) ?>" alt="" loading="lazy"><?php else: ?><span><?= e($client['company_name']) ?></span><?php endif; ?></div>
-    <?php endforeach; ?>
-   </div>
-  </div>
-  <?php endif; ?>
- </div>
+	<div class="prd-container">
+		<div class="prd-clients-heading">
+			<span class="prd-clients-eyebrow">Our Clients</span>
+			<h2 id="prd-clients-heading">Great work knows no borders.</h2>
+			<p>Built in Sri Lanka. Made for ambitious teams.</p>
+		</div>
+		<div class="prd-client-map-slot">
+			<div class="prd-travel-map">
+				<img class="prd-travel-map-base" src="<?= SITE_URL ?>/World-Map-Dots.svg" alt="">
+				<?php foreach ($clientCountries as $country): ?>
+				<button type="button" class="prd-country-pin" data-country="<?= e($country['code']) ?>" aria-label="<?= e($country['name']) ?>" style="left:<?= $country['x'] / 2640.041 * 100 ?>%;top:<?= $country['y'] / 1226.7573 * 100 ?>%"><span aria-hidden="true"><?= e($country['name']) ?></span></button>
+				<?php endforeach; ?>
+			</div>
+			<div class="prd-travel-highlight" aria-hidden="true">
+				<img src="<?= SITE_URL ?>/assets/Images/sri-lanka-highlight.svg?v=2" alt="">
+			</div>
+		</div>
+		<?php if ($clientCountries): ?>
+		<h3 class="prd-marquee-title">Countries We Have Worked With</h3>
+		<ul class="prd-client-countries" aria-label="Countries we have worked with">
+			<?php foreach ($clientCountries as $country): ?><li><?= e($country['name']) ?></li><?php endforeach; ?>
+		</ul>
+		<?php endif; ?>
+		<?php if ($portfolioClients): ?>
+		<h3 class="prd-marquee-title">Worldwide Trusted Clients</h3>
+		<div class="prd-client-logos-marquee" aria-label="Our clients">
+			<div class="prd-client-logos-track">
+				<?php foreach ($portfolioClients as $client): $clientLogo = imgUrl($client['logo_path']); ?>
+				<div class="marquee-logo"><?php if ($clientLogo): ?><img src="<?= e($clientLogo) ?>" alt="<?= e($client['company_name']) ?>" loading="lazy"><?php else: ?><span><?= e($client['company_name']) ?></span><?php endif; ?></div>
+				<?php endforeach; ?>
+				<?php foreach ($portfolioClients as $client): $clientLogo = imgUrl($client['logo_path']); ?>
+				<div class="marquee-logo" aria-hidden="true"><?php if ($clientLogo): ?><img src="<?= e($clientLogo) ?>" alt="" loading="lazy"><?php else: ?><span><?= e($client['company_name']) ?></span><?php endif; ?></div>
+				<?php endforeach; ?>
+			</div>
+		</div>
+		<?php endif; ?>
+	</div>
 </section>
 
 <section class="prd-section prd-section-light pe" id="portfolio" aria-labelledby="portfolio-heading" data-pe-theme="light">
@@ -245,8 +247,6 @@ $pageTitle = 'Our Digital Solutions Portfolio — Creative Web Technologies';
 		<?php endif; ?>
 	</div>
 </section>
-
-
 
 </main>
 <?php require_once __DIR__ . '/includes/footer.php'; ?>

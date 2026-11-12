@@ -16,7 +16,7 @@ document.addEventListener('DOMContentLoaded', function () {
             const mainRect = pageMain.getBoundingClientRect();
             const slotRect = mapSlot.getBoundingClientRect();
             const viewportWidth = document.documentElement.clientWidth;
-            const startWidth = Math.min(780, viewportWidth * (viewportWidth <= 540 ? .65 : .9));
+            const startWidth = Math.min(780, viewportWidth * (viewportWidth <= 300 ? .65 : .9));
             mapGeometry = {
                 startWidth,
                 startX: mainRect.width - viewportWidth * .04 - startWidth,
@@ -321,8 +321,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
     const logosEl = document.querySelector('.prd-client-logos');
     if (logosEl) setupMarquee(logosEl);
-
-
 
 });
 

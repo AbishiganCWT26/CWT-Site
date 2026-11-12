@@ -1,6 +1,7 @@
 <?php
 
 /**
+ * this is C:\xampp\htdocs\CWT Site\includes\functions.php
  * Global helper functions
  * CWT Corporate Website
  */
@@ -151,7 +152,7 @@ function uploadFile(array $file, string $subdir): string|false
 	}
 
 	// --- 2. Size + emptiness check.
-	$maxSize = 5 * 1024 * 1024;
+	$maxSize = 10 * 1024 * 1024;
 	$size    = @filesize($file['tmp_name']);
 	if ($size === false || $size === 0) {
 		error_log('[uploadFile] file size is 0 or unreadable');
@@ -615,14 +616,14 @@ function imgUrl(string $path, string $placeholder = ''): string
 
 function projectImageUrl(array $project): string
 {
-    $image = trim((string)($project['image_path'] ?? ''));
-    $banner = trim((string)($project['fallback_banner_image'] ?? $project['details']['banner_image'] ?? ''));
-    return imgUrl($image !== '' ? $image : $banner);
+	$image = trim((string)($project['image_path'] ?? ''));
+	$banner = trim((string)($project['fallback_banner_image'] ?? $project['details']['banner_image'] ?? ''));
+	return imgUrl($image !== '' ? $image : $banner);
 }
 function projectBannerUrl(array $project, array $details = []): string
 {
-    $custom = trim((string)($details['banner_image'] ?? ''));
-    return imgUrl($custom !== '' ? $custom : (string)($project['image_path'] ?? ''));
+	$custom = trim((string)($details['banner_image'] ?? ''));
+	return imgUrl($custom !== '' ? $custom : (string)($project['image_path'] ?? ''));
 }
 function e(string $str): string
 {
@@ -910,33 +911,33 @@ function getProjectById(PDO $pdo, int $id): array
 
 function getProjectBySlug(PDO $pdo, string $slug): array
 {
-    $select = 'SELECT p.*, c.name AS category_name, c.color AS category_color, c.icon AS category_icon, logo.logo_path AS product_logo_path, logo.product_name AS product_logo_name FROM projects p LEFT JOIN solution_category c ON p.category_id = c.id LEFT JOIN products logo ON logo.id = p.logo_product_id';
-    $stmt = $pdo->prepare($select . ' WHERE p.slug = ?');
-    $stmt->execute([$slug]);
-    $project = $stmt->fetch();
-    if ($project) return $project;
-    $stmt = $pdo->prepare($select . ' JOIN project_slug_history h ON h.project_id = p.id WHERE h.slug = ?');
-    $stmt->execute([$slug]);
-    return $stmt->fetch() ?: [];
+	$select = 'SELECT p.*, c.name AS category_name, c.color AS category_color, c.icon AS category_icon, logo.logo_path AS product_logo_path, logo.product_name AS product_logo_name FROM projects p LEFT JOIN solution_category c ON p.category_id = c.id LEFT JOIN products logo ON logo.id = p.logo_product_id';
+	$stmt = $pdo->prepare($select . ' WHERE p.slug = ?');
+	$stmt->execute([$slug]);
+	$project = $stmt->fetch();
+	if ($project) return $project;
+	$stmt = $pdo->prepare($select . ' JOIN project_slug_history h ON h.project_id = p.id WHERE h.slug = ?');
+	$stmt->execute([$slug]);
+	return $stmt->fetch() ?: [];
 }
 
 function availableProjectSlug(PDO $pdo, string $name, int $projectId = 0): string
 {
-    $base = substr(projectSlug($name), 0, 240) ?: 'project';
-    $candidate = $base;
-    $suffix = 1;
-    $query = $pdo->prepare('SELECT id FROM projects WHERE slug = ? AND id <> ? UNION ALL SELECT project_id FROM project_slug_history WHERE slug = ? AND project_id <> ? LIMIT 1');
-    do {
-        $query->execute([$candidate, $projectId, $candidate, $projectId]);
-        if (!$query->fetchColumn()) return $candidate;
-        $candidate = $base . '-' . ++$suffix;
-    } while (true);
+	$base = substr(projectSlug($name), 0, 240) ?: 'project';
+	$candidate = $base;
+	$suffix = 1;
+	$query = $pdo->prepare('SELECT id FROM projects WHERE slug = ? AND id <> ? UNION ALL SELECT project_id FROM project_slug_history WHERE slug = ? AND project_id <> ? LIMIT 1');
+	do {
+		$query->execute([$candidate, $projectId, $candidate, $projectId]);
+		if (!$query->fetchColumn()) return $candidate;
+		$candidate = $base . '-' . ++$suffix;
+	} while (true);
 }
 
 function rememberProjectSlug(PDO $pdo, int $projectId, string $slug): void
 {
-    if ($slug === '') return;
-    $pdo->prepare('INSERT IGNORE INTO project_slug_history (slug, project_id) VALUES (?, ?)')->execute([$slug, $projectId]);
+	if ($slug === '') return;
+	$pdo->prepare('INSERT IGNORE INTO project_slug_history (slug, project_id) VALUES (?, ?)')->execute([$slug, $projectId]);
 }
 
 function projectSlug(string $name): string
@@ -1178,17 +1179,17 @@ function get_award_by_id(PDO $pdo, int $id): array|false
 	return $stmt->fetch();
 }
 
-function create_award(PDO $pdo, string $image, string $title, string $para): int
+function create_award(PDO $pdo, string $image, string $title, string $para, ?string $file3d = null): int
 {
-	$stmt = $pdo->prepare("INSERT INTO awards (image, title, para) VALUES (?, ?, ?)");
-	$stmt->execute([$image, $title, $para]);
+	$stmt = $pdo->prepare("INSERT INTO awards (image, `3d_file`, title, para) VALUES (?, ?, ?, ?)");
+	$stmt->execute([$image, $file3d, $title, $para]);
 	return (int)$pdo->lastInsertId();
 }
 
-function update_award(PDO $pdo, int $id, string $image, string $title, string $para): bool
+function update_award(PDO $pdo, int $id, string $image, string $title, string $para, ?string $file3d = null): bool
 {
-	$stmt = $pdo->prepare("UPDATE awards SET image=?, title=?, para=?, updated_at=NOW() WHERE id=?");
-	return $stmt->execute([$image, $title, $para, $id]);
+	$stmt = $pdo->prepare("UPDATE awards SET image=?, `3d_file`=?, title=?, para=?, updated_at=NOW() WHERE id=?");
+	return $stmt->execute([$image, $file3d, $title, $para, $id]);
 }
 
 function delete_award(PDO $pdo, int $id): bool
@@ -1198,6 +1199,9 @@ function delete_award(PDO $pdo, int $id): bool
 	$ok = $stmt->execute([$id]);
 	if ($ok && $existing && !empty($existing['image'])) {
 		deleteUploadedFile($pdo, 'award/' . $existing['image'], 'award');
+	}
+	if ($ok && $existing && !empty($existing['3d_file'])) {
+		delete_award_3d_file($pdo, $existing['3d_file']);
 	}
 	return $ok;
 }
@@ -1212,4 +1216,68 @@ function handle_award_image_upload(array $file): string|false
 	$result = uploadFile($file, 'award');
 	if ($result === false) return false;
 	return basename($result);
+}
+
+function handle_award_3d_upload(array $file): string|false
+{
+	if (!isset($file['error']) || $file['error'] !== UPLOAD_ERR_OK) {
+		error_log('[handle_award_3d_upload] upload error code: ' . ($file['error'] ?? 'none'));
+		return false;
+	}
+	if (empty($file['tmp_name']) || !is_uploaded_file($file['tmp_name']) || !is_readable($file['tmp_name'])) {
+		error_log('[handle_award_3d_upload] tmp file missing or unreadable');
+		return false;
+	}
+
+	$maxSize = 10 * 1024 * 1024;
+	$size    = @filesize($file['tmp_name']);
+	if ($size === false || $size === 0 || $size > $maxSize) {
+		error_log('[handle_award_3d_upload] invalid file size');
+		return false;
+	}
+
+	$ext = strtolower(pathinfo($file['name'] ?? '', PATHINFO_EXTENSION));
+	if (!in_array($ext, ['html', 'htm'], true)) {
+		error_log('[handle_award_3d_upload] disallowed extension: ' . $ext);
+		return false;
+	}
+
+	$content = @file_get_contents($file['tmp_name']);
+	if ($content === false || !preg_match('/<(html|head|body|script|canvas)/i', $content)) {
+		error_log('[handle_award_3d_upload] file does not look like an html document');
+		return false;
+	}
+
+	$dir = rtrim(UPLOAD_DIR . 'award/3D', '/') . '/';
+	if (!is_dir($dir)) {
+		if (!@mkdir($dir, 0755, true) && !is_dir($dir)) {
+			error_log('[handle_award_3d_upload] cannot create directory: ' . $dir);
+			return false;
+		}
+	}
+	if (!is_writable($dir)) {
+		error_log('[handle_award_3d_upload] directory not writable: ' . $dir);
+		return false;
+	}
+
+	$filename = uniqid('cwt3d_', true) . '.html';
+	$dest     = $dir . $filename;
+
+	if (!@move_uploaded_file($file['tmp_name'], $dest)) {
+		error_log('[handle_award_3d_upload] move_uploaded_file failed -> ' . $dest);
+		return false;
+	}
+	if (!is_file($dest) || filesize($dest) === 0) {
+		@unlink($dest);
+		error_log('[handle_award_3d_upload] file missing or empty after move -> ' . $dest);
+		return false;
+	}
+
+	return $filename;
+}
+
+function delete_award_3d_file(?PDO $pdo, ?string $filename): bool
+{
+	if ($filename === null || trim($filename) === '') return true;
+	return deleteUploadedFile($pdo, 'award/3D/' . basename($filename), 'award');
 }

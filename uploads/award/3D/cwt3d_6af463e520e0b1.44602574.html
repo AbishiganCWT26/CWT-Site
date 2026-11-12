@@ -1,0 +1,189 @@
+<!doctype html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>NLA 2026 Gold Award – 3D Model</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+      --bg: transparent;
+      --fg: #222;
+      box-sizing: border-box;
+      padding-top: env(safe-area-inset-top, 0px);
+      padding-bottom: env(safe-area-inset-bottom, 0px);
+    }
+
+    :root[data-theme="light"] {
+      color-scheme: light;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root:not([data-theme="light"]) {
+        --bg: transparent;
+        --fg: #eee;
+      }
+    }
+
+    :root[data-theme="dark"] {
+      color-scheme: dark;
+      --bg: transparent;
+      --fg: #eee;
+    }
+
+    html,
+    body {
+      height: 100%;
+      margin: 0;
+      background: transparent;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--fg);
+      font: 14px system-ui, -apple-system, "Segoe UI", sans-serif;
+      display: flex;
+      flex-direction: column;
+    }
+
+    #c {
+      flex: 1;
+      min-height: 0;
+      position: relative;
+      background: transparent;
+    }
+
+    #c canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+      background: transparent;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="c"></div>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+  <script>
+    const D = 35, W = 100, H = 200, PT = 1.5, REC = 25, GAP = 2, cx = 27, cy = 55, R = 34, zc = D / 2 - REC;
+    const holder = document.getElementById('c');
+    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, premultipliedAlpha: true });
+    renderer.setClearColor(0x000000, 0);
+    renderer.localClippingEnabled = true; renderer.outputEncoding = THREE.sRGBEncoding;
+    renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+    holder.appendChild(renderer.domElement);
+    const scene = new THREE.Scene();
+    const cam = new THREE.PerspectiveCamera(30, 1, 1, 3000);
+    const ctl = new THREE.OrbitControls(cam, renderer.domElement); ctl.enableDamping = true;
+
+    // studio environment for metal reflections
+    (function () {
+      const c = document.createElement('canvas'); c.width = 1024; c.height = 512; const g = c.getContext('2d');
+      const gr = g.createLinearGradient(0, 0, 0, 512); gr.addColorStop(0, '#d5d8dc'); gr.addColorStop(.5, '#7a7d82'); gr.addColorStop(1, '#2a2a2c');
+      g.fillStyle = gr; g.fillRect(0, 0, 1024, 512); g.fillStyle = '#fff'; g.fillRect(130, 110, 220, 120); g.fillRect(600, 80, 280, 140); g.fillStyle = '#ffe6b8'; g.fillRect(420, 210, 100, 60);
+      const t = new THREE.CanvasTexture(c); t.mapping = THREE.EquirectangularReflectionMapping; t.encoding = THREE.sRGBEncoding;
+      const p = new THREE.PMREMGenerator(renderer); scene.environment = p.fromEquirectangular(t).texture;
+    })();
+    const key = new THREE.DirectionalLight(0xfff2dd, 1.1); key.position.set(150, 260, 320); scene.add(key);
+    const fill = new THREE.DirectionalLight(0xdde8ff, .35); fill.position.set(-250, 60, 200); scene.add(fill);
+    scene.add(new THREE.AmbientLight(0xffffff, .25));
+
+    function tex(fn, rep) {
+      const c = document.createElement('canvas'); c.width = c.height = 512; fn(c.getContext('2d'));
+      const t = new THREE.CanvasTexture(c); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.encoding = THREE.sRGBEncoding; t.anisotropy = 8; t.repeat.set(rep, rep); return t
+    }
+    const goldT = tex(g => {
+      g.fillStyle = '#d9ab34'; g.fillRect(0, 0, 512, 512); for (let i = 0; i < 1000; i++) {
+        const x = Math.random() * 512, y = Math.random() * 512;
+        g.strokeStyle = Math.random() < .5 ? 'rgba(255,240,180,.2)' : 'rgba(120,80,0,.15)'; g.lineWidth = Math.random() * 1.4 + .3; g.beginPath(); g.moveTo(x, y); g.lineTo(x + 60 + Math.random() * 320, y); g.stroke()
+      }
+    }, .01);
+    const woodT = tex(g => {
+      g.fillStyle = '#6a2a18'; g.fillRect(0, 0, 512, 512); for (let i = 0; i < 800; i++) {
+        const x = Math.random() * 512;
+        g.strokeStyle = Math.random() < .5 ? 'rgba(30,8,2,.28)' : 'rgba(175,85,48,.22)'; g.lineWidth = Math.random() * 2 + .4; g.beginPath(); g.moveTo(x, 0); g.bezierCurveTo(x + 7, 170, x - 7, 340, x + 3, 512); g.stroke()
+      }
+    }, .012);
+
+    // gap: remove band gy±1 across full width (front 25 mm layers)
+    const cl = { side: THREE.DoubleSide };
+    const gold = new THREE.MeshStandardMaterial(Object.assign({ map: goldT, metalness: 1, roughness: .36 }, cl));
+    const goldW = new THREE.MeshStandardMaterial(Object.assign({ color: 0xc99a2a, metalness: 1, roughness: .3 }, cl));
+    const wood = new THREE.MeshStandardMaterial(Object.assign({ map: woodT, roughness: .42, metalness: 0 }, cl));
+    const woodW = new THREE.MeshStandardMaterial(Object.assign({ color: 0x5a2314, roughness: .55 }, cl));
+    const woodU = new THREE.MeshStandardMaterial({ map: woodT, roughness: .42, side: THREE.DoubleSide });
+    const woodUW = new THREE.MeshStandardMaterial({ color: 0x4a1c10, roughness: .6, side: THREE.DoubleSide });
+
+    function star(r, k) {
+      const p = []; for (let i = 0; i < 10; i++) { const q = (i % 2 ? r * .382 : r) * k, a = (270 + i * 36) * Math.PI / 180; p.push([cx + q * Math.cos(a), cy + q * Math.sin(a)]) }
+      const t = p[2], a = p[1], b = p[3]; let A = t, B = t;
+      if (t[0] > 50) { const ip = u => { const s = (50 - u[0]) / (t[0] - u[0]); return [50, u[1] + s * (t[1] - u[1])] }; A = ip(a); B = ip(b) }
+      return [p[0], p[1], A, B, ...p.slice(3)]
+    }
+    function slab(hole, z0, z1, mat) {
+      const s = new THREE.Shape(); if (hole && hole[2][0] === 50) { const c = [[-50, -100], [50, -100], hole[2], hole[1], hole[0], hole[10], hole[9], hole[8], hole[7], hole[6], hole[5], hole[4], hole[3], [50, 100], [-50, 100]]; c.forEach((p, i) => i ? s.lineTo(p[0], p[1]) : s.moveTo(p[0], p[1])); s.closePath() }
+      else {
+        s.moveTo(-50, -100); s.lineTo(50, -100); s.lineTo(50, 100); s.lineTo(-50, 100); s.lineTo(-50, -100);
+        if (hole) { const hp = hole.filter((p, i) => i == 0 || p[0] !== hole[i - 1][0] || p[1] !== hole[i - 1][1]); const h = new THREE.Path(); hp.forEach((p, i) => i ? h.lineTo(p[0], p[1]) : h.moveTo(p[0], p[1])); h.closePath(); s.holes.push(h) }
+      }
+      const g = new THREE.ExtrudeGeometry(s, { depth: z1 - z0, bevelEnabled: false }); g.translate(0, 0, z0); return new THREE.Mesh(g, mat)
+    }
+    function loft(a, za, b, zb, mat) {
+      const n = a.length, pos = []; for (let i = 0; i < n; i++) {
+        if (i == 2) continue; const j = (i + 1) % n, q = [[a[i], za], [a[j], za], [b[j], zb], [b[i], zb]];
+        [0, 1, 2, 0, 2, 3].forEach(k => pos.push(q[k][0][0], q[k][0][1], q[k][1]))
+      }
+      const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); g.computeVertexNormals(); return new THREE.Mesh(g, mat)
+    }
+
+    // engraving layer
+    const eg = document.createElement('canvas'); eg.width = 1000; eg.height = 2000; const g = eg.getContext('2d');
+    g.fillStyle = g.strokeStyle = '#3b2a06';
+    function st(x, y, r) { g.beginPath(); for (let i = 0; i < 10; i++) { const a = -Math.PI / 2 + i * Math.PI / 5, q = i % 2 ? r * .4 : r; g.lineTo(x + q * Math.cos(a), y + q * Math.sin(a)) } g.closePath(); g.fill() }
+    const lx = 240, ly = 1660; g.lineWidth = 7;
+    g.beginPath(); g.arc(lx, ly, 150, .65 * Math.PI, 1.35 * Math.PI); g.stroke();
+    g.beginPath(); g.arc(lx, ly, 150, -.35 * Math.PI, .35 * Math.PI); g.stroke();
+    [[-48, -132, 13], [0, -148, 19], [48, -132, 13], [-48, 132, 13], [0, 148, 19], [48, 132, 13]].forEach(s => st(lx + s[0], ly + s[1], s[2]));
+    g.textAlign = 'center'; g.font = 'bold 92px Georgia,serif'; g.fillText('NLA', lx, ly + 10);
+    g.font = 'bold 20px Arial,sans-serif'; g.fillText('National Logistics Awards', lx, ly + 45); g.fillText('by SLFFA', lx, ly + 70);
+    g.textAlign = 'left'; g.font = '44px "Times New Roman",Georgia,serif';
+    ['National Logistics Awards', '2026', 'Software providers', 'Gold'].forEach((t, i) => g.fillText(t, 440, 1596 + i * 50));
+    g.textAlign = 'center'; g.font = '54px "Times New Roman",Georgia,serif'; g.fillText('Creative Web Technologies', 520, 1925);
+    const eT = new THREE.CanvasTexture(eg); eT.encoding = THREE.sRGBEncoding; eT.anisotropy = 8;
+
+    const grp = new THREE.Group(); scene.add(grp);
+    function build(through) {
+      while (grp.children.length) { const o = grp.children.pop(); o.geometry.dispose() }
+      const op = star(R, 1), ch = star(R, .86), inn = star(R, .8);
+      grp.add(slab(op, D / 2 - PT, D / 2, gold));
+      grp.add(slab(op, zc, D / 2 - PT, wood));
+      grp.add(slab(through ? op : null, -D / 2, zc, woodU));
+      grp.add(loft(op, D / 2, ch, D / 2 - 4, goldW));
+      grp.add(loft(ch, D / 2 - 4, inn, zc, woodW));
+      if (through) grp.add(loft(inn, zc, op, -D / 2, woodUW));
+      const d = new THREE.Mesh(new THREE.PlaneGeometry(W, H), new THREE.MeshBasicMaterial({ map: eT, transparent: true, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2 }));
+      d.position.z = D / 2 + .05; grp.add(d);
+    }
+    build(true);
+
+    const V = { fr: [260, 110, 430], fl: [-260, 110, 430], f: [0, 0, 560], s: [560, 0, 0], b: [0, 0, -560], t: [0, 560, 1] };
+    function view(k) { cam.position.set(...V[k]); ctl.target.set(0, 0, 0); ctl.update() }
+    function rs() { const w = holder.clientWidth, h = holder.clientHeight; renderer.setSize(w, h, false); cam.aspect = w / h; cam.updateProjectionMatrix() }
+    new ResizeObserver(rs).observe(holder); rs(); view('fr');
+    (function loop() { requestAnimationFrame(loop); ctl.update(); renderer.render(scene, cam) })();
+
+    // Scroll-based rotation: expose group and listen for postMessage from parent
+    window.cwtAwardGroup = grp;
+    window.cwtAwardRotate = function(angle) { grp.rotation.y = angle; };
+    window.addEventListener('message', function(e) {
+      if (e.data && e.data.type === 'cwt-award-rotate') {
+        grp.rotation.y = e.data.angle;
+      }
+    });
+  </script>
+</body>
+
+</html>

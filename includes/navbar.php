@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 $currentPage = basename($_SERVER['PHP_SELF']);
 $currentPage = ['project-detail.php' => 'products.php', 'insight-detail.php' => 'insights.php'][$currentPage] ?? $currentPage;
 ?>
@@ -39,9 +39,40 @@ $currentPage = ['project-detail.php' => 'products.php', 'insight-detail.php' => 
 		</ul>
 
 		<div class="cwt-nav-actions">
-<button type="button" class="cwt-theme-toggle" id="cwtThemeToggle" aria-label="Switch to dark mode" aria-pressed="false" title="Switch to dark mode">
-				<svg class="cwt-theme-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M20.5 14.5A9 9 0 0 1 9.5 3.5a9 9 0 1 0 11 11Z"/></svg>
-				<svg class="cwt-theme-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M2 12h2m16 0h2M5 5l1.5 1.5m11 11L19 19M5 19l1.5-1.5m11-11L19 5"/></svg>
+<button type="button" class="cwt-theme-toggle" id="cwtThemeToggle"
+				data-theme-toggle
+				aria-label="Switch to dark mode"
+				aria-pressed="false"
+				title="Switch to dark mode">
+				<!--
+				  Morphing sun/moon icon:
+				  - A mask "bite" slides in to carve the crescent for dark mode.
+				  - Sun rays fade and spin away when switching to moon.
+				-->
+				<svg class="cwt-theme-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true" focusable="false">
+					<defs>
+						<mask id="cwt-moon-mask">
+							<rect width="24" height="24" fill="white"/>
+							<circle class="cwt-mask-bite" cx="17" cy="7" r="6" fill="black"/>
+						</mask>
+					</defs>
+					<circle
+						class="cwt-icon-disc"
+						cx="12" cy="12" r="5"
+						fill="currentColor"
+						mask="url(#cwt-moon-mask)"
+					/>
+					<g class="cwt-icon-rays" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+						<line x1="12" y1="2"   x2="12" y2="4"/>
+						<line x1="12" y1="20"  x2="12" y2="22"/>
+						<line x1="2"  y1="12"  x2="4"  y2="12"/>
+						<line x1="20" y1="12"  x2="22" y2="12"/>
+						<line x1="4.93"  y1="4.93"  x2="6.34"  y2="6.34"/>
+						<line x1="17.66" y1="17.66" x2="19.07" y2="19.07"/>
+						<line x1="4.93"  y1="19.07" x2="6.34"  y2="17.66"/>
+						<line x1="17.66" y1="6.34"  x2="19.07" y2="4.93"/>
+					</g>
+				</svg>
 			</button>
 			<a href="<?= SITE_URL ?>/contact" class="cwt-cta">
 				<span>Let's Talk</span>

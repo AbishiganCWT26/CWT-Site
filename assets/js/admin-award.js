@@ -19,39 +19,76 @@
 
 		input.addEventListener('change', function () {
 			var file = this.files && this.files[0];
-				if (!file) {
-					preview.src = '';
-					preview.style.display = 'none';
-					return;
-				}
+			if (!file) {
+				preview.src = '';
+				preview.style.display = 'none';
+				return;
+			}
 
-				var MAX = 10 * 1024 * 1024;
-				if (file.size > MAX) {
-					showNotice('The selected file is larger than 10 MB. Please choose a smaller image.', 'File Too Large', 'error');
-					input.value = '';
-					preview.src = '';
-					preview.style.display = 'none';
-					return;
-				}
+			var MAX = 10 * 1024 * 1024;
+			if (file.size > MAX) {
+				showNotice('The selected file is larger than 10 MB. Please choose a smaller image.', 'File Too Large', 'error');
+				input.value = '';
+				preview.src = '';
+				preview.style.display = 'none';
+				return;
+			}
 
-				var isImage = (file.type && file.type.indexOf('image/') === 0) ||
-					/\.(jpe?g|png|gif|webp|svg)$/i.test(file.name);
-				if (!isImage) {
-					showNotice('Please select a JPG, PNG, GIF, WebP, or SVG image.', 'Invalid Format', 'error');
-					input.value = '';
-					preview.src = '';
-					preview.style.display = 'none';
-					return;
-				}
+			var isImage = (file.type && file.type.indexOf('image/') === 0) ||
+				/\.(jpe?g|png|gif|webp|svg)$/i.test(file.name);
+			if (!isImage) {
+				showNotice('Please select a JPG, PNG, GIF, WebP, or SVG image.', 'Invalid Format', 'error');
+				input.value = '';
+				preview.src = '';
+				preview.style.display = 'none';
+				return;
+			}
 
-				var reader = new FileReader();
-				reader.onload = function (e) {
-					preview.src = e.target.result;
-					preview.style.display = 'block';
-				};
-				reader.readAsDataURL(file);
-			});
+			var reader = new FileReader();
+			reader.onload = function (e) {
+				preview.src = e.target.result;
+				preview.style.display = 'block';
+			};
+			reader.readAsDataURL(file);
+		});
 	});
+
+	var award3dInput = document.getElementById('award3dFile');
+	var award3dInfo = document.getElementById('award3dInfo');
+	var award3dName = document.getElementById('award3dName');
+	if (award3dInput) {
+		var original3dName = award3dName ? award3dName.textContent : '';
+		var original3dVisible = award3dInfo ? award3dInfo.style.display !== 'none' : false;
+
+		award3dInput.addEventListener('change', function () {
+			var file = this.files && this.files[0];
+			if (!file) {
+				if (award3dName) award3dName.textContent = original3dName;
+				if (award3dInfo) award3dInfo.style.display = original3dVisible ? '' : 'none';
+				return;
+			}
+
+			var MAX_3D = 10 * 1024 * 1024;
+			if (file.size > MAX_3D) {
+				showNotice('The selected 3D file is larger than 10 MB. Please choose a smaller file.', 'File Too Large', 'error');
+				award3dInput.value = '';
+				if (award3dName) award3dName.textContent = original3dName;
+				if (award3dInfo) award3dInfo.style.display = original3dVisible ? '' : 'none';
+				return;
+			}
+
+			if (!/\.html?$/i.test(file.name)) {
+				showNotice('Please select an HTML file (.html or .htm) that contains the three.js 3D model.', 'Invalid Format', 'error');
+				award3dInput.value = '';
+				if (award3dName) award3dName.textContent = original3dName;
+				if (award3dInfo) award3dInfo.style.display = original3dVisible ? '' : 'none';
+				return;
+			}
+
+			if (award3dName) award3dName.textContent = file.name;
+			if (award3dInfo) award3dInfo.style.display = '';
+		});
+	}
 
 	document.querySelectorAll('button[data-confirm]').forEach(function (btn) {
 		btn.addEventListener('click', function (e) {
@@ -101,12 +138,12 @@
 				para.focus();
 				return;
 			}
-				if (!isEdit && img && (!img.files || img.files.length === 0)) {
-					e.preventDefault();
-					showNotice('Please select an award image.', 'Required Image');
-					img.focus();
-					return;
-				}
-			});
+			if (!isEdit && img && (!img.files || img.files.length === 0)) {
+				e.preventDefault();
+				showNotice('Please select an award image.', 'Required Image');
+				img.focus();
+				return;
+			}
+		});
 	}
 })();

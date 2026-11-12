@@ -3,6 +3,10 @@
 # ============================================================
 Options +FollowSymLinks -MultiViews
 
+<IfModule mod_headers.c>
+	Header always set Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://fonts.googleapis.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://unpkg.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com; font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com; img-src 'self' data: blob:; connect-src 'self' https://cdn.jsdelivr.net https://unpkg.com blob: data:"
+</IfModule>
+
 # ============================================================
 #  2. Enable Rewrite Engine
 # ============================================================

@@ -676,42 +676,97 @@ body.cwt-public :is(.cwt-nav-link, .cwt-mobile-link).is-fluid-preview {
     }
 }
 
-/* Navbar controls and surfaces follow the shared saved theme. */
+/* ============================================================
+   Theme toggle button — morphing sun/moon icon
+   ============================================================ */
+
+/* Hidden until theme JS has resolved the saved preference. */
 .cwt-theme-toggle {
     display: none;
-    flex: 0 0 44px;
-    width: 44px;
-    height: 44px;
-    padding: 10px;
+    flex: 0 0 40px;
+    width: 40px;
+    height: 40px;
+    padding: 0;
     border: 1px solid #c5d8fa;
-    border-radius: 11px;
+    border-radius: 10px;
     background: #f5f9ff;
     color: #245bdb;
     place-items: center;
     cursor: pointer;
+    transition: background 0.2s, border-color 0.2s, color 0.2s;
+    overflow: hidden;
 }
 
 .cwt-theme-ready .cwt-theme-toggle {
     display: grid;
 }
 
-.cwt-theme-toggle svg {
-    width: 22px;
-    height: 22px;
+/* ---- The morphing SVG icon ---- */
+.cwt-theme-icon {
+    width: 20px;
+    height: 20px;
     display: block;
+    overflow: visible;
 }
 
-.cwt-theme-toggle .cwt-theme-sun {
-    display: none;
+/* ---- Disc (sun circle / moon crescent) ---- */
+.cwt-icon-disc {
+    transform-origin: 12px 12px;
+    transition: r 0.4s cubic-bezier(.65,0,.35,1);
 }
 
+/* ---- Mask bite that carves the crescent ---- */
+.cwt-mask-bite {
+    /* Start: bite off-screen to the top-right so the full disc shows (sun) */
+    cx: 24;
+    cy: 0;
+    transition: cx 0.4s cubic-bezier(.65,0,.35,1),
+                cy 0.4s cubic-bezier(.65,0,.35,1);
+}
+
+/* ---- Sun rays ---- */
+.cwt-icon-rays {
+    transform-origin: 12px 12px;
+    transition: opacity 0.3s ease, transform 0.4s cubic-bezier(.65,0,.35,1);
+}
+
+/* ---- Dark-mode states ---- */
+
+/* Bite slides into position to carve the crescent */
+html[data-theme="dark"] .cwt-mask-bite {
+    cx: 17;
+    cy: 7;
+}
+
+/* Disc grows slightly to fill the crescent shape */
+html[data-theme="dark"] .cwt-icon-disc {
+    r: 6;
+}
+
+/* Rays spin away and vanish */
+html[data-theme="dark"] .cwt-icon-rays {
+    opacity: 0;
+    transform: rotate(30deg) scale(0.5);
+}
+
+/* ---- Button hover / focus states ---- */
 .cwt-theme-toggle:hover {
     background: #dce8ff;
+    border-color: #a4c3fa;
 }
 
 .cwt-theme-toggle:focus-visible {
     outline: 3px solid #85b4ff;
     outline-offset: 3px;
+}
+
+/* ---- Respect reduced-motion: skip morphing transitions ---- */
+@media (prefers-reduced-motion: reduce) {
+    .cwt-icon-disc,
+    .cwt-mask-bite,
+    .cwt-icon-rays {
+        transition: none;
+    }
 }
 
 .cwt-navbar .cwt-cta::after {
@@ -767,16 +822,9 @@ html[data-theme="dark"] body.cwt-public :is(.cwt-mobile, .cwt-burger, .cwt-theme
     color: #8ab4ff;
 }
 
-html[data-theme="dark"] .cwt-theme-toggle .cwt-theme-moon {
-    display: none;
-}
-
-html[data-theme="dark"] .cwt-theme-toggle .cwt-theme-sun {
-    display: block;
-}
-
 html[data-theme="dark"] .cwt-theme-toggle:hover {
     background: #203557;
+    border-color: #3d5a82;
 }
 
 html[data-theme="dark"] .cwt-burger span {
@@ -790,5 +838,42 @@ html[data-theme="dark"] .cwt-mobile-divider {
 @media (max-width: 540px) {
     .cwt-nav-actions>.cwt-cta {
         display: none;
+    }
+}
+
+/* ============================================================
+   View Transitions API — circular-reveal theme switch
+   ============================================================ */
+
+/*
+ * Suppress the browser's default cross-fade so our JS-driven
+ * clip-path animation is the only visual effect.
+ */
+::view-transition-old(root),
+::view-transition-new(root) {
+    animation: none;
+    mix-blend-mode: normal;
+}
+
+/* The incoming snapshot starts fully clipped (clip-path is
+   animated from JS via Element.animate on the pseudo-element). */
+::view-transition-new(root) {
+    clip-path: circle(0px at 50% 50%); /* overridden by JS */
+}
+
+/* Keep the outgoing page visible and static beneath the reveal. */
+::view-transition-old(root) {
+    z-index: 1;
+}
+
+::view-transition-new(root) {
+    z-index: 2;
+}
+
+/* No transition animations when the user prefers reduced motion. */
+@media (prefers-reduced-motion: reduce) {
+    ::view-transition-old(root),
+    ::view-transition-new(root) {
+        animation: none !important;
     }
 }
