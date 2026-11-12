@@ -61,6 +61,14 @@ controls.enableDamping = true;
 controls.minDistance = 2.5;
 controls.maxDistance = 10;
 controls.maxPolarAngle = Math.PI / 2 - 0.02;
+controls.enableZoom = false;
+
+let zoomTarget = camera.position.distanceTo(controls.target);
+const zoomOffset = new THREE.Vector3();
+renderer.domElement.addEventListener('wheel', e => {
+	e.preventDefault();
+	zoomTarget = THREE.MathUtils.clamp(zoomTarget * Math.exp(e.deltaY * 0.0012), controls.minDistance, controls.maxDistance);
+}, { passive: false });
 
 scene.add(new THREE.HemisphereLight(0xe6ecff, 0x44507a, 0.8));
 
@@ -335,15 +343,23 @@ addEventListener('resize', () => {
 	camera.updateProjectionMatrix();
 	renderer.setSize(innerWidth, innerHeight);
 });
-renderer.setAnimationLoop(() => { controls.update(); renderer.render(scene, camera); });
+renderer.setAnimationLoop(() => {
+	zoomOffset.copy(camera.position).sub(controls.target);
+	const dist = zoomOffset.length();
+	const next = dist + (zoomTarget - dist) * 0.12;
+	zoomOffset.setLength(Math.abs(zoomTarget - next) < 0.0005 ? zoomTarget : next);
+	camera.position.copy(controls.target).add(zoomOffset);
+	controls.update();
+	renderer.render(scene, camera);
+});
 
 // Scroll-based rotation: expose trophy group and listen for postMessage from parent
 window.cwtAwardGroup = trophy;
 window.cwtAwardRotate = function(angle) { trophy.rotation.y = angle; };
 window.addEventListener('message', function(e) {
-  if (e.data && e.data.type === 'cwt-award-rotate') {
-    trophy.rotation.y = e.data.angle;
-  }
+	if (e.data && e.data.type === 'cwt-award-rotate') {
+		trophy.rotation.y = e.data.angle;
+	}
 });
 </script>
 </body>

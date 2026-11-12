@@ -4,16 +4,25 @@ require_once __DIR__ . '/includes/db.php';
 require_once __DIR__ . '/includes/functions.php';
 
 $awards = [];
+$certifications = [];
+$appreciations = [];
 try {
-	$stmt = $pdo->prepare('SELECT id, image, `3d_file`, title, para FROM awards ORDER BY id ASC');
-	$stmt->execute();
-	$awards = $stmt->fetchAll(PDO::FETCH_ASSOC);
+	$awards = get_awards($pdo, 'award');
+	$certifications = get_awards($pdo, 'certification');
+	$appreciations = get_awards($pdo, 'client_appreciation');
 } catch (Throwable $err) {
 	$awards = [];
+	$certifications = [];
+	$appreciations = [];
 }
 
-$perPageDesktop = 5;
-$perPageMobile  = 3;
+$perPageDesktop = 3;
+$perPageTablet  = 2;
+$perPageMobile  = 2;
+
+$gridPerDesktop = 6;
+$gridPerTablet  = 4;
+$gridPerMobile  = 2;
 
 $pageTitle = 'Recognition — Creative Web Technologies';
 ?>
@@ -49,7 +58,8 @@ $pageTitle = 'Recognition — Creative Web Technologies';
 				Awards &amp; Achievements
 			</span>
 			<h1 class="svc-hero-title">Our <span class="svc-hero-accent">Recognition</span></h1>
-			<p class="svc-hero-text">Celebrating excellence through innovation and industry recognition — each award reflects our commitment to delivering impactful technology solutions.</p>
+			<p class="svc-hero-text">A testament to our skill and dedication, our latest awards and recognitions have set a new standard in the industry</p>
+			<p class="rcg-hero-support">Categorised across our departments and our company, here are some of our global awards and recognitions that we are proud to have, since our inception in 2020.</p>
 		</div>
 	</div>
 </section>
@@ -85,7 +95,7 @@ $pageTitle = 'Recognition — Creative Web Technologies';
 				$wrapCls = 'award-image-wrap' . ($imgUrl !== '' ? ' has-image' : '') . ($url3d !== '' ? ' has-3d' : '');
 				$number  = str_pad((string)($i + 1), 2, '0', STR_PAD_LEFT);
 				$chipIcon  = $url3d !== '' ? 'fa-cube' : 'fa-award';
-				$chipLabel = $url3d !== '' ? 'Interactive 3D' : 'Award';
+				$chipLabel = $url3d !== '' ? '3D Award' : 'Award';
 			?>
 			<article class="<?= $cls ?>" data-index="<?= (int)$i ?>" aria-labelledby="award-title-<?= $awId ?>"<?= $onPage ? '' : ' hidden' ?>>
 				<div class="<?= $wrapCls ?>">
@@ -116,7 +126,121 @@ $pageTitle = 'Recognition — Creative Web Technologies';
 			<?php endforeach; ?>
 		</div>
 
-		<nav class="awards-pagination" id="awardsPagination" aria-label="Awards pagination" data-desktop="<?= (int)$perPageDesktop ?>" data-mobile="<?= (int)$perPageMobile ?>"></nav>
+		<nav class="rcg-pagination" id="awardsPagination" aria-label="Awards pagination" data-desktop="<?= (int)$perPageDesktop ?>" data-tablet="<?= (int)$perPageTablet ?>" data-mobile="<?= (int)$perPageMobile ?>"></nav>
+
+		<?php endif; ?>
+
+	</div>
+</section>
+
+<section class="rcg-section rcg-cert-section" id="certifications" aria-labelledby="cert-section-heading">
+	<div class="rcg-container">
+
+		<div class="rcg-sec-head reveal">
+			<span class="rcg-sec-label">Certifications</span>
+			<h2 class="rcg-sec-title" id="cert-section-heading">Certified Excellence</h2>
+			<p class="rcg-sec-sub">Industry certifications that validate the quality, security, and reliability of our work.</p>
+		</div>
+
+		<?php if (empty($certifications)): ?>
+		<div class="rcg-empty reveal">
+			<span class="rcg-empty-icon">
+				<i class="fa-solid fa-certificate" aria-hidden="true"></i>
+			</span>
+			<p class="rcg-empty-text">Certifications coming soon.</p>
+		</div>
+		<?php else: ?>
+
+		<div class="cert-carousel reveal" id="certCarousel" aria-label="Certifications">
+			<div class="cert-track" id="certTrack">
+				<?php foreach ($certifications as $ci => $cert):
+					$certId   = (int)$cert['id'];
+					$certFile = trim((string)($cert['image'] ?? ''));
+					$certUrl  = $certFile !== '' ? SITE_URL . '/uploads/award/' . rawurlencode($certFile) : '';
+					$certPara = trim((string)($cert['para'] ?? ''));
+					$certOnPage = $ci < $gridPerDesktop;
+				?>
+				<article class="cert-card" aria-labelledby="cert-title-<?= $certId ?>"<?= $certOnPage ? '' : ' hidden' ?>>
+					<div class="cert-media">
+						<?php if ($certUrl !== ''): ?>
+						<img class="cert-image" src="<?= e($certUrl) ?>" alt="<?= e($cert['title']) ?>" loading="lazy" draggable="false">
+						<?php else: ?>
+						<span class="cert-placeholder" aria-hidden="true"><i class="fa-solid fa-certificate"></i></span>
+						<?php endif; ?>
+					</div>
+					<div class="cert-body">
+						<h3 class="cert-title" id="cert-title-<?= $certId ?>"><?= e($cert['title']) ?></h3>
+						<?php if ($certPara !== ''): ?>
+						<p class="cert-para"><?= nl2br(e($certPara)) ?></p>
+						<?php endif; ?>
+					</div>
+				</article>
+				<?php endforeach; ?>
+			</div>
+		</div>
+
+		<nav class="rcg-pagination" id="certPagination" aria-label="Certifications pagination" data-desktop="<?= (int)$gridPerDesktop ?>" data-tablet="<?= (int)$gridPerTablet ?>" data-mobile="<?= (int)$gridPerMobile ?>"></nav>
+
+		<?php endif; ?>
+
+	</div>
+</section>
+
+<section class="rcg-section rcg-appr-section" id="appreciations" aria-labelledby="appr-section-heading">
+	<div class="rcg-container">
+
+		<div class="rcg-sec-head reveal">
+			<span class="rcg-sec-label">Client Appreciations</span>
+			<h2 class="rcg-sec-title" id="appr-section-heading">Words From Our Clients</h2>
+			<p class="rcg-sec-sub">Appreciation from the clients we have had the privilege of working with.</p>
+		</div>
+
+		<?php if (empty($appreciations)): ?>
+		<div class="rcg-empty reveal">
+			<span class="rcg-empty-icon">
+				<i class="fa-solid fa-handshake" aria-hidden="true"></i>
+			</span>
+			<p class="rcg-empty-text">Client appreciations coming soon.</p>
+		</div>
+		<?php else: ?>
+
+		<div class="appr-grid reveal" id="apprGrid">
+			<?php foreach ($appreciations as $ai => $appr):
+				$apprId   = (int)$appr['id'];
+				$apprFile = trim((string)($appr['image'] ?? ''));
+				$apprUrl  = $apprFile !== '' ? SITE_URL . '/uploads/award/' . rawurlencode($apprFile) : '';
+				$apprPara = trim((string)($appr['para'] ?? ''));
+				$apprOnPage = $ai < $gridPerDesktop;
+			?>
+			<article class="appr-card" tabindex="0" role="button" aria-pressed="false" aria-label="<?= e($appr['title']) ?>"<?= $apprOnPage ? '' : ' hidden' ?>>
+				<div class="appr-inner">
+					<div class="appr-face appr-front">
+						<?php if ($apprUrl !== ''): ?>
+						<img class="appr-image" src="<?= e($apprUrl) ?>" alt="<?= e($appr['title']) ?>" loading="lazy" draggable="false">
+						<?php else: ?>
+						<span class="appr-placeholder" aria-hidden="true"><i class="fa-solid fa-handshake"></i></span>
+						<?php endif; ?>
+						<div class="appr-overlay" aria-hidden="true">
+							<span class="appr-hint">
+								<span class="appr-hint-touch">Tap to view details</span>
+							</span>
+						</div>
+					</div>
+					<div class="appr-face appr-back">
+						<div class="appr-back-content">
+							<span class="appr-icon" aria-hidden="true"><i class="fa-solid fa-handshake"></i></span>
+							<h3 class="appr-title" id="appr-title-<?= $apprId ?>"><?= e($appr['title']) ?></h3>
+							<?php if ($apprPara !== ''): ?>
+							<p class="appr-para"><?= nl2br(e($apprPara)) ?></p>
+							<?php endif; ?>
+						</div>
+					</div>
+				</div>
+			</article>
+			<?php endforeach; ?>
+		</div>
+
+		<nav class="rcg-pagination" id="apprPagination" aria-label="Client appreciations pagination" data-desktop="<?= (int)$gridPerDesktop ?>" data-tablet="<?= (int)$gridPerTablet ?>" data-mobile="<?= (int)$gridPerMobile ?>"></nav>
 
 		<?php endif; ?>
 

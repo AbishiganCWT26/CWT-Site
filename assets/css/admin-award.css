@@ -32,6 +32,36 @@
 	-webkit-user-drag: none;
 }
 
+#award3dGroup[hidden] {
+	display: none;
+}
+
+.aw-cat {
+	display: inline-flex;
+	align-items: center;
+	padding: 3px 10px;
+	border-radius: 999px;
+	font-size: 0.75rem;
+	font-weight: 700;
+	letter-spacing: 0.02em;
+	white-space: nowrap;
+}
+
+.aw-cat-award {
+	background: rgba(0, 27, 228, 0.1);
+	color: #001be4;
+}
+
+.aw-cat-certification {
+	background: rgba(5, 150, 105, 0.12);
+	color: #047857;
+}
+
+.aw-cat-client_appreciation {
+	background: rgba(217, 119, 6, 0.14);
+	color: #b45309;
+}
+
 .aw-3d-info {
 	display: flex;
 	align-items: center;
@@ -78,6 +108,20 @@ a.aw-3d-badge:hover {
 	color: #001be4;
 	text-decoration: underline;
 	white-space: nowrap;
+}
+
+.aw-3d-remove {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	margin-top: 10px;
+	font-size: 0.85rem;
+	color: var(--text-muted, #6b7280);
+	cursor: pointer;
+}
+
+.aw-3d-remove input {
+	margin: 0;
 }
 
 .empty-state {

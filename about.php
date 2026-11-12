@@ -262,7 +262,7 @@ $pageTitle = 'About Us — Creative Web Technologies';
 					Celebrating Our <span class="abt-recognition-accent">Achievements</span>
 				</h2>
 				<p class="abt-recognition-para">Celebrating our achievements and industry recognition, our awards reflect a commitment to excellence, innovation, and technological leadership. Each recognition represents our dedication to delivering impactful solutions, exceeding industry standards, and continuously advancing the future of technology.</p>
-				<a href="#about-cwt" class="abt-recognition-cta" aria-label="View our about section for more details">View Details</a>
+				<a href="<?= SITE_URL ?>/recognition.php" class="abt-recognition-cta" aria-label="View our about section for more details">View Our Recognition</a>
 			</div>
 
 			<!-- Right Side: Carousel -->

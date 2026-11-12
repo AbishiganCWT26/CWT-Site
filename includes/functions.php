@@ -6,7 +6,7 @@
  * CWT Corporate Website
  */
 
-define('SITE_URL',   'http://localhost/CWT-Site');
+define('SITE_URL',   'http://localhost/CWT Site');
 define('ADMIN_URL',  SITE_URL . '/admin');
 define('UPLOAD_DIR', __DIR__ . '/../uploads/');
 define('UPLOAD_URL', SITE_URL . '/uploads/');
@@ -326,6 +326,8 @@ function isImageReferencedElsewhere(PDO $pdo, string $relativePath): bool
 		['project_mockups', 'image_path'],
 		['tech_stack', 'logo_path'],
 		['blog_details', 'featured_image'],
+		['awards', 'image'],
+		['awards', '3d_file'],
 	];
 
 	foreach ($checks as [$table, $column]) {
@@ -1166,9 +1168,23 @@ function cwt_delete_service_image(?string $filename): void
 	@unlink($real);
 }
 
-function get_awards(PDO $pdo): array
+function award_categories(): array
 {
-	$stmt = $pdo->query("SELECT * FROM awards ORDER BY id ASC");
+	return [
+		'award'               => 'Award',
+		'certification'       => 'Certification',
+		'client_appreciation' => 'Client Appreciation',
+	];
+}
+
+function get_awards(PDO $pdo, ?string $category = null): array
+{
+	if ($category !== null) {
+		$stmt = $pdo->prepare("SELECT * FROM awards WHERE category = ? ORDER BY id ASC");
+		$stmt->execute([$category]);
+		return $stmt->fetchAll();
+	}
+	$stmt = $pdo->query("SELECT * FROM awards ORDER BY FIELD(category, 'award', 'certification', 'client_appreciation'), id ASC");
 	return $stmt->fetchAll();
 }
 
@@ -1179,17 +1195,21 @@ function get_award_by_id(PDO $pdo, int $id): array|false
 	return $stmt->fetch();
 }
 
-function create_award(PDO $pdo, string $image, string $title, string $para, ?string $file3d = null): int
+function create_award(PDO $pdo, string $image, string $title, string $para, ?string $file3d = null, string $category = 'award'): int
 {
-	$stmt = $pdo->prepare("INSERT INTO awards (image, `3d_file`, title, para) VALUES (?, ?, ?, ?)");
-	$stmt->execute([$image, $file3d, $title, $para]);
+	if (!isset(award_categories()[$category])) $category = 'award';
+	if ($category !== 'award') $file3d = null;
+	$stmt = $pdo->prepare("INSERT INTO awards (category, image, `3d_file`, title, para) VALUES (?, ?, ?, ?, ?)");
+	$stmt->execute([$category, $image, $file3d, $title, $para]);
 	return (int)$pdo->lastInsertId();
 }
 
-function update_award(PDO $pdo, int $id, string $image, string $title, string $para, ?string $file3d = null): bool
+function update_award(PDO $pdo, int $id, string $image, string $title, string $para, ?string $file3d = null, string $category = 'award'): bool
 {
-	$stmt = $pdo->prepare("UPDATE awards SET image=?, `3d_file`=?, title=?, para=?, updated_at=NOW() WHERE id=?");
-	return $stmt->execute([$image, $file3d, $title, $para, $id]);
+	if (!isset(award_categories()[$category])) $category = 'award';
+	if ($category !== 'award') $file3d = null;
+	$stmt = $pdo->prepare("UPDATE awards SET category=?, image=?, `3d_file`=?, title=?, para=?, updated_at=NOW() WHERE id=?");
+	return $stmt->execute([$category, $image, $file3d, $title, $para, $id]);
 }
 
 function delete_award(PDO $pdo, int $id): bool
@@ -1213,6 +1233,11 @@ function deleteAwardRecordWithFiles(PDO $pdo, int $awardId): bool
 
 function handle_award_image_upload(array $file): string|false
 {
+	$ext = strtolower(pathinfo($file['name'] ?? '', PATHINFO_EXTENSION));
+	if (!in_array($ext, ['jpg', 'jpeg', 'png', 'webp', 'gif'], true)) {
+		error_log('[handle_award_image_upload] disallowed extension: ' . $ext);
+		return false;
+	}
 	$result = uploadFile($file, 'award');
 	if ($result === false) return false;
 	return basename($result);

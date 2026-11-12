@@ -1,6 +1,8 @@
 document.addEventListener('DOMContentLoaded', function () {
 
     var reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+    var mobileQuery = window.matchMedia('(max-width: 599px)');
+    var tabletQuery = window.matchMedia('(max-width: 991px)');
 
     var navbar = document.querySelector('.cwt-navbar, .navbar');
     if (navbar) {
@@ -10,6 +12,147 @@ document.addEventListener('DOMContentLoaded', function () {
         };
         onScroll();
         window.addEventListener('scroll', onScroll, { passive: true });
+    }
+
+    function listenQuery(query, handler) {
+        if (query.addEventListener) query.addEventListener('change', handler);
+        else if (query.addListener) query.addListener(handler);
+    }
+
+    function pageList(total, current) {
+        if (total <= 7) {
+            var all = [];
+            for (var p = 1; p <= total; p++) all.push(p);
+            return all;
+        }
+        var set = [1, total, current - 1, current, current + 1];
+        var pages = set.filter(function (p, i) {
+            return p >= 1 && p <= total && set.indexOf(p) === i;
+        }).sort(function (a, b) { return a - b; });
+        var out = [];
+        pages.forEach(function (p, i) {
+            if (i > 0 && p - pages[i - 1] > 1) out.push('gap');
+            out.push(p);
+        });
+        return out;
+    }
+
+    function buildPagination(target, total, current) {
+        if (total <= 1) {
+            target.innerHTML = '';
+            target.setAttribute('hidden', '');
+            return;
+        }
+        target.removeAttribute('hidden');
+
+        var html = '';
+        html += '<button type="button" class="page-btn prev-btn" data-action="prev" aria-label="Previous page"' + (current === 1 ? ' disabled' : '') + '>' +
+            '<i class="fa-solid fa-chevron-left" aria-hidden="true"></i><span>Prev</span></button>';
+
+        pageList(total, current).forEach(function (p) {
+            if (p === 'gap') {
+                html += '<span class="page-ellipsis" aria-hidden="true">&hellip;</span>';
+                return;
+            }
+            var active = p === current;
+            html += '<button type="button" class="page-btn' + (active ? ' active' : '') + '" data-action="page" data-page="' + p + '" aria-label="Page ' + p + '"' + (active ? ' aria-current="page"' : '') + '>' + p + '</button>';
+        });
+
+        html += '<button type="button" class="page-btn next-btn" data-action="next" aria-label="Next page"' + (current === total ? ' disabled' : '') + '>' +
+            '<span>Next</span><i class="fa-solid fa-chevron-right" aria-hidden="true"></i></button>';
+
+        target.innerHTML = html;
+    }
+
+    function scrollToId(id) {
+        var section = document.getElementById(id);
+        if (!section) return;
+        var offset = (navbar ? navbar.offsetHeight : 72) + 16;
+        var top = section.getBoundingClientRect().top + window.pageYOffset - offset;
+        window.scrollTo({ top: top, behavior: reducedMotion.matches ? 'auto' : 'smooth' });
+    }
+
+    function restoreNavFocus(target, action) {
+        var btn = null;
+        if (action === 'next') btn = target.querySelector('[data-action="next"]:not(:disabled)');
+        else if (action === 'prev') btn = target.querySelector('[data-action="prev"]:not(:disabled)');
+        if (!btn) btn = target.querySelector('.page-btn.active');
+        if (btn) btn.focus({ preventScroll: true });
+    }
+
+    function initPager(cfg) {
+        var holder = document.getElementById(cfg.holder);
+        var pagerNav = document.getElementById(cfg.nav);
+        if (!holder || !pagerNav) return;
+
+        var items = Array.prototype.slice.call(holder.querySelectorAll(cfg.item));
+        if (!items.length) return;
+
+        var perDesktop = parseInt(pagerNav.getAttribute('data-desktop'), 10) || 6;
+        var perTablet = parseInt(pagerNav.getAttribute('data-tablet'), 10) || 4;
+        var perMobile = parseInt(pagerNav.getAttribute('data-mobile'), 10) || 2;
+        var page = 1;
+
+        function perPage() {
+            if (mobileQuery.matches) return perMobile;
+            if (tabletQuery.matches) return perTablet;
+            return perDesktop;
+        }
+
+        function totalPages() {
+            return Math.max(1, Math.ceil(items.length / perPage()));
+        }
+
+        function show() {
+            var per = perPage();
+            var start = (page - 1) * per;
+            var end = start + per;
+            items.forEach(function (item, i) {
+                item.hidden = !(i >= start && i < end);
+                item.classList.remove('is-flipped');
+                if (item.hasAttribute('aria-pressed')) item.setAttribute('aria-pressed', 'false');
+            });
+        }
+
+        function render() {
+            buildPagination(pagerNav, totalPages(), page);
+        }
+
+        var lastPer = perPage();
+
+        function onBreakpointChange() {
+            var newPer = perPage();
+            if (newPer === lastPer) return;
+            var firstIndex = (page - 1) * lastPer;
+            lastPer = newPer;
+            page = Math.min(Math.floor(firstIndex / newPer) + 1, totalPages());
+            show();
+            render();
+        }
+
+        function goTo(target, action) {
+            if (target === page || target < 1 || target > totalPages()) return;
+            page = target;
+            show();
+            render();
+            restoreNavFocus(pagerNav, action);
+            scrollToId(cfg.section);
+        }
+
+        pagerNav.addEventListener('click', function (e) {
+            var btn = e.target.closest('.page-btn');
+            if (!btn || btn.disabled) return;
+            var action = btn.getAttribute('data-action');
+            if (action === 'prev') goTo(page - 1, action);
+            else if (action === 'next') goTo(page + 1, action);
+            else if (action === 'page') goTo(parseInt(btn.getAttribute('data-page'), 10), action);
+        });
+
+        listenQuery(mobileQuery, onBreakpointChange);
+        listenQuery(tabletQuery, onBreakpointChange);
+
+        show();
+        render();
     }
 
     var revealEls = document.querySelectorAll('.reveal');
@@ -33,6 +176,33 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
+    initPager({ holder: 'certTrack', nav: 'certPagination', item: '.cert-card', section: 'certifications' });
+
+    var apprCards = document.querySelectorAll('.appr-card');
+    if (apprCards.length) {
+        var apprFineHover = window.matchMedia('(hover: hover) and (pointer: fine)');
+
+        apprCards.forEach(function (card) {
+            var toggleCard = function () {
+                var flipped = card.classList.toggle('is-flipped');
+                card.setAttribute('aria-pressed', flipped ? 'true' : 'false');
+            };
+
+            card.addEventListener('click', function () {
+                if (!apprFineHover.matches) toggleCard();
+            });
+
+            card.addEventListener('keydown', function (e) {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    toggleCard();
+                }
+            });
+        });
+    }
+
+    initPager({ holder: 'apprGrid', nav: 'apprPagination', item: '.appr-card', section: 'appreciations' });
+
     var grid = document.getElementById('awardsGrid');
     var nav = document.getElementById('awardsPagination');
     if (!grid || !nav) return;
@@ -40,20 +210,51 @@ document.addEventListener('DOMContentLoaded', function () {
     var cards = Array.prototype.slice.call(grid.querySelectorAll('.award-card'));
     if (!cards.length) return;
 
-    var perPageDesktop = parseInt(nav.getAttribute('data-desktop'), 10) || 5;
-    var perPageMobile = parseInt(nav.getAttribute('data-mobile'), 10) || 3;
-    var mobileQuery = window.matchMedia('(max-width: 599px)');
+    var perPageDesktop = parseInt(nav.getAttribute('data-desktop'), 10) || 3;
+    var perPageTablet = parseInt(nav.getAttribute('data-tablet'), 10) || 2;
+    var perPageMobile = parseInt(nav.getAttribute('data-mobile'), 10) || 2;
     var currentPage = 1;
     var busy = false;
     var cardObserver = null;
 
-    var MAX_ANGLE = Math.PI / 3; // 60 degrees scroll-based rotation
+    var MAX_ANGLE = Math.PI / 3;
     var LOAD_TIMEOUT = 12000;
     var models = [];
     var tickPending = false;
+    var isScrolling = false;
+    var scrollTimer = null;
+    var scrollWeight = 0;
+    var lastTimestamp = 0;
+
+    function onScrollActivity() {
+        isScrolling = true;
+        clearTimeout(scrollTimer);
+        scrollTimer = setTimeout(function () {
+            isScrolling = false;
+        }, 350);
+        requestTick();
+    }
+
+    function isCardInView(card) {
+        if (!card || card.hidden) return false;
+        var rect = card.getBoundingClientRect();
+        var vh = window.innerHeight || document.documentElement.clientHeight;
+        return rect.bottom > 0 && rect.top < vh;
+    }
+
+    function cardScrollProgress(card) {
+        var rect = card.getBoundingClientRect();
+        var vh = window.innerHeight || document.documentElement.clientHeight;
+        var travel = vh + rect.height;
+        if (travel <= 0) return 0.5;
+        var p = (vh - rect.top) / travel;
+        return Math.max(0, Math.min(1, p));
+    }
 
     function getPerPage() {
-        return mobileQuery.matches ? perPageMobile : perPageDesktop;
+        if (mobileQuery.matches) return perPageMobile;
+        if (tabletQuery.matches) return perPageTablet;
+        return perPageDesktop;
     }
 
     function getTotalPages() {
@@ -113,7 +314,6 @@ document.addEventListener('DOMContentLoaded', function () {
         }
         if (!win) return;
 
-        // 1. Direct group access (same-origin, fastest)
         try {
             if (win.cwtAwardGroup) {
                 win.cwtAwardGroup.rotation.y = angle;
@@ -121,7 +321,6 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         } catch (errGrp) { }
 
-        // 2. Exposed function (same-origin fallback)
         try {
             if (typeof win.cwtAwardRotate === 'function') {
                 win.cwtAwardRotate(angle, progress);
@@ -129,49 +328,84 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         } catch (errFn) { }
 
-        // 3. postMessage (cross-origin fallback)
         try {
             win.postMessage({ type: 'cwt-award-rotate', angle: angle, progress: progress }, '*');
         } catch (errMsg) { }
     }
 
-    function targetProgress(model) {
-        var rect = model.wrap.getBoundingClientRect();
-        var vh = window.innerHeight || document.documentElement.clientHeight;
-        var travel = vh + rect.height;
-        if (travel <= 0) return 0;
-        var p = (vh - rect.top) / travel;
-        return Math.max(0, Math.min(1, p));
-    }
-
-    function tick() {
+    function tick(timestamp) {
         tickPending = false;
-        var again = false;
+        if (!timestamp) timestamp = (typeof performance !== 'undefined' ? performance.now() : Date.now());
+        var dt = lastTimestamp ? (timestamp - lastTimestamp) / 1000 : 0.016;
+        if (dt > 0.1) dt = 0.016;
+        lastTimestamp = timestamp;
+
+        var targetWeight = isScrolling ? 1 : 0;
+        scrollWeight += (targetWeight - scrollWeight) * (isScrolling ? 0.3 : 0.08);
+        if (Math.abs(targetWeight - scrollWeight) < 0.005) {
+            scrollWeight = targetWeight;
+        }
+
+        var anyActive = false;
 
         models.forEach(function (model) {
             if (!model.ready || model.card.hidden) return;
-            var progress = targetProgress(model);
-            var target = progress * MAX_ANGLE;
 
-            if (reducedMotion.matches) {
-                model.current = target;
-            } else {
-                model.current += (target - model.current) * 0.14;
-                if (Math.abs(target - model.current) < 0.001) {
-                    model.current = target;
-                } else {
-                    again = true;
+            var inView = isCardInView(model.card);
+            model.inView = inView;
+
+            if (!inView) {
+                if (Math.abs(model.current) > 0.002) {
+                    model.current += (0 - model.current) * 0.12;
+                    rotateModel(model, model.current, 0.5);
+                    model.applied = model.current;
+                    anyActive = true;
+                } else if (model.applied !== 0) {
+                    model.current = 0;
+                    rotateModel(model, 0, 0.5);
+                    model.applied = 0;
                 }
+                return;
             }
 
-            if (model.applied !== model.current || !model.touched) {
-                rotateModel(model, model.current, progress);
+            anyActive = true;
+
+            if (reducedMotion.matches) {
+                model.current = 0;
+                if (model.applied !== 0) {
+                    rotateModel(model, 0, 0.5);
+                    model.applied = 0;
+                }
+                return;
+            }
+
+            var p = cardScrollProgress(model.card);
+            var scrollAngle = (p * 2 - 1) * MAX_ANGLE;
+
+            if (isScrolling) {
+                var norm = Math.max(-0.999, Math.min(0.999, model.current / MAX_ANGLE));
+                model.oscPhase = Math.asin(norm);
+            } else {
+                model.oscPhase = (model.oscPhase || 0) + dt * 1.4;
+                if (model.oscPhase > Math.PI * 2) model.oscPhase -= Math.PI * 2;
+            }
+            var oscAngle = Math.sin(model.oscPhase || 0) * MAX_ANGLE;
+
+            var target = (scrollWeight * scrollAngle) + ((1 - scrollWeight) * oscAngle);
+            target = Math.max(-MAX_ANGLE, Math.min(MAX_ANGLE, target));
+
+            model.current += (target - model.current) * 0.12;
+
+            if (Math.abs(model.applied - model.current) > 0.0005 || !model.touched) {
+                rotateModel(model, model.current, p);
                 model.applied = model.current;
                 model.touched = true;
             }
         });
 
-        if (again) requestTick();
+        if (anyActive) {
+            requestTick();
+        }
     }
 
     function requestTick() {
@@ -276,6 +510,8 @@ document.addEventListener('DOMContentLoaded', function () {
                 ready: false,
                 failed: false,
                 touched: false,
+                inView: false,
+                oscPhase: 0,
                 current: 0,
                 applied: 0,
                 group: null,
@@ -284,6 +520,25 @@ document.addEventListener('DOMContentLoaded', function () {
                 timeout: null
             });
         });
+
+        if ('IntersectionObserver' in window) {
+            var cardViewObserver = new IntersectionObserver(function (entries) {
+                var shouldTick = false;
+                entries.forEach(function (entry) {
+                    models.forEach(function (m) {
+                        if (m.card === entry.target) {
+                            m.inView = entry.isIntersecting;
+                            if (m.inView) shouldTick = true;
+                        }
+                    });
+                });
+                if (shouldTick) requestTick();
+            }, { threshold: [0, 0.1, 0.5] });
+
+            models.forEach(function (m) {
+                cardViewObserver.observe(m.card);
+            });
+        }
     }
 
     function syncModels() {
@@ -343,66 +598,8 @@ document.addEventListener('DOMContentLoaded', function () {
         syncModels();
     }
 
-    function pageList(total, current) {
-        if (total <= 7) {
-            var all = [];
-            for (var p = 1; p <= total; p++) all.push(p);
-            return all;
-        }
-        var set = [1, total, current - 1, current, current + 1];
-        var pages = set.filter(function (p, i) {
-            return p >= 1 && p <= total && set.indexOf(p) === i;
-        }).sort(function (a, b) { return a - b; });
-        var out = [];
-        pages.forEach(function (p, i) {
-            if (i > 0 && p - pages[i - 1] > 1) out.push('gap');
-            out.push(p);
-        });
-        return out;
-    }
-
     function renderPagination() {
-        var total = getTotalPages();
-        if (total <= 1) {
-            nav.innerHTML = '';
-            nav.setAttribute('hidden', '');
-            return;
-        }
-        nav.removeAttribute('hidden');
-
-        var html = '';
-        html += '<button type="button" class="page-btn prev-btn" data-action="prev" aria-label="Previous page"' + (currentPage === 1 ? ' disabled' : '') + '>' +
-            '<i class="fa-solid fa-chevron-left" aria-hidden="true"></i><span>Prev</span></button>';
-
-        pageList(total, currentPage).forEach(function (p) {
-            if (p === 'gap') {
-                html += '<span class="page-ellipsis" aria-hidden="true">&hellip;</span>';
-                return;
-            }
-            var active = p === currentPage;
-            html += '<button type="button" class="page-btn' + (active ? ' active' : '') + '" data-action="page" data-page="' + p + '" aria-label="Page ' + p + '"' + (active ? ' aria-current="page"' : '') + '>' + p + '</button>';
-        });
-
-        html += '<button type="button" class="page-btn next-btn" data-action="next" aria-label="Next page"' + (currentPage === total ? ' disabled' : '') + '>' +
-            '<span>Next</span><i class="fa-solid fa-chevron-right" aria-hidden="true"></i></button>';
-
-        nav.innerHTML = html;
-    }
-
-    function scrollToSection() {
-        var section = document.getElementById('awards');
-        if (!section) return;
-        var offset = (navbar ? navbar.offsetHeight : 72) + 16;
-        var top = section.getBoundingClientRect().top + window.pageYOffset - offset;
-        window.scrollTo({ top: top, behavior: reducedMotion.matches ? 'auto' : 'smooth' });
-    }
-
-    function restoreFocus(action) {
-        var target = null;
-        if (action === 'next') target = nav.querySelector('[data-action="next"]:not(:disabled)');
-        else if (action === 'prev') target = nav.querySelector('[data-action="prev"]:not(:disabled)');
-        if (!target) target = nav.querySelector('.page-btn.active');
-        if (target) target.focus({ preventScroll: true });
+        buildPagination(nav, getTotalPages(), currentPage);
     }
 
     function goToPage(page, action) {
@@ -413,8 +610,8 @@ document.addEventListener('DOMContentLoaded', function () {
         var apply = function () {
             showPage(currentPage);
             renderPagination();
-            restoreFocus(action);
-            scrollToSection();
+            restoreNavFocus(nav, action);
+            scrollToId('awards');
             grid.classList.remove('is-fading');
             busy = false;
         };
@@ -449,11 +646,11 @@ document.addEventListener('DOMContentLoaded', function () {
         renderPagination();
     };
 
-    if (mobileQuery.addEventListener) mobileQuery.addEventListener('change', onBreakpointChange);
-    else if (mobileQuery.addListener) mobileQuery.addListener(onBreakpointChange);
+    listenQuery(mobileQuery, onBreakpointChange);
+    listenQuery(tabletQuery, onBreakpointChange);
 
-    window.addEventListener('scroll', requestTick, { passive: true });
-    window.addEventListener('resize', requestTick);
+    window.addEventListener('scroll', onScrollActivity, { passive: true });
+    window.addEventListener('resize', onScrollActivity);
 
     setupModels();
     watchImages();

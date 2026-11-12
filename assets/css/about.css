@@ -4317,8 +4317,7 @@ html[data-theme="dark"] .cwt-public #our-crew>section {
 }
 
 .abt-recognition-cta {
-    display: none;
-    /*display: inline-flex;*/
+    display: inline-flex;
     align-items: center;
     gap: 6px;
     background: var(--primary);
